@@ -48,6 +48,13 @@ import { AuthService } from '../../../core/services/auth.service';
             {{ loading() ? 'Connexion...' : 'Se connecter' }}
           </button>
         </form>
+
+        <p class="text-center text-sm text-gray-500 mt-6">
+          Pas encore de compte ?
+          <a routerLink="/auth/register" class="text-blue-600 hover:underline font-medium">
+            Créer un espace comptable
+          </a>
+        </p>
       </div>
     </div>
   `

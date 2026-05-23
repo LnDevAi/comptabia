@@ -32,7 +32,10 @@ import { AuthService } from '../../../core/services/auth.service';
 
         <div class="flex items-center gap-3 text-sm">
           <span class="text-gray-500">{{ user()?.nomEntreprise }}</span>
-          <span class="font-medium text-gray-800">{{ user()?.nom }}</span>
+          <a routerLink="/dashboard/profile"
+             class="font-medium text-gray-800 hover:text-blue-600 transition">
+            {{ user()?.nom }}
+          </a>
           <span class="px-2 py-0.5 rounded-full text-xs font-semibold"
                 [class]="roleClass()">
             {{ user()?.role }}

@@ -2,7 +2,10 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs';
-import { AuthResponse, LoginPayload, RegisterPayload, TokenPayload } from '../models/auth.model';
+import {
+  AuthResponse, LoginPayload, RegisterPayload,
+  TokenPayload, ProfileResponse, UpdateProfilePayload
+} from '../models/auth.model';
 
 const TOKEN_KEY = 'ec_token';
 const USER_KEY  = 'ec_user';
@@ -37,6 +40,23 @@ export class AuthService {
     localStorage.removeItem(USER_KEY);
     this.currentUser.set(null);
     this.router.navigate(['/auth/login']);
+  }
+
+  getProfile() {
+    return this.http.get<ProfileResponse>('/api/auth/me');
+  }
+
+  updateProfile(payload: UpdateProfilePayload) {
+    return this.http.patch<ProfileResponse>('/api/auth/me', payload).pipe(
+      tap(profile => {
+        const current = this.currentUser();
+        if (current) {
+          const updated: AuthResponse = { ...current, nom: profile.nom, email: profile.email };
+          localStorage.setItem(USER_KEY, JSON.stringify(updated));
+          this.currentUser.set(updated);
+        }
+      })
+    );
   }
 
   getToken(): string | null {

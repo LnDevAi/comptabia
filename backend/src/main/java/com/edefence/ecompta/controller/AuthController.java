@@ -2,7 +2,9 @@ package com.edefence.ecompta.controller;
 
 import com.edefence.ecompta.dto.auth.AuthResponseDto;
 import com.edefence.ecompta.dto.auth.LoginDto;
+import com.edefence.ecompta.dto.auth.ProfileDto;
 import com.edefence.ecompta.dto.auth.RegisterDto;
+import com.edefence.ecompta.dto.auth.UpdateProfileDto;
 import com.edefence.ecompta.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +41,18 @@ public class AuthController {
                        @AuthenticationPrincipal UserDetails user) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            // Blacklist for 24h (matches JWT TTL)
             redisTemplate.opsForValue().set("blacklist:" + token, "1", Duration.ofHours(24));
         }
+    }
+
+    @GetMapping("/me")
+    public ProfileDto me(@AuthenticationPrincipal UserDetails user) {
+        return authService.getMe(user.getUsername());
+    }
+
+    @PatchMapping("/me")
+    public ProfileDto updateMe(@AuthenticationPrincipal UserDetails user,
+                               @Valid @RequestBody UpdateProfileDto dto) {
+        return authService.updateMe(user.getUsername(), dto);
     }
 }

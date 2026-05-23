@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -8,8 +9,15 @@ export const routes: Routes = [
     children: [
       {
         path: 'login',
+        canActivate: [guestGuard],
         loadComponent: () =>
           import('./features/auth/login/login.component').then(m => m.LoginComponent)
+      },
+      {
+        path: 'register',
+        canActivate: [guestGuard],
+        loadComponent: () =>
+          import('./features/auth/register/register.component').then(m => m.RegisterComponent)
       }
     ]
   },
@@ -33,6 +41,11 @@ export const routes: Routes = [
         path: 'ecritures',
         loadComponent: () =>
           import('./features/ecritures/ecritures.component').then(m => m.EcrituresComponent)
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/profile/profile.component').then(m => m.ProfileComponent)
       }
     ]
   },
