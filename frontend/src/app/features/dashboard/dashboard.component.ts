@@ -1,11 +1,29 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, OnInit, inject, signal
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { EcritureService } from '../../core/services/ecriture.service';
-import { CompteService } from '../../core/services/compte.service';
+import { DashboardService } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
-import { forkJoin } from 'rxjs';
-import { Ecriture } from '../../core/models/ecriture.model';
+import { DashboardData, MoisStat } from '../../core/models/dashboard.model';
+
+const JOURNAL_META: Record<string, { label: string; color: string; bg: string }> = {
+  AC: { label: 'Achats',         color: '#f97316', bg: 'bg-orange-100 text-orange-700' },
+  BQ: { label: 'Banque',         color: '#3b82f6', bg: 'bg-blue-100 text-blue-700'   },
+  OD: { label: 'Op. diverses',   color: '#8b5cf6', bg: 'bg-purple-100 text-purple-700'},
+  VT: { label: 'Ventes',         color: '#22c55e', bg: 'bg-green-100 text-green-700' },
+};
+
+function conicGradient(segments: { pct: number; color: string }[]): string {
+  const active = segments.filter(s => s.pct > 0);
+  if (!active.length) return 'conic-gradient(#e5e7eb 0% 100%)';
+  let pos = 0;
+  const parts = active.map(s => {
+    const from = pos; pos += s.pct;
+    return `${s.color} ${from.toFixed(2)}% ${pos.toFixed(2)}%`;
+  });
+  return `conic-gradient(${parts.join(', ')})`;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -13,89 +31,300 @@ import { Ecriture } from '../../core/models/ecriture.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="p-6 max-w-5xl mx-auto space-y-6">
+    <div class="p-6 max-w-6xl mx-auto space-y-6">
+
+      <!-- Page title -->
       <div>
         <h2 class="text-xl font-bold text-gray-900">Tableau de bord</h2>
         <p class="text-sm text-gray-500">{{ auth.user()?.nomEntreprise }}</p>
       </div>
 
-      <!-- Stats cards -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
-          <p class="text-xs text-gray-500 uppercase tracking-wide">Comptes actifs</p>
-          <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats().comptes }}</p>
-        </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
-          <p class="text-xs text-gray-500 uppercase tracking-wide">Écritures totales</p>
-          <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats().ecritures }}</p>
-        </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
-          <p class="text-xs text-gray-500 uppercase tracking-wide">Brouillons</p>
-          <p class="text-2xl font-bold text-yellow-600 mt-1">{{ stats().brouillons }}</p>
-        </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
-          <p class="text-xs text-gray-500 uppercase tracking-wide">Validées</p>
-          <p class="text-2xl font-bold text-green-600 mt-1">{{ stats().validees }}</p>
-        </div>
-      </div>
+      @if (data()) {
+        <!-- Alert: brouillons en attente -->
+        @if (data()!.brouillons > 0) {
+          <div class="flex items-center gap-3 bg-yellow-50 border border-yellow-200
+                      rounded-xl px-5 py-3">
+            <span class="text-yellow-500 text-lg">⚠</span>
+            <span class="text-sm text-yellow-800 font-medium">
+              {{ data()!.brouillons }} écriture{{ data()!.brouillons > 1 ? 's' : '' }}
+              en brouillon en attente de validation
+            </span>
+            <a routerLink="/dashboard/ecritures"
+               class="ml-auto text-sm text-yellow-700 hover:underline font-medium">
+              Valider →
+            </a>
+          </div>
+        }
 
-      <!-- Quick actions -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <a routerLink="/dashboard/ecritures"
-           class="flex items-center gap-4 bg-blue-600 hover:bg-blue-700 text-white
-                  rounded-xl p-5 transition">
-          <div class="text-3xl">📝</div>
-          <div>
-            <p class="font-semibold">Nouvelle écriture</p>
-            <p class="text-sm text-blue-200">Saisir une écriture comptable</p>
+        <!-- Stats cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Comptes -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs text-gray-500 uppercase tracking-wide">Plan de comptes</p>
+                <p class="text-3xl font-bold text-gray-900 mt-1">{{ data()!.comptesActifs }}</p>
+                <p class="text-xs text-gray-400 mt-1">
+                  sur {{ data()!.totalComptes }} au total
+                </p>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-xl">
+                📊
+              </div>
+            </div>
           </div>
-        </a>
-        <a routerLink="/dashboard/plan-comptes"
-           class="flex items-center gap-4 bg-white hover:bg-gray-50 border border-gray-200
-                  rounded-xl p-5 transition">
-          <div class="text-3xl">📊</div>
-          <div>
-            <p class="font-semibold text-gray-900">Plan de comptes</p>
-            <p class="text-sm text-gray-500">Consulter le référentiel SYSCOHADA</p>
+          <!-- Écritures -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs text-gray-500 uppercase tracking-wide">Écritures</p>
+                <p class="text-3xl font-bold text-gray-900 mt-1">{{ data()!.totalEcritures }}</p>
+                <p class="text-xs text-gray-400 mt-1">
+                  {{ data()!.cloturees }} clôturée{{ data()!.cloturees > 1 ? 's' : '' }}
+                </p>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-xl">
+                📝
+              </div>
+            </div>
           </div>
-        </a>
-      </div>
+          <!-- Brouillons -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs text-gray-500 uppercase tracking-wide">Brouillons</p>
+                <p class="text-3xl font-bold mt-1"
+                   [class]="data()!.brouillons > 0 ? 'text-yellow-500' : 'text-gray-900'">
+                  {{ data()!.brouillons }}
+                </p>
+                <p class="text-xs text-gray-400 mt-1">à valider</p>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center text-xl">
+                🕐
+              </div>
+            </div>
+          </div>
+          <!-- Validées -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs text-gray-500 uppercase tracking-wide">Validées</p>
+                <p class="text-3xl font-bold text-green-600 mt-1">{{ data()!.validees }}</p>
+                <p class="text-xs text-gray-400 mt-1">écritures définitives</p>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-xl">
+                ✅
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <!-- Recent écritures -->
-      @if (recentEcritures().length > 0) {
-        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div class="px-5 py-3 border-b border-gray-100">
-            <h3 class="text-sm font-semibold text-gray-700">Dernières écritures</h3>
+        <!-- Solde des validées -->
+        @if (data()!.totalDebitValide > 0 || data()!.totalCreditValide > 0) {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white rounded-xl border border-gray-200 p-5">
+              <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                Total débit validé
+              </p>
+              <p class="text-2xl font-bold text-gray-900 font-mono">
+                {{ data()!.totalDebitValide | number:'1.2-2' }}
+              </p>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5">
+              <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                Total crédit validé
+              </p>
+              <p class="text-2xl font-bold text-gray-900 font-mono">
+                {{ data()!.totalCreditValide | number:'1.2-2' }}
+              </p>
+            </div>
           </div>
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
-              <tr>
-                <th class="px-5 py-2 text-left">Pièce</th>
-                <th class="px-5 py-2 text-left">Date</th>
-                <th class="px-5 py-2 text-left">Libellé</th>
-                <th class="px-5 py-2 text-left">Journal</th>
-                <th class="px-5 py-2 text-left">Statut</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              @for (e of recentEcritures(); track e.id) {
-                <tr class="hover:bg-gray-50">
-                  <td class="px-5 py-3 font-mono text-xs">{{ e.numeroPiece }}</td>
-                  <td class="px-5 py-3 text-gray-600">{{ e.dateEcriture }}</td>
-                  <td class="px-5 py-3 text-gray-800">{{ e.libelle }}</td>
-                  <td class="px-5 py-3">
-                    <span class="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-700">{{ e.journal }}</span>
-                  </td>
-                  <td class="px-5 py-3">
-                    <span class="px-2 py-0.5 rounded-full text-xs font-medium"
-                          [class]="statutClass(e.statut)">
-                      {{ e.statut }}
-                    </span>
-                  </td>
-                </tr>
+        }
+
+        <!-- Charts row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+          <!-- Répartition par journal (donut) -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-4">
+              Répartition par journal
+            </h3>
+            @if (totalJournal() > 0) {
+              <div class="flex items-center gap-6">
+                <!-- Donut -->
+                <div class="relative shrink-0" style="width:120px;height:120px">
+                  <div class="w-full h-full rounded-full"
+                       [style.background]="donutGradient()"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-16 h-16 rounded-full bg-white flex flex-col items-center justify-center">
+                      <span class="text-sm font-bold text-gray-900 leading-none">
+                        {{ totalJournal() }}
+                      </span>
+                      <span class="text-xs text-gray-400">total</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Legend -->
+                <div class="flex-1 space-y-2">
+                  @for (j of data()!.parJournal; track j.journal) {
+                    @if (j.count > 0) {
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                          <div class="w-3 h-3 rounded-full shrink-0"
+                               [style.background]="journalColor(j.journal)"></div>
+                          <span class="text-xs text-gray-700">
+                            {{ journalLabel(j.journal) }}
+                          </span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                          <div class="h-1.5 rounded-full bg-gray-100 w-16 overflow-hidden">
+                            <div class="h-full rounded-full"
+                                 [style.width]="pct(j.count) + '%'"
+                                 [style.background]="journalColor(j.journal)"></div>
+                          </div>
+                          <span class="text-xs font-semibold text-gray-600 w-6 text-right">
+                            {{ j.count }}
+                          </span>
+                        </div>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            } @else {
+              <div class="flex items-center justify-center h-28 text-gray-400 text-sm">
+                Aucune écriture
+              </div>
+            }
+          </div>
+
+          <!-- Évolution mensuelle (bar chart) -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-4">
+              Évolution mensuelle (6 mois)
+            </h3>
+            <div class="flex items-end gap-2 h-28">
+              @for (m of data()!.derniersMois; track m.mois) {
+                <div class="flex-1 flex flex-col items-center gap-1 min-w-0">
+                  <span class="text-xs font-semibold text-gray-600"
+                        [class.text-blue-600]="m.count > 0">
+                    {{ m.count || '' }}
+                  </span>
+                  <div class="w-full rounded-t-lg transition-all duration-500"
+                       [style.height]="barHeight(m) + 'px'"
+                       [style.background]="m.count > 0 ? '#3b82f6' : '#e5e7eb'"
+                       [class.opacity-40]="m.count === 0"
+                       style="min-height:4px">
+                  </div>
+                  <span class="text-xs text-gray-400 truncate w-full text-center"
+                        style="font-size:10px">
+                    {{ shortMois(m.mois) }}
+                  </span>
+                </div>
               }
-            </tbody>
-          </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Raccourcis rapides -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <a routerLink="/dashboard/ecritures"
+             class="flex flex-col items-center gap-2 bg-blue-600 hover:bg-blue-700
+                    text-white rounded-xl p-4 transition text-center">
+            <span class="text-2xl">📝</span>
+            <span class="text-sm font-semibold">Nouvelle écriture</span>
+          </a>
+          <a routerLink="/dashboard/plan-comptes"
+             class="flex flex-col items-center gap-2 bg-white hover:bg-gray-50 border
+                    border-gray-200 rounded-xl p-4 transition text-center">
+            <span class="text-2xl">📊</span>
+            <span class="text-sm font-semibold text-gray-800">Plan de comptes</span>
+          </a>
+          <a routerLink="/dashboard/ecritures"
+             [queryParams]="{statut:'BROUILLON'}"
+             class="flex flex-col items-center gap-2 bg-white hover:bg-gray-50 border
+                    border-gray-200 rounded-xl p-4 transition text-center relative">
+            <span class="text-2xl">🕐</span>
+            <span class="text-sm font-semibold text-gray-800">Valider écritures</span>
+            @if (data()!.brouillons > 0) {
+              <span class="absolute -top-1.5 -right-1.5 bg-yellow-400 text-white text-xs
+                           font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {{ data()!.brouillons }}
+              </span>
+            }
+          </a>
+          <a routerLink="/dashboard/profile"
+             class="flex flex-col items-center gap-2 bg-white hover:bg-gray-50 border
+                    border-gray-200 rounded-xl p-4 transition text-center">
+            <span class="text-2xl">⚙</span>
+            <span class="text-sm font-semibold text-gray-800">Mon profil</span>
+          </a>
+        </div>
+
+        <!-- Dernières écritures -->
+        @if (data()!.dernieresEcritures.length > 0) {
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+              <h3 class="text-sm font-semibold text-gray-700">Dernières écritures</h3>
+              <a routerLink="/dashboard/ecritures"
+                 class="text-xs text-blue-600 hover:underline">
+                Voir toutes →
+              </a>
+            </div>
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
+                <tr>
+                  <th class="px-5 py-2 text-left">Pièce</th>
+                  <th class="px-5 py-2 text-left">Date</th>
+                  <th class="px-5 py-2 text-left">Libellé</th>
+                  <th class="px-5 py-2 text-center">Journal</th>
+                  <th class="px-5 py-2 text-right">Débit</th>
+                  <th class="px-5 py-2 text-center">Statut</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                @for (e of data()!.dernieresEcritures; track e.id) {
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-5 py-3 font-mono text-xs text-gray-700">
+                      {{ e.numeroPiece }}
+                    </td>
+                    <td class="px-5 py-3 text-gray-500 whitespace-nowrap text-xs">
+                      {{ e.dateEcriture }}
+                    </td>
+                    <td class="px-5 py-3 text-gray-800 max-w-xs truncate">
+                      {{ e.libelle }}
+                    </td>
+                    <td class="px-5 py-3 text-center">
+                      <span class="px-2 py-0.5 rounded text-xs font-medium"
+                            [class]="journalBg(e.journal)">
+                        {{ e.journal }}
+                      </span>
+                    </td>
+                    <td class="px-5 py-3 text-right font-mono text-xs text-gray-800">
+                      {{ e.totalDebit | number:'1.2-2' }}
+                    </td>
+                    <td class="px-5 py-3 text-center">
+                      <span class="px-2 py-0.5 rounded-full text-xs font-medium"
+                            [class]="statutClass(e.statut)">
+                        {{ e.statut }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+      } @else {
+        <!-- Skeleton loading -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          @for (i of [1,2,3,4]; track i) {
+            <div class="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
+              <div class="h-3 bg-gray-200 rounded w-24 mb-3"></div>
+              <div class="h-8 bg-gray-200 rounded w-16"></div>
+            </div>
+          }
         </div>
       }
     </div>
@@ -103,25 +332,45 @@ import { Ecriture } from '../../core/models/ecriture.model';
 })
 export class DashboardComponent implements OnInit {
 
-  protected readonly auth             = inject(AuthService);
-  private  readonly ecritureService   = inject(EcritureService);
-  private  readonly compteService     = inject(CompteService);
+  protected readonly auth = inject(AuthService);
+  private readonly svc    = inject(DashboardService);
 
-  stats            = signal({ comptes: 0, ecritures: 0, brouillons: 0, validees: 0 });
-  recentEcritures  = signal<Ecriture[]>([]);
+  data = signal<DashboardData | null>(null);
 
   ngOnInit() {
-    forkJoin({
-      comptes:   this.compteService.findAll(),
-      ecritures: this.ecritureService.findAll(0, 5)
-    }).subscribe({
-      next: ({ comptes, ecritures }) => {
-        const brouillons = ecritures.content.filter(e => e.statut === 'BROUILLON').length;
-        const validees   = ecritures.content.filter(e => e.statut === 'VALIDEE').length;
-        this.stats.set({ comptes: comptes.length, ecritures: ecritures.totalElements, brouillons, validees });
-        this.recentEcritures.set(ecritures.content);
-      }
-    });
+    this.svc.get().subscribe(d => this.data.set(d));
+  }
+
+  totalJournal(): number {
+    return this.data()?.parJournal.reduce((s, j) => s + j.count, 0) ?? 0;
+  }
+
+  donutGradient(): string {
+    const total = this.totalJournal();
+    if (!total) return 'conic-gradient(#e5e7eb 0% 100%)';
+    const segments = (this.data()?.parJournal ?? []).map(j => ({
+      pct: (j.count / total) * 100,
+      color: JOURNAL_META[j.journal]?.color ?? '#9ca3af'
+    }));
+    return conicGradient(segments);
+  }
+
+  pct(count: number): number {
+    const t = this.totalJournal();
+    return t ? Math.round((count / t) * 100) : 0;
+  }
+
+  journalLabel(j: string): string { return JOURNAL_META[j]?.label ?? j; }
+  journalColor(j: string): string { return JOURNAL_META[j]?.color ?? '#9ca3af'; }
+  journalBg(j: string):    string { return JOURNAL_META[j]?.bg ?? 'bg-gray-100 text-gray-600'; }
+
+  barHeight(m: MoisStat): number {
+    const max = Math.max(...(this.data()?.derniersMois.map(x => x.count) ?? [1]), 1);
+    return Math.max(4, Math.round((m.count / max) * 80));
+  }
+
+  shortMois(mois: string): string {
+    return mois.split(' ')[0].slice(0, 3);
   }
 
   statutClass(statut: string): string {
