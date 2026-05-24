@@ -39,4 +39,8 @@ public class LigneEcriture {
     private String lettre;
 
     private LocalDate lettreDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "axe_analytique_id")
+    private AxeAnalytique axeAnalytique;
 }

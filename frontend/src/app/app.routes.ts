@@ -93,6 +93,11 @@ export const routes: Routes = [
           import('./features/lettrage/lettrage.component').then(m => m.LettrageComponent)
       },
       {
+        path: 'analytique',
+        loadComponent: () =>
+          import('./features/analytique/analytique.component').then(m => m.AnalytiqueComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./features/profile/profile.component').then(m => m.ProfileComponent)

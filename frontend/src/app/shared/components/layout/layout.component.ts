@@ -60,6 +60,10 @@ import { AuthService } from '../../../core/services/auth.service';
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             Lettrage
           </a>
+          <a routerLink="/dashboard/analytique" routerLinkActive="bg-blue-50 text-blue-700"
+             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+            Analytique
+          </a>
           @if (user()?.role === 'ADMIN') {
             <a routerLink="/dashboard/admin" routerLinkActive="bg-red-50 text-red-700"
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">

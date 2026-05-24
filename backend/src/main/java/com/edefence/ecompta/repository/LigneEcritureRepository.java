@@ -127,4 +127,13 @@ public interface LigneEcritureRepository extends JpaRepository<LigneEcriture, UU
     List<LigneEcriture> findByIdsForLettrage(@Param("ids") List<UUID> ids,
                                              @Param("eid") UUID entrepriseId,
                                              @Param("compte") String compteNumero);
+
+    @Query("""
+            SELECT l FROM LigneEcriture l
+            JOIN l.ecriture e
+            WHERE l.id IN :ids
+            AND e.entreprise.id = :eid
+            """)
+    List<LigneEcriture> findByIdsAndEntreprise(@Param("ids") List<UUID> ids,
+                                               @Param("eid") UUID entrepriseId);
 }
