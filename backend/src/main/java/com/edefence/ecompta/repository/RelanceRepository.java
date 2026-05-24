@@ -24,4 +24,11 @@ public interface RelanceRepository extends JpaRepository<Relance, UUID> {
             GROUP BY r.tiers.id
             """)
     List<Object[]> countParTiers(@Param("eid") UUID entrepriseId);
+
+    @Query("""
+            SELECT COUNT(DISTINCT r.tiers.id)
+            FROM Relance r
+            WHERE r.entreprise.id = :eid AND r.niveau = 3
+            """)
+    long countTiersAvecMiseEnDemeure(@Param("eid") UUID entrepriseId);
 }

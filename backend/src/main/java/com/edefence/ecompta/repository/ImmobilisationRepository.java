@@ -44,4 +44,17 @@ public interface ImmobilisationRepository extends JpaRepository<Immobilisation, 
             WHERE i.entreprise.id = :eid AND i.statut = 'ACTIF'
             """)
     java.math.BigDecimal sumValeurBrute(@Param("eid") UUID entrepriseId);
+
+    @Query("""
+            SELECT COUNT(i) FROM Immobilisation i
+            WHERE i.entreprise.id = :eid
+            AND i.statut = 'ACTIF'
+            AND NOT EXISTS (
+                SELECT 1 FROM Amortissement a
+                WHERE a.immobilisation.id = i.id
+                AND a.exercice = :exercice
+            )
+            """)
+    long countActifsSansDotation(@Param("eid") UUID entrepriseId,
+                                 @Param("exercice") int exercice);
 }

@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { AlerteService } from '../../../core/services/alerte.service';
 
 @Component({
   selector: 'app-layout',
@@ -68,6 +69,16 @@ import { AuthService } from '../../../core/services/auth.service';
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             Relances
           </a>
+          <a routerLink="/dashboard/alertes" routerLinkActive="bg-red-50 text-red-700"
+             class="relative px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+            Alertes
+            @if (alerteSvc.total > 0) {
+              <span class="absolute -top-1 -right-1 inline-flex items-center justify-center w-4 h-4 rounded-full text-xs font-bold"
+                    [ngClass]="(alerteSvc.alertes()?.countDanger ?? 0) > 0 ? 'bg-red-500 text-white' : 'bg-orange-400 text-white'">
+                {{ alerteSvc.total }}
+              </span>
+            }
+          </a>
           @if (user()?.role === 'ADMIN') {
             <a routerLink="/dashboard/admin" routerLinkActive="bg-red-50 text-red-700"
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
@@ -104,11 +115,13 @@ import { AuthService } from '../../../core/services/auth.service';
     </div>
   `
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnInit {
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, readonly alerteSvc: AlerteService) {}
 
   user = this.auth.user;
+
+  ngOnInit() { this.alerteSvc.charger(); }
 
   roleClass(): string {
     const role = this.user()?.role;

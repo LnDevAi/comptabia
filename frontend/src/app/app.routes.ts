@@ -103,6 +103,11 @@ export const routes: Routes = [
           import('./features/relances/relances.component').then(m => m.RelancesComponent)
       },
       {
+        path: 'alertes',
+        loadComponent: () =>
+          import('./features/alertes/alertes.component').then(m => m.AlertesComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./features/profile/profile.component').then(m => m.ProfileComponent)
