@@ -37,3 +37,17 @@ export const TYPE_DOCUMENT_LABELS: Record<TypeDocument, string> = {
   RECU: 'Reçu de paiement',
   AUTRE: 'Autre document',
 };
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatRequest {
+  messages: ChatMessage[];
+  includeContext: boolean;
+}
+
+export interface ChatResponse {
+  content: string;
+}
