@@ -52,6 +52,10 @@ import { AuthService } from '../../../core/services/auth.service';
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             Rapprochement
           </a>
+          <a routerLink="/dashboard/tva" routerLinkActive="bg-blue-50 text-blue-700"
+             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+            TVA
+          </a>
           @if (user()?.role === 'ADMIN') {
             <a routerLink="/dashboard/admin" routerLinkActive="bg-red-50 text-red-700"
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">

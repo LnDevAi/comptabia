@@ -83,6 +83,11 @@ export const routes: Routes = [
           import('./features/rapprochement/rapprochement.component').then(m => m.RapprochementComponent)
       },
       {
+        path: 'tva',
+        loadComponent: () =>
+          import('./features/tva/tva.component').then(m => m.TvaComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./features/profile/profile.component').then(m => m.ProfileComponent)
