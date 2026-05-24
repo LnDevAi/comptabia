@@ -1,6 +1,8 @@
 package com.edefence.ecompta.controller;
 
+import com.edefence.ecompta.dto.ia.ChatDto;
 import com.edefence.ecompta.dto.ia.InvoiceAnalysisDto;
+import com.edefence.ecompta.service.IaChatService;
 import com.edefence.ecompta.service.IaInvoiceService;
 import com.edefence.ecompta.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +17,16 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class IaController {
 
-    private final IaInvoiceService service;
+    private final IaInvoiceService invoiceService;
+    private final IaChatService    chatService;
 
     @PostMapping(value = "/analyser-facture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public InvoiceAnalysisDto analyserFacture(@RequestPart("file") MultipartFile file) throws IOException {
-        return service.analyse(file, TenantContext.get());
+        return invoiceService.analyse(file, TenantContext.get());
+    }
+
+    @PostMapping("/chat")
+    public ChatDto.Response chat(@RequestBody ChatDto.Request req) {
+        return chatService.chat(req.messages(), req.includeContext(), TenantContext.get());
     }
 }
