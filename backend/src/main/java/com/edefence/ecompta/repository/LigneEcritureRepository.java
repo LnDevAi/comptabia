@@ -52,4 +52,17 @@ public interface LigneEcritureRepository extends JpaRepository<LigneEcriture, UU
                                        @Param("numero") String numero,
                                        @Param("from") LocalDate from,
                                        @Param("to") LocalDate to);
+
+    @Query("""
+            SELECT l.id, e.dateEcriture, e.numeroPiece, l.libelle, l.debit, l.credit
+            FROM LigneEcriture l
+            JOIN l.compte c
+            JOIN l.ecriture e
+            WHERE e.entreprise.id = :id
+            AND e.statut = 'VALIDEE'
+            AND c.numero = :compte
+            ORDER BY e.dateEcriture ASC, e.createdAt ASC
+            """)
+    List<Object[]> findLignesForCompte(@Param("id") UUID entrepriseId,
+                                       @Param("compte") String compteNumero);
 }
