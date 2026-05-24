@@ -65,4 +65,16 @@ public interface EcritureComptableRepository extends JpaRepository<EcritureCompt
 
     @Query("SELECT COUNT(e) FROM EcritureComptable e WHERE e.entreprise.id = :id AND e.statut = 'VALIDEE'")
     long countValideesByEntrepriseId(@Param("id") UUID entrepriseId);
+
+    @Query("""
+            SELECT e FROM EcritureComptable e JOIN FETCH e.lignes l JOIN FETCH l.compte
+            WHERE e.entreprise.id = :id
+            AND e.statut = 'VALIDEE'
+            AND e.dateEcriture >= :from
+            AND e.dateEcriture <= :to
+            ORDER BY e.dateEcriture ASC, e.createdAt ASC
+            """)
+    List<EcritureComptable> findValideesByPeriod(@Param("id") UUID id,
+                                                  @Param("from") java.time.LocalDate from,
+                                                  @Param("to") java.time.LocalDate to);
 }

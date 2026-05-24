@@ -88,7 +88,7 @@ const JOURNALS: Journal[] = ['AC', 'BQ', 'OD', 'VT'];
                   </tr>
                 </thead>
                 <tbody formArrayName="lignes">
-                  @for (ligne of lignesArray.controls; track $index; let i = $index) {
+                  @for (ligne of lignesArray.controls; track ligne; let i = $index) {
                     <tr [formGroupName]="i" class="border-t border-gray-100">
                       <td class="px-3 py-2">
                         <select formControlName="compteId"
@@ -441,9 +441,9 @@ export class EcrituresComponent implements OnInit {
     const raw = this.form.getRawValue();
     const payload: EcritureRequest = {
       ...raw,
-      lignes: raw.lignes.map(l => ({
+      lignes: (raw.lignes as any[]).map((l: any) => ({
         ...l, debit: Number(l.debit), credit: Number(l.credit)
-      })).filter(l => l.compteId)
+      })).filter((l: any) => l.compteId)
     };
     this.ecritureService.create(payload).subscribe({
       next: (e) => {

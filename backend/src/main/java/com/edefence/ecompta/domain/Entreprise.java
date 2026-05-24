@@ -31,6 +31,11 @@ public class Entreprise {
     @Builder.Default
     private PlanType plan = PlanType.FREE;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "systeme_comptable", nullable = false, length = 10)
+    @Builder.Default
+    private SystemeComptable systemeComptable = SystemeComptable.NORMAL;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;
@@ -44,4 +49,5 @@ public class Entreprise {
     private List<CompteComptable> comptes = new ArrayList<>();
 
     public enum PlanType { FREE, PRO, ENTERPRISE }
+    public enum SystemeComptable { NORMAL, SMT }
 }
