@@ -40,7 +40,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         final String token = header.substring(7);
 
-        // Redis blacklist check
+        // Redis blacklist check (token-level)
         if (Boolean.TRUE.equals(redisTemplate.hasKey("blacklist:" + token))) {
             chain.doFilter(request, response);
             return;
@@ -52,6 +52,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         final String email = jwtService.extractEmail(token);
+
+        // User-level deactivation check (set by AdminService when account is disabled)
+        if (email != null && Boolean.TRUE.equals(redisTemplate.hasKey("deactivated:" + email))) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(

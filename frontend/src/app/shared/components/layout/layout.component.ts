@@ -32,6 +32,12 @@ import { AuthService } from '../../../core/services/auth.service';
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             États financiers
           </a>
+          @if (user()?.role === 'ADMIN') {
+            <a routerLink="/dashboard/admin" routerLinkActive="bg-red-50 text-red-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Administration
+            </a>
+          }
           <a routerLink="/dashboard/ia" routerLinkActive="bg-purple-50 text-purple-700"
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 flex items-center gap-1">
             <span class="text-xs">✦</span> Assistant IA
