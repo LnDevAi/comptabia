@@ -43,6 +43,11 @@ export const routes: Routes = [
           import('./features/ecritures/ecritures.component').then(m => m.EcrituresComponent)
       },
       {
+        path: 'ia',
+        loadComponent: () =>
+          import('./features/ia/ia.component').then(m => m.IaComponent)
+      },
+      {
         path: 'etats',
         loadComponent: () =>
           import('./features/etats/etats.component').then(m => m.EtatsComponent)
