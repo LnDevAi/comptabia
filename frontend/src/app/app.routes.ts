@@ -156,6 +156,11 @@ export const routes: Routes = [
         path: 'paie',
         loadComponent: () =>
           import('./features/paie/paie.component').then(m => m.PayeComponent)
+      },
+      {
+        path: 'ratios',
+        loadComponent: () =>
+          import('./features/ratios/ratios.component').then(m => m.RatiosComponent)
       }
     ]
   },
