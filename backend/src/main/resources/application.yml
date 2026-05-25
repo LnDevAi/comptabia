@@ -33,6 +33,16 @@ anthropic:
   model: ${ANTHROPIC_MODEL:claude-haiku-4-5-20251001}
   base-url: https://api.anthropic.com/v1
 
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+app:
+  upload:
+    dir: ${UPLOAD_DIR:./uploads}
+
 logging:
   level:
     com.edefence.ecompta: INFO

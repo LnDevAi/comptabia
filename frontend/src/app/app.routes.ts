@@ -186,6 +186,11 @@ export const routes: Routes = [
         path: 'consolidation',
         loadComponent: () =>
           import('./features/consolidation/consolidation.component').then(m => m.ConsolidationComponent)
+      },
+      {
+        path: 'documents',
+        loadComponent: () =>
+          import('./features/documents/documents.component').then(m => m.DocumentsComponent)
       }
     ]
   },
