@@ -8,7 +8,9 @@ import { EtatFinancierService } from '../../core/services/etat-financier.service
 import {
   BalanceData, BilanData, CompteResultatData, GrandLivreData,
   JournalLivreData, EtatRecettesDepensesData, EtatTresorerieData,
-  FluxTresorerieData, EvcapData, NoteAnnexe, EtatTab
+  FluxTresorerieData, EvcapData,
+  NoteAnnexe, NoteAnnexeCreate,
+  NoteCatalogue, NoteComputeeData, NotesGroupe, EtatTab
 } from '../../core/models/etats.model';
 
 interface TabDef { id: EtatTab; label: string; group: 'sn' | 'smt' | 'commun'; }
@@ -512,72 +514,169 @@ const TABS: TabDef[] = [
         </div>
       }
 
-      <!-- Notes annexes -->
+      <!-- Notes Annexes AUDCIF (36 notes structurées) -->
       @if (activeTab() === 'notes') {
-        <div class="p-4 space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-gray-700">Notes annexes – Exercice {{ exercice() }}</h2>
-            <button (click)="openNoteForm()"
-                    class="text-sm px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-              + Ajouter une note
-            </button>
-          </div>
+        <div class="flex h-[calc(100vh-220px)] min-h-[500px]">
 
-          <!-- Note form -->
-          @if (noteFormOpen()) {
-            <div class="border border-blue-200 rounded-xl p-4 bg-blue-50 space-y-3">
-              <input [(ngModel)]="noteForm.titre" placeholder="Titre de la note *"
-                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-              <textarea [(ngModel)]="noteForm.contenu" placeholder="Contenu" rows="4"
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-              <div class="flex items-center gap-3">
-                <label class="text-xs text-gray-600">Ordre</label>
-                <input type="number" [(ngModel)]="noteForm.ordre" min="0"
-                       class="w-20 border border-gray-300 rounded-lg px-2 py-1.5 text-sm"/>
-                <button (click)="saveNote()"
-                        class="ml-auto px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
-                  {{ editingNoteId() ? 'Enregistrer' : 'Créer' }}
-                </button>
-                <button (click)="cancelNote()" class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800">
-                  Annuler
-                </button>
+          <!-- Sidebar : liste des 36 notes -->
+          <aside class="w-72 shrink-0 border-r border-gray-200 overflow-y-auto bg-gray-50">
+            @for (groupe of groupes(); track groupe.nom) {
+              <div>
+                <div class="px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-700 bg-blue-50 border-b border-blue-100 sticky top-0">
+                  {{ groupe.nom }}
+                </div>
+                @for (note of groupe.notes; track note.numero) {
+                  <button (click)="selectNote(note)"
+                          class="w-full text-left px-3 py-2 text-xs border-b border-gray-100 hover:bg-white transition-colors flex items-start gap-2"
+                          [class.bg-white]="selectedNote()?.numero === note.numero"
+                          [class.font-semibold]="selectedNote()?.numero === note.numero"
+                          [class.text-blue-700]="selectedNote()?.numero === note.numero">
+                    <span class="shrink-0 font-mono text-gray-400 w-5">{{ note.numero }}</span>
+                    <span class="leading-tight">{{ note.titre }}</span>
+                    <span class="ml-auto shrink-0 text-gray-300 text-xs">{{ note.type === 'CALCULEE' ? '◈' : '✎' }}</span>
+                  </button>
+                }
               </div>
-            </div>
-          }
+            }
+          </aside>
 
-          @for (note of notes(); track note.id) {
-            <div class="border border-gray-200 rounded-xl p-4 hover:border-blue-200 transition-colors">
-              <div class="flex items-start justify-between gap-2">
-                <div class="flex-1">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-xs text-gray-400 font-mono">N°{{ note.ordre }}</span>
-                    <h3 class="font-semibold text-gray-800 text-sm">{{ note.titre }}</h3>
+          <!-- Panneau de droite : contenu de la note sélectionnée -->
+          <div class="flex-1 overflow-y-auto">
+            @if (!selectedNote()) {
+              <div class="flex flex-col items-center justify-center h-full text-gray-400">
+                <p class="text-sm">Sélectionnez une note dans la liste</p>
+                <p class="text-xs mt-1">36 notes structurées selon l'AUDCIF SYSCOHADA</p>
+              </div>
+            } @else {
+
+              <!-- En-tête note -->
+              <div class="px-5 py-3 border-b border-gray-200 bg-white sticky top-0 z-10 flex items-center gap-3">
+                <span class="text-2xl font-bold text-blue-700 font-mono">{{ selectedNote()!.numero }}</span>
+                <div>
+                  <h3 class="font-semibold text-gray-800 text-sm">{{ selectedNote()!.titre }}</h3>
+                  <p class="text-xs text-gray-400">Exercice {{ exercice() }} · {{ selectedNote()!.type === 'CALCULEE' ? 'Calculée automatiquement' : 'Note textuelle' }}</p>
+                </div>
+              </div>
+
+              <!-- Note calculée -->
+              @if (selectedNote()!.type === 'CALCULEE') {
+                @if (noteLoading()) {
+                  <div class="flex items-center justify-center py-16 text-gray-400 text-sm">Calcul en cours…</div>
+                } @else if (noteError()) {
+                  <div class="p-5 text-red-500 text-sm">{{ noteError() }}</div>
+                } @else if (currentNoteData()) {
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                        <tr>
+                          <th class="px-4 py-2 text-left w-20">Compte</th>
+                          <th class="px-4 py-2 text-left">Intitulé</th>
+                          <th class="px-4 py-2 text-right w-32">Débit</th>
+                          <th class="px-4 py-2 text-right w-32">Crédit</th>
+                          <th class="px-4 py-2 text-right w-32">Solde net</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (l of currentNoteData()!.lignes; track $index) {
+                          <tr class="border-t border-gray-50 hover:bg-gray-50"
+                              [class.bg-gray-800]="l.numero === '' && l.intitule.startsWith('▸')"
+                              [class.text-white]="l.numero === '' && l.intitule.startsWith('▸')">
+                            <td class="px-4 py-1.5 font-mono text-xs text-gray-500">{{ l.numero }}</td>
+                            <td class="px-4 py-1.5" [class.font-semibold]="l.intitule.startsWith('▸')">{{ l.intitule }}</td>
+                            <td class="px-4 py-1.5 text-right font-mono">
+                              {{ l.totalDebit === 0 ? '–' : (l.totalDebit | number:'1.2-2') }}
+                            </td>
+                            <td class="px-4 py-1.5 text-right font-mono">
+                              {{ l.totalCredit === 0 ? '–' : (l.totalCredit | number:'1.2-2') }}
+                            </td>
+                            <td class="px-4 py-1.5 text-right font-mono font-semibold"
+                                [class.text-blue-700]="l.solde > 0"
+                                [class.text-red-600]="l.solde < 0"
+                                [class.text-gray-400]="l.solde === 0">
+                              {{ l.solde === 0 ? '–' : (l.solde | number:'1.2-2') }}
+                            </td>
+                          </tr>
+                        }
+                        @if (currentNoteData()!.lignes.length === 0) {
+                          <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400 text-sm">
+                            Aucun mouvement sur ces comptes pour l'exercice {{ exercice() }}.
+                          </td></tr>
+                        }
+                      </tbody>
+                      <tfoot class="bg-gray-800 text-white font-semibold text-sm">
+                        <tr>
+                          <td colspan="2" class="px-4 py-2 uppercase text-xs tracking-wide">Total</td>
+                          <td class="px-4 py-2 text-right font-mono">{{ currentNoteData()!.totalDebit | number:'1.2-2' }}</td>
+                          <td class="px-4 py-2 text-right font-mono">{{ currentNoteData()!.totalCredit | number:'1.2-2' }}</td>
+                          <td class="px-4 py-2 text-right font-mono">{{ currentNoteData()!.totalSolde | number:'1.2-2' }}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
                   </div>
-                  @if (note.contenu) {
-                    <p class="text-sm text-gray-600 whitespace-pre-wrap">{{ note.contenu }}</p>
+                  @if (currentNoteData()!.remarque) {
+                    <div class="px-5 py-3 bg-blue-50 border-t border-blue-100">
+                      <p class="text-xs text-blue-700">{{ currentNoteData()!.remarque }}</p>
+                    </div>
                   }
-                  <span class="text-xs text-gray-400 mt-1 block">
-                    Mis à jour {{ note.updatedAt | date:'dd/MM/yyyy HH:mm' }}
-                  </span>
+                }
+              }
+
+              <!-- Note textuelle -->
+              @if (selectedNote()!.type === 'TEXTE') {
+                <div class="p-5 space-y-4">
+                  @if (!noteEditMode()) {
+                    @if (textNoteForSelected()) {
+                      <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                          <span class="text-xs text-gray-400">
+                            Mis à jour {{ textNoteForSelected()!.updatedAt | date:'dd/MM/yyyy HH:mm' }}
+                          </span>
+                          <div class="flex gap-2">
+                            <button (click)="startEditNote()"
+                                    class="text-xs px-2 py-1 border border-blue-200 text-blue-600 rounded hover:border-blue-400">
+                              Modifier
+                            </button>
+                            <button (click)="deleteSelectedNote()"
+                                    class="text-xs px-2 py-1 border border-red-200 text-red-500 rounded hover:border-red-400">
+                              Supprimer
+                            </button>
+                          </div>
+                        </div>
+                        <div class="bg-white border border-gray-200 rounded-xl p-4 min-h-[120px] text-sm text-gray-700 whitespace-pre-wrap">
+                          {{ textNoteForSelected()!.contenu || '(Contenu vide)' }}
+                        </div>
+                      </div>
+                    } @else {
+                      <div class="text-center py-10 text-gray-400 text-sm">
+                        <p>Aucune note saisie pour cette annexe.</p>
+                        <button (click)="startEditNote()"
+                                class="mt-3 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                          + Rédiger cette note
+                        </button>
+                      </div>
+                    }
+                  } @else {
+                    <div class="space-y-3">
+                      <textarea [(ngModel)]="noteEditContenu" rows="10" placeholder="Rédigez le contenu de la note…"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                      </textarea>
+                      <div class="flex gap-2 justify-end">
+                        <button (click)="cancelEditNote()"
+                                class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                          Annuler
+                        </button>
+                        <button (click)="saveTextNote()"
+                                class="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                          Enregistrer
+                        </button>
+                      </div>
+                    </div>
+                  }
                 </div>
-                <div class="flex gap-2 shrink-0">
-                  <button (click)="editNote(note)"
-                          class="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded border border-blue-200 hover:border-blue-400">
-                    Modifier
-                  </button>
-                  <button (click)="deleteNote(note.id)"
-                          class="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded border border-red-200 hover:border-red-400">
-                    Supprimer
-                  </button>
-                </div>
-              </div>
-            </div>
-          }
-          @if (notes().length === 0 && !noteFormOpen()) {
-            <div class="text-center py-12 text-gray-400 text-sm">
-              Aucune note annexe pour cet exercice
-            </div>
-          }
+              }
+
+            }
+          </div>
         </div>
       }
     }
@@ -606,6 +705,15 @@ export class EtatsComponent implements OnInit {
   evcap           = signal<EvcapData | null>(null);
   notes           = signal<NoteAnnexe[]>([]);
 
+  // ─── Notes AUDCIF ─────────────────────────────────────────────────────────
+  catalogue       = signal<NoteCatalogue[]>([]);
+  selectedNote    = signal<NoteCatalogue | null>(null);
+  currentNoteData = signal<NoteComputeeData | null>(null);
+  noteLoading     = signal(false);
+  noteError       = signal<string | null>(null);
+  noteEditMode    = signal(false);
+  noteEditContenu = '';
+
   glCompte = '';
   noteFormOpen  = signal(false);
   editingNoteId = signal<string | null>(null);
@@ -622,6 +730,18 @@ export class EtatsComponent implements OnInit {
   passifCategories = computed(() =>
     [...new Set((this.bilan()?.passif ?? []).map(p => p.categorie))]
   );
+
+  groupes = computed<NotesGroupe[]>(() => {
+    const cat = this.catalogue();
+    const nomGroupes = [...new Set(cat.map(n => n.groupe))];
+    return nomGroupes.map(nom => ({ nom, notes: cat.filter(n => n.groupe === nom) }));
+  });
+
+  textNoteForSelected = computed<NoteAnnexe | null>(() => {
+    const sel = this.selectedNote();
+    if (!sel) return null;
+    return this.notes().find(n => n.numeroNote === sel.numero) ?? null;
+  });
 
   bilanActifByCat(cat: string) { return (this.bilan()?.actif ?? []).filter(p => p.categorie === cat); }
   bilanPassifByCat(cat: string) { return (this.bilan()?.passif ?? []).filter(p => p.categorie === cat); }
@@ -651,6 +771,7 @@ export class EtatsComponent implements OnInit {
     this.grandLivre.set(null); this.journalLivre.set(null);
     this.recettesDepenses.set(null); this.tresorerie.set(null);
     this.fluxTresorerie.set(null); this.evcap.set(null); this.notes.set([]);
+    this.selectedNote.set(null); this.currentNoteData.set(null); this.noteEditMode.set(false);
   }
 
   private loadTab(tab: EtatTab) {
@@ -692,6 +813,9 @@ export class EtatsComponent implements OnInit {
         this.fetch(this.svc.getEvcap(y), v => this.evcap.set(v));
         break;
       case 'notes':
+        if (this.catalogue().length === 0) {
+          this.fetch(this.svc.getCatalogue(), v => this.catalogue.set(v));
+        }
         this.fetch(this.svc.getNotes(y), v => this.notes.set(v));
         break;
     }
@@ -710,45 +834,69 @@ export class EtatsComponent implements OnInit {
     });
   }
 
-  // ─── Notes CRUD ───────────────────────────────────────────────────────────
 
-  openNoteForm() {
-    this.editingNoteId.set(null);
-    this.noteForm = { titre: '', contenu: '', ordre: this.notes().length };
-    this.noteFormOpen.set(true);
-  }
+  // ─── Notes AUDCIF ─────────────────────────────────────────────────────────
 
-  editNote(note: NoteAnnexe) {
-    this.editingNoteId.set(note.id);
-    this.noteForm = { titre: note.titre, contenu: note.contenu ?? '', ordre: note.ordre };
-    this.noteFormOpen.set(true);
-  }
+  selectNote(note: NoteCatalogue) {
+    this.selectedNote.set(note);
+    this.currentNoteData.set(null);
+    this.noteError.set(null);
+    this.noteEditMode.set(false);
 
-  cancelNote() { this.noteFormOpen.set(false); this.editingNoteId.set(null); }
-
-  saveNote() {
-    if (!this.noteForm.titre.trim()) return;
-    const id = this.editingNoteId();
-    if (id) {
-      this.svc.updateNote(id, this.noteForm).subscribe({
-        next: updated => {
-          this.notes.update(list => list.map(n => n.id === id ? updated : n));
-          this.cancelNote();
-        }
-      });
-    } else {
-      this.svc.createNote({ ...this.noteForm, exercice: this.exercice() }).subscribe({
-        next: created => {
-          this.notes.update(list => [...list, created]);
-          this.cancelNote();
+    if (note.type === 'CALCULEE') {
+      this.noteLoading.set(true);
+      this.svc.getNoteData(note.numero, this.exercice()).subscribe({
+        next: data => { this.currentNoteData.set(data); this.noteLoading.set(false); },
+        error: (e: any) => {
+          this.noteError.set(e?.error?.message ?? 'Erreur de calcul');
+          this.noteLoading.set(false);
         }
       });
     }
   }
 
-  deleteNote(id: string) {
-    this.svc.deleteNote(id).subscribe({
-      next: () => this.notes.update(list => list.filter(n => n.id !== id))
+  startEditNote() {
+    this.noteEditContenu = this.textNoteForSelected()?.contenu ?? '';
+    this.noteEditMode.set(true);
+  }
+
+  cancelEditNote() {
+    this.noteEditMode.set(false);
+  }
+
+  saveTextNote() {
+    const sel = this.selectedNote();
+    if (!sel) return;
+    const existing = this.textNoteForSelected();
+    if (existing) {
+      this.svc.updateNote(existing.id, { contenu: this.noteEditContenu }).subscribe({
+        next: updated => {
+          this.notes.update(list => list.map(n => n.id === updated.id ? updated : n));
+          this.noteEditMode.set(false);
+        }
+      });
+    } else {
+      const req: NoteAnnexeCreate = {
+        exercice: this.exercice(),
+        numeroNote: sel.numero,
+        titre: sel.titre,
+        contenu: this.noteEditContenu,
+        ordre: sel.numero
+      };
+      this.svc.createNote(req).subscribe({
+        next: created => {
+          this.notes.update(list => [...list, created]);
+          this.noteEditMode.set(false);
+        }
+      });
+    }
+  }
+
+  deleteSelectedNote() {
+    const existing = this.textNoteForSelected();
+    if (!existing || !confirm('Supprimer cette note ?')) return;
+    this.svc.deleteNote(existing.id).subscribe({
+      next: () => this.notes.update(list => list.filter(n => n.id !== existing.id))
     });
   }
 

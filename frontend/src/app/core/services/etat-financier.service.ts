@@ -3,7 +3,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import {
   BalanceData, BilanData, CompteResultatData, GrandLivreData,
   JournalLivreData, EtatRecettesDepensesData, EtatTresorerieData,
-  FluxTresorerieData, EvcapData, NoteAnnexe, NoteAnnexeCreate, NoteAnnexeUpdate
+  FluxTresorerieData, EvcapData,
+  NoteAnnexe, NoteAnnexeCreate, NoteAnnexeUpdate,
+  NoteCatalogue, NoteComputeeData
 } from '../models/etats.model';
 
 @Injectable({ providedIn: 'root' })
@@ -32,4 +34,7 @@ export class EtatFinancierService {
   createNote(req: NoteAnnexeCreate)                 { return this.http.post<NoteAnnexe>(`${this.base}/notes`, req); }
   updateNote(id: string, req: NoteAnnexeUpdate)     { return this.http.put<NoteAnnexe>(`${this.base}/notes/${id}`, req); }
   deleteNote(id: string)                            { return this.http.delete<void>(`${this.base}/notes/${id}`); }
+
+  getCatalogue()                                    { return this.http.get<NoteCatalogue[]>(`${this.base}/notes-catalogue`); }
+  getNoteData(numero: number, exercice: number)     { return this.http.get<NoteComputeeData>(`${this.base}/notes-catalogue/${numero}/data`, { params: this.params(exercice) }); }
 }

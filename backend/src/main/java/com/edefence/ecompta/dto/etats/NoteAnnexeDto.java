@@ -13,6 +13,7 @@ public final class NoteAnnexeDto {
     public record Response(
             UUID id,
             int exercice,
+            Integer numeroNote,
             String titre,
             String contenu,
             int ordre,
@@ -22,6 +23,7 @@ public final class NoteAnnexeDto {
 
     public record CreateRequest(
             @NotNull int exercice,
+            Integer numeroNote,
             @NotBlank String titre,
             String contenu,
             int ordre

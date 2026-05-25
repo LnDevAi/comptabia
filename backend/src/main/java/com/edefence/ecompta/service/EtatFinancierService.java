@@ -236,6 +236,7 @@ public class EtatFinancierService {
         NoteAnnexe note = NoteAnnexe.builder()
                 .entreprise(entreprise)
                 .exercice(req.exercice())
+                .numeroNote(req.numeroNote())
                 .titre(req.titre())
                 .contenu(req.contenu())
                 .ordre(req.ordre())
@@ -441,7 +442,7 @@ public class EtatFinancierService {
     }
 
     private NoteAnnexeDto.Response toNoteResponse(NoteAnnexe n) {
-        return new NoteAnnexeDto.Response(n.getId(), n.getExercice(), n.getTitre(),
-                n.getContenu(), n.getOrdre(), n.getCreatedAt(), n.getUpdatedAt());
+        return new NoteAnnexeDto.Response(n.getId(), n.getExercice(), n.getNumeroNote(),
+                n.getTitre(), n.getContenu(), n.getOrdre(), n.getCreatedAt(), n.getUpdatedAt());
     }
 }

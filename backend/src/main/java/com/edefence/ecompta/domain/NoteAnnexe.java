@@ -30,6 +30,9 @@ public class NoteAnnexe {
     @Column(columnDefinition = "TEXT")
     private String contenu;
 
+    @Column(name = "numero_note")
+    private Integer numeroNote;
+
     @Column(nullable = false)
     @Builder.Default
     private int ordre = 0;

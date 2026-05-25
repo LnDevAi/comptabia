@@ -122,6 +122,7 @@ export interface EtatTresorerieData {
 export interface NoteAnnexe {
   id: string;
   exercice: number;
+  numeroNote: number | null;
   titre: string;
   contenu: string;
   ordre: number;
@@ -131,6 +132,7 @@ export interface NoteAnnexe {
 
 export interface NoteAnnexeCreate {
   exercice: number;
+  numeroNote?: number;
   titre: string;
   contenu: string;
   ordre: number;
@@ -140,6 +142,38 @@ export interface NoteAnnexeUpdate {
   titre?: string;
   contenu?: string;
   ordre?: number;
+}
+
+// ─── Catalogue AUDCIF ─────────────────────────────────────────────────────
+
+export interface NoteCatalogue {
+  numero:  number;
+  groupe:  string;
+  titre:   string;
+  type:    'TEXTE' | 'CALCULEE';
+}
+
+export interface NoteComputeeLigne {
+  numero:     string;
+  intitule:   string;
+  totalDebit: number;
+  totalCredit:number;
+  solde:      number;
+}
+
+export interface NoteComputeeData {
+  numero:      number;
+  titre:       string;
+  lignes:      NoteComputeeLigne[];
+  totalDebit:  number;
+  totalCredit: number;
+  totalSolde:  number;
+  remarque:    string | null;
+}
+
+export interface NotesGroupe {
+  nom:   string;
+  notes: NoteCatalogue[];
 }
 
 export interface FluxLigne {
