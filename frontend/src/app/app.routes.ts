@@ -181,6 +181,11 @@ export const routes: Routes = [
         path: 'previsions-tresorerie',
         loadComponent: () =>
           import('./features/previsions-tresorerie/previsions-tresorerie.component').then(m => m.PrevisionsTresorerieComponent)
+      },
+      {
+        path: 'consolidation',
+        loadComponent: () =>
+          import('./features/consolidation/consolidation.component').then(m => m.ConsolidationComponent)
       }
     ]
   },
