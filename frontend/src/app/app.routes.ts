@@ -161,6 +161,11 @@ export const routes: Routes = [
         path: 'ratios',
         loadComponent: () =>
           import('./features/ratios/ratios.component').then(m => m.RatiosComponent)
+      },
+      {
+        path: 'pilotage',
+        loadComponent: () =>
+          import('./features/pilotage/pilotage.component').then(m => m.PilotageComponent)
       }
     ]
   },
