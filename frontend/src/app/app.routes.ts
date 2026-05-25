@@ -176,6 +176,11 @@ export const routes: Routes = [
         path: 'devis',
         loadComponent: () =>
           import('./features/devis/devis.component').then(m => m.DevisComponent)
+      },
+      {
+        path: 'previsions-tresorerie',
+        loadComponent: () =>
+          import('./features/previsions-tresorerie/previsions-tresorerie.component').then(m => m.PrevisionsTresorerieComponent)
       }
     ]
   },

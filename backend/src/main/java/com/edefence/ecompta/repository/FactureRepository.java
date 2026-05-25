@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public interface FactureRepository extends JpaRepository<Facture, UUID> {
@@ -34,4 +35,11 @@ public interface FactureRepository extends JpaRepository<Facture, UUID> {
 
     @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(f.numero, LENGTH(f.numero)-3, 4) AS int)), 0) FROM Facture f WHERE f.entreprise.id = :eid AND f.numero LIKE :prefix")
     Integer maxNumeroSeq(@Param("eid") UUID eid, @Param("prefix") String prefix);
+
+    @Query("""
+            SELECT f FROM Facture f
+            WHERE f.entreprise.id = :eid AND f.statut = 'EMISE'
+            ORDER BY COALESCE(f.dateEcheance, f.dateFacture) ASC
+            """)
+    List<Facture> findAllEmises(@Param("eid") UUID eid);
 }
