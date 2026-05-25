@@ -3,8 +3,12 @@ package com.edefence.ecompta.service;
 import com.edefence.ecompta.domain.EcritureComptable;
 import com.edefence.ecompta.domain.LigneEcriture;
 import com.edefence.ecompta.dto.DashboardDto;
+import com.edefence.ecompta.dto.DashboardStatsDto;
 import com.edefence.ecompta.repository.CompteComptableRepository;
 import com.edefence.ecompta.repository.EcritureComptableRepository;
+import com.edefence.ecompta.repository.FactureRepository;
+import com.edefence.ecompta.repository.LigneEcritureRepository;
+import com.edefence.ecompta.repository.NoteFraisRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +26,9 @@ public class DashboardService {
 
     private final EcritureComptableRepository ecritureRepo;
     private final CompteComptableRepository   compteRepo;
+    private final LigneEcritureRepository     ligneRepo;
+    private final NoteFraisRepository         noteFraisRepo;
+    private final FactureRepository           factureRepo;
 
     private static final DateTimeFormatter MOIS_FMT = DateTimeFormatter.ofPattern("MMM yyyy", Locale.FRENCH);
 
@@ -44,6 +51,64 @@ public class DashboardService {
 
         return new DashboardDto(totalC, actifs, total, brouil, validees, cloturees,
                 totalDebit, totalCredit, parJournal, mois, recentes);
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardStatsDto stats(UUID eid) {
+        LocalDate jan1  = LocalDate.now().withDayOfYear(1);
+        LocalDate today = LocalDate.now();
+
+        BigDecimal tresorerie = ligneRepo.soldeTresorerie(eid);
+        BigDecimal charges    = ligneRepo.totalChargesYtd(eid, jan1, today);
+        BigDecimal produits   = ligneRepo.totalProduitsYtd(eid, jan1, today);
+        BigDecimal resultat   = produits.subtract(charges);
+
+        long       nfCount    = noteFraisRepo.countSoumises(eid);
+        BigDecimal nfMontant  = noteFraisRepo.sumMontantSoumises(eid);
+
+        long       fCount     = factureRepo.countByStatut(eid, com.edefence.ecompta.domain.Facture.Statut.EMISE);
+        BigDecimal fMontant   = factureRepo.sumMontantTtcEmises(eid);
+
+        List<DashboardStatsDto.MoisEvolution> evolution = buildEvolution6Mois(eid);
+
+        return new DashboardStatsDto(tresorerie, charges, produits, resultat,
+                nfCount, nfMontant, fCount, fMontant, evolution);
+    }
+
+    private List<DashboardStatsDto.MoisEvolution> buildEvolution6Mois(UUID eid) {
+        LocalDate from = LocalDate.now().minusMonths(5).withDayOfMonth(1);
+        LocalDate to   = LocalDate.now();
+
+        List<Object[]> rows = ligneRepo.tendanceMensuelle(eid, from, to);
+        // row: [month, credit7, debit7, debit6, credit6]
+        Map<Integer, Object[]> byMonth = new HashMap<>();
+        for (Object[] row : rows) {
+            byMonth.put(((Number) row[0]).intValue(), row);
+        }
+
+        List<DashboardStatsDto.MoisEvolution> result = new ArrayList<>();
+        for (int i = 5; i >= 0; i--) {
+            YearMonth ym = YearMonth.now().minusMonths(i);
+            Object[] row = byMonth.get(ym.getMonthValue());
+            BigDecimal ch = BigDecimal.ZERO;
+            BigDecimal pr = BigDecimal.ZERO;
+            if (row != null) {
+                BigDecimal credit7 = toBd(row[1]);
+                BigDecimal debit7  = toBd(row[2]);
+                BigDecimal debit6  = toBd(row[3]);
+                BigDecimal credit6 = toBd(row[4]);
+                pr = credit7.subtract(debit7).max(BigDecimal.ZERO);
+                ch = debit6.subtract(credit6).max(BigDecimal.ZERO);
+            }
+            result.add(new DashboardStatsDto.MoisEvolution(ym.format(MOIS_FMT), ch, pr));
+        }
+        return result;
+    }
+
+    private BigDecimal toBd(Object v) {
+        if (v instanceof BigDecimal bd) return bd;
+        if (v instanceof Number n) return BigDecimal.valueOf(n.doubleValue());
+        return BigDecimal.ZERO;
     }
 
     private List<DashboardDto.JournalStat> buildJournalStats(UUID id) {

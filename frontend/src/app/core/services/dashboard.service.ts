@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { DashboardData } from '../models/dashboard.model';
+import { DashboardData, DashboardStats } from '../models/dashboard.model';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
@@ -8,5 +8,9 @@ export class DashboardService {
 
   get() {
     return this.http.get<DashboardData>('/api/dashboard');
+  }
+
+  getStats() {
+    return this.http.get<DashboardStats>('/api/dashboard/stats');
   }
 }

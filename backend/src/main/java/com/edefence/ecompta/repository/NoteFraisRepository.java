@@ -39,4 +39,10 @@ public interface NoteFraisRepository extends JpaRepository<NoteFrais, UUID> {
         WHERE n.id = :id AND n.entreprise.id = :eid
         """)
     Optional<NoteFrais> findByIdAndEntreprise(@Param("id") UUID id, @Param("eid") UUID eid);
+
+    @Query("SELECT COUNT(n) FROM NoteFrais n WHERE n.entreprise.id = :eid AND n.statut = 'SOUMISE'")
+    long countSoumises(@Param("eid") UUID eid);
+
+    @Query("SELECT COALESCE(SUM(n.montant), 0) FROM NoteFrais n WHERE n.entreprise.id = :eid AND n.statut = 'SOUMISE'")
+    java.math.BigDecimal sumMontantSoumises(@Param("eid") UUID eid);
 }

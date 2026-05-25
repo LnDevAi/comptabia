@@ -1,6 +1,7 @@
 package com.edefence.ecompta.controller;
 
 import com.edefence.ecompta.dto.DashboardDto;
+import com.edefence.ecompta.dto.DashboardStatsDto;
 import com.edefence.ecompta.service.DashboardService;
 import com.edefence.ecompta.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
@@ -18,5 +19,10 @@ public class DashboardController {
     @GetMapping
     public DashboardDto get() {
         return service.get(TenantContext.get());
+    }
+
+    @GetMapping("/stats")
+    public DashboardStatsDto stats() {
+        return service.stats(TenantContext.get());
     }
 }

@@ -177,6 +177,36 @@ public interface LigneEcritureRepository extends JpaRepository<LigneEcriture, UU
     List<LigneEcriture> findWithDevise(@Param("eid") UUID eid);
 
     @Query("""
+            SELECT COALESCE(SUM(l.debit - l.credit), 0)
+            FROM LigneEcriture l JOIN l.compte c JOIN l.ecriture e
+            WHERE e.entreprise.id = :eid AND e.statut = 'VALIDEE'
+              AND c.numero LIKE '521%'
+            """)
+    BigDecimal soldeTresorerie(@Param("eid") UUID eid);
+
+    @Query("""
+            SELECT COALESCE(SUM(l.debit - l.credit), 0)
+            FROM LigneEcriture l JOIN l.compte c JOIN l.ecriture e
+            WHERE e.entreprise.id = :eid AND e.statut = 'VALIDEE'
+              AND SUBSTRING(c.numero, 1, 1) = '6'
+              AND e.dateEcriture >= :from AND e.dateEcriture <= :to
+            """)
+    BigDecimal totalChargesYtd(@Param("eid") UUID eid,
+                               @Param("from") LocalDate from,
+                               @Param("to") LocalDate to);
+
+    @Query("""
+            SELECT COALESCE(SUM(l.credit - l.debit), 0)
+            FROM LigneEcriture l JOIN l.compte c JOIN l.ecriture e
+            WHERE e.entreprise.id = :eid AND e.statut = 'VALIDEE'
+              AND SUBSTRING(c.numero, 1, 1) = '7'
+              AND e.dateEcriture >= :from AND e.dateEcriture <= :to
+            """)
+    BigDecimal totalProduitsYtd(@Param("eid") UUID eid,
+                                @Param("from") LocalDate from,
+                                @Param("to") LocalDate to);
+
+    @Query("""
             SELECT MONTH(e.dateEcriture),
                    COALESCE(SUM(CASE WHEN SUBSTRING(c.numero, 1, 1) = '7' THEN l.credit ELSE 0 END), 0),
                    COALESCE(SUM(CASE WHEN SUBSTRING(c.numero, 1, 1) = '7' THEN l.debit  ELSE 0 END), 0),

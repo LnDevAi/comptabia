@@ -42,4 +42,7 @@ public interface FactureRepository extends JpaRepository<Facture, UUID> {
             ORDER BY COALESCE(f.dateEcheance, f.dateFacture) ASC
             """)
     List<Facture> findAllEmises(@Param("eid") UUID eid);
+
+    @Query("SELECT COALESCE(SUM(f.montantTtc), 0) FROM Facture f WHERE f.entreprise.id = :eid AND f.statut = 'EMISE'")
+    java.math.BigDecimal sumMontantTtcEmises(@Param("eid") UUID eid);
 }

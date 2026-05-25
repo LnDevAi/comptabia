@@ -1,3 +1,21 @@
+export interface MoisEvolution {
+  mois: string;
+  charges: number;
+  produits: number;
+}
+
+export interface DashboardStats {
+  soldeTresorerie:            number;
+  totalChargesYtd:            number;
+  totalProduitsYtd:           number;
+  resultatNet:                number;
+  notesFraisEnAttente:        number;
+  notesFraisMontantEnAttente: number;
+  facturesImpayees:           number;
+  facturesMontantImpayees:    number;
+  evolution6Mois:             MoisEvolution[];
+}
+
 export interface JournalStat {
   journal: string;
   count: number;

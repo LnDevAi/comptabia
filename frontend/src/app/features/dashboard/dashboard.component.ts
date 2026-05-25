@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
-import { DashboardData, MoisStat } from '../../core/models/dashboard.model';
+import { DashboardData, DashboardStats, MoisEvolution, MoisStat } from '../../core/models/dashboard.model';
 
 const JOURNAL_META: Record<string, { label: string; color: string; bg: string }> = {
   AC: { label: 'Achats',         color: '#f97316', bg: 'bg-orange-100 text-orange-700' },
@@ -53,6 +53,125 @@ function conicGradient(segments: { pct: number; color: string }[]): string {
                class="ml-auto text-sm text-yellow-700 hover:underline font-medium">
               Valider →
             </a>
+          </div>
+        }
+
+        <!-- Alertes analytiques -->
+        @if (stats()) {
+          @if (stats()!.notesFraisEnAttente > 0) {
+            <div class="flex items-center gap-3 bg-orange-50 border border-orange-200 rounded-xl px-5 py-3">
+              <span class="text-orange-500 text-lg">📋</span>
+              <span class="text-sm text-orange-800 font-medium">
+                {{ stats()!.notesFraisEnAttente }} note{{ stats()!.notesFraisEnAttente > 1 ? 's' : '' }} de frais
+                en attente d'approbation — {{ fmtXof(stats()!.notesFraisMontantEnAttente) }}
+              </span>
+              <a routerLink="/dashboard/notes-frais"
+                 class="ml-auto text-sm text-orange-700 hover:underline font-medium">Traiter →</a>
+            </div>
+          }
+          @if (stats()!.facturesImpayees > 0) {
+            <div class="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-3">
+              <span class="text-red-500 text-lg">🧾</span>
+              <span class="text-sm text-red-800 font-medium">
+                {{ stats()!.facturesImpayees }} facture{{ stats()!.facturesImpayees > 1 ? 's' : '' }}
+                impayée{{ stats()!.facturesImpayees > 1 ? 's' : '' }} — {{ fmtXof(stats()!.facturesMontantImpayees) }}
+              </span>
+              <a routerLink="/dashboard/facturation"
+                 class="ml-auto text-sm text-red-700 hover:underline font-medium">Voir →</a>
+            </div>
+          }
+          @if (stats()!.soldeTresorerie < 0) {
+            <div class="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-3">
+              <span class="text-red-500 text-lg">🏦</span>
+              <span class="text-sm text-red-800 font-medium">
+                Solde trésorerie négatif : {{ fmtXof(stats()!.soldeTresorerie) }}
+              </span>
+            </div>
+          }
+
+          <!-- KPI analytiques -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded-xl border border-gray-200 p-5">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-xs text-gray-500 uppercase tracking-wide">Trésorerie (521)</p>
+                  <p class="text-2xl font-bold mt-1"
+                     [class]="stats()!.soldeTresorerie >= 0 ? 'text-gray-900' : 'text-red-600'">
+                    {{ fmtXof(stats()!.soldeTresorerie) }}
+                  </p>
+                  <p class="text-xs text-gray-400 mt-1">Solde net validé</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-xl">🏦</div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-xs text-gray-500 uppercase tracking-wide">Charges YTD (cl. 6)</p>
+                  <p class="text-2xl font-bold text-orange-600 mt-1">{{ fmtXof(stats()!.totalChargesYtd) }}</p>
+                  <p class="text-xs text-gray-400 mt-1">Depuis le 1er jan.</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-xl">📉</div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-xs text-gray-500 uppercase tracking-wide">Produits YTD (cl. 7)</p>
+                  <p class="text-2xl font-bold text-green-600 mt-1">{{ fmtXof(stats()!.totalProduitsYtd) }}</p>
+                  <p class="text-xs text-gray-400 mt-1">Depuis le 1er jan.</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-xl">📈</div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-5">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-xs text-gray-500 uppercase tracking-wide">Résultat net YTD</p>
+                  <p class="text-2xl font-bold mt-1"
+                     [class]="stats()!.resultatNet >= 0 ? 'text-green-700' : 'text-red-600'">
+                    {{ fmtXof(stats()!.resultatNet) }}
+                  </p>
+                  <p class="text-xs text-gray-400 mt-1">Produits - Charges</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+                     [class]="stats()!.resultatNet >= 0 ? 'bg-green-50' : 'bg-red-50'">
+                  {{ stats()!.resultatNet >= 0 ? '✅' : '⚠' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Graphique charges vs produits (6 mois) -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-4">Charges vs Produits — 6 derniers mois</h3>
+            <div class="flex items-end gap-3 h-32">
+              @for (m of stats()!.evolution6Mois; track m.mois) {
+                <div class="flex-1 flex flex-col items-center gap-1 min-w-0">
+                  <div class="w-full flex items-end gap-0.5" style="height:100px">
+                    <div class="flex-1 rounded-t transition-all duration-500"
+                         [style.height]="evoBarHeight(m.charges, stats()!.evolution6Mois, false) + 'px'"
+                         style="min-height:2px; background:#f97316; opacity:0.8"></div>
+                    <div class="flex-1 rounded-t transition-all duration-500"
+                         [style.height]="evoBarHeight(m.produits, stats()!.evolution6Mois, true) + 'px'"
+                         style="min-height:2px; background:#22c55e; opacity:0.8"></div>
+                  </div>
+                  <span class="text-xs text-gray-400 truncate w-full text-center" style="font-size:10px">
+                    {{ shortMois(m.mois) }}
+                  </span>
+                </div>
+              }
+            </div>
+            <div class="flex items-center gap-4 mt-2 justify-center">
+              <div class="flex items-center gap-1.5">
+                <div class="w-3 h-3 rounded-sm" style="background:#f97316"></div>
+                <span class="text-xs text-gray-500">Charges</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="w-3 h-3 rounded-sm" style="background:#22c55e"></div>
+                <span class="text-xs text-gray-500">Produits</span>
+              </div>
+            </div>
           </div>
         }
 
@@ -335,10 +454,12 @@ export class DashboardComponent implements OnInit {
   protected readonly auth = inject(AuthService);
   private readonly svc    = inject(DashboardService);
 
-  data = signal<DashboardData | null>(null);
+  data  = signal<DashboardData | null>(null);
+  stats = signal<DashboardStats | null>(null);
 
   ngOnInit() {
     this.svc.get().subscribe(d => this.data.set(d));
+    this.svc.getStats().subscribe(s => this.stats.set(s));
   }
 
   totalJournal(): number {
@@ -377,5 +498,17 @@ export class DashboardComponent implements OnInit {
     if (statut === 'VALIDEE')  return 'bg-green-100 text-green-700';
     if (statut === 'CLOTUREE') return 'bg-gray-200 text-gray-600';
     return 'bg-yellow-100 text-yellow-700';
+  }
+
+  fmtXof(n: number): string {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
+    }).format(n);
+  }
+
+  evoBarHeight(val: number, months: MoisEvolution[], isProduit: boolean): number {
+    const allVals = months.flatMap(m => [m.charges, m.produits]);
+    const max = Math.max(...allVals, 1);
+    return Math.max(2, Math.round((val / max) * 100));
   }
 }
