@@ -126,6 +126,11 @@ export const routes: Routes = [
         path: 'affectation',
         loadComponent: () =>
           import('./features/affectation/affectation.component').then(m => m.AffectationComponent)
+      },
+      {
+        path: 'is',
+        loadComponent: () =>
+          import('./features/declaration-is/declaration-is.component').then(m => m.DeclarationIsComponent)
       }
     ]
   },

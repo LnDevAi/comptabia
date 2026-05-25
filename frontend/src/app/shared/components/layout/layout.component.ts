@@ -97,6 +97,10 @@ import { AlerteService } from '../../../core/services/alerte.service';
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             Affectation
           </a>
+          <a routerLink="/dashboard/is" routerLinkActive="bg-blue-50 text-blue-700"
+             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+            IS
+          </a>
           <a routerLink="/dashboard/ia" routerLinkActive="bg-purple-50 text-purple-700"
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 flex items-center gap-1">
             <span class="text-xs">✦</span> Assistant IA
