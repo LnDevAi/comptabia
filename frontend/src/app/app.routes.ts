@@ -141,6 +141,11 @@ export const routes: Routes = [
         path: 'modeles',
         loadComponent: () =>
           import('./features/modeles/modeles.component').then(m => m.ModelesComponent)
+      },
+      {
+        path: 'import-fec',
+        loadComponent: () =>
+          import('./features/import-fec/import-fec.component').then(m => m.ImportFecComponent)
       }
     ]
   },
