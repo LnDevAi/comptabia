@@ -216,6 +216,11 @@ export const routes: Routes = [
         path: 'regularisations',
         loadComponent: () =>
           import('./features/regularisations/regularisations.component').then(m => m.RegularisationsComponent)
+      },
+      {
+        path: 'notes-frais',
+        loadComponent: () =>
+          import('./features/notes-frais/notes-frais.component').then(m => m.NotesFraisComponent)
       }
     ]
   },
