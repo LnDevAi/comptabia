@@ -221,6 +221,11 @@ export const routes: Routes = [
         path: 'notes-frais',
         loadComponent: () =>
           import('./features/notes-frais/notes-frais.component').then(m => m.NotesFraisComponent)
+      },
+      {
+        path: 'conges',
+        loadComponent: () =>
+          import('./features/conges/conges.component').then(m => m.CongesComponent)
       }
     ]
   },
