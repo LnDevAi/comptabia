@@ -166,6 +166,11 @@ export const routes: Routes = [
         path: 'pilotage',
         loadComponent: () =>
           import('./features/pilotage/pilotage.component').then(m => m.PilotageComponent)
+      },
+      {
+        path: 'facturation',
+        loadComponent: () =>
+          import('./features/facturation/facturation.component').then(m => m.FacturationComponent)
       }
     ]
   },
