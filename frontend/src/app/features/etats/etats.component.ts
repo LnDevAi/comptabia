@@ -8,7 +8,7 @@ import { EtatFinancierService } from '../../core/services/etat-financier.service
 import {
   BalanceData, BilanData, CompteResultatData, GrandLivreData,
   JournalLivreData, EtatRecettesDepensesData, EtatTresorerieData,
-  FluxTresorerieData, NoteAnnexe, EtatTab
+  FluxTresorerieData, EvcapData, NoteAnnexe, EtatTab
 } from '../../core/models/etats.model';
 
 interface TabDef { id: EtatTab; label: string; group: 'sn' | 'smt' | 'commun'; }
@@ -22,6 +22,7 @@ const TABS: TabDef[] = [
   { id: 'recettes-depenses',label: 'Recettes / Dépenses',  group: 'smt'    },
   { id: 'tresorerie',       label: 'Trésorerie (SMT)',     group: 'smt'    },
   { id: 'flux-tresorerie',  label: 'Flux de trésorerie',   group: 'sn'     },
+  { id: 'evcap',            label: 'Var. Capitaux Propres', group: 'sn'    },
   { id: 'notes',            label: 'Notes annexes',        group: 'commun' },
 ];
 
@@ -446,6 +447,71 @@ const TABS: TabDef[] = [
         </div>
       }
 
+      <!-- État de Variation des Capitaux Propres -->
+      @if (activeTab() === 'evcap' && evcap()) {
+        <div class="overflow-x-auto">
+          <div class="px-4 py-3 border-b border-gray-100 space-y-0.5">
+            <h2 class="font-semibold text-gray-700">État de Variation des Capitaux Propres – Exercice {{ evcap()!.exercice }}</h2>
+            <p class="text-xs text-gray-400">Comptes 10x–15x (SYSCOHADA) — solde créditeur net (positif = ressource)</p>
+          </div>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+              <tr>
+                <th class="px-4 py-2 text-left w-24">Compte</th>
+                <th class="px-4 py-2 text-left">Intitulé</th>
+                <th class="px-4 py-2 text-right w-36">Solde début N</th>
+                <th class="px-4 py-2 text-right w-36">Augmentations</th>
+                <th class="px-4 py-2 text-right w-36">Diminutions</th>
+                <th class="px-4 py-2 text-right w-36">Solde fin N</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of evcap()!.lignes; track l.numero) {
+                <tr class="border-t border-gray-50 hover:bg-gray-50">
+                  <td class="px-4 py-1.5 font-mono text-xs">{{ l.numero }}</td>
+                  <td class="px-4 py-1.5 text-gray-700">{{ l.intitule }}</td>
+                  <td class="px-4 py-1.5 text-right font-mono"
+                      [class]="l.soldeDebut >= 0 ? 'text-gray-700' : 'text-red-600'">
+                    {{ l.soldeDebut === 0 ? '–' : (l.soldeDebut | number:'1.2-2') }}
+                  </td>
+                  <td class="px-4 py-1.5 text-right font-mono text-green-700">
+                    {{ l.augmentations === 0 ? '–' : (l.augmentations | number:'1.2-2') }}
+                  </td>
+                  <td class="px-4 py-1.5 text-right font-mono text-red-500">
+                    {{ l.diminutions === 0 ? '–' : (l.diminutions | number:'1.2-2') }}
+                  </td>
+                  <td class="px-4 py-1.5 text-right font-mono font-semibold"
+                      [class]="l.soldeFin >= 0 ? 'text-blue-700' : 'text-red-700'">
+                    {{ l.soldeFin | number:'1.2-2' }}
+                  </td>
+                </tr>
+              }
+              @if (evcap()!.lignes.length === 0) {
+                <tr>
+                  <td colspan="6" class="px-4 py-8 text-center text-gray-400 text-sm">
+                    Aucun mouvement sur les comptes de capitaux propres pour cet exercice.
+                  </td>
+                </tr>
+              }
+            </tbody>
+            <tfoot class="bg-gray-800 text-white font-semibold text-sm">
+              <tr>
+                <td colspan="2" class="px-4 py-2 uppercase tracking-wide text-xs">Total Capitaux Propres</td>
+                <td class="px-4 py-2 text-right font-mono">{{ evcap()!.totalDebut | number:'1.2-2' }}</td>
+                <td class="px-4 py-2 text-right font-mono">{{ evcap()!.totalAugmentations | number:'1.2-2' }}</td>
+                <td class="px-4 py-2 text-right font-mono">{{ evcap()!.totalDiminutions | number:'1.2-2' }}</td>
+                <td class="px-4 py-2 text-right font-mono">{{ evcap()!.totalFin | number:'1.2-2' }}</td>
+              </tr>
+            </tfoot>
+          </table>
+          <div class="px-4 py-2 bg-blue-50 border-t border-blue-100">
+            <p class="text-xs text-blue-600">
+              Augmentations = crédits de l'exercice N · Diminutions = débits de l'exercice N · Solde début = cumul au 31/12/N-1
+            </p>
+          </div>
+        </div>
+      }
+
       <!-- Notes annexes -->
       @if (activeTab() === 'notes') {
         <div class="p-4 space-y-4">
@@ -537,6 +603,7 @@ export class EtatsComponent implements OnInit {
   recettesDepenses = signal<EtatRecettesDepensesData | null>(null);
   tresorerie      = signal<EtatTresorerieData | null>(null);
   fluxTresorerie  = signal<FluxTresorerieData | null>(null);
+  evcap           = signal<EvcapData | null>(null);
   notes           = signal<NoteAnnexe[]>([]);
 
   glCompte = '';
@@ -583,7 +650,7 @@ export class EtatsComponent implements OnInit {
     this.balance.set(null); this.bilan.set(null); this.compteResultat.set(null);
     this.grandLivre.set(null); this.journalLivre.set(null);
     this.recettesDepenses.set(null); this.tresorerie.set(null);
-    this.fluxTresorerie.set(null); this.notes.set([]);
+    this.fluxTresorerie.set(null); this.evcap.set(null); this.notes.set([]);
   }
 
   private loadTab(tab: EtatTab) {
@@ -619,6 +686,10 @@ export class EtatsComponent implements OnInit {
       case 'flux-tresorerie':
         if (this.fluxTresorerie()) return;
         this.fetch(this.svc.getFluxTresorerie(y), v => this.fluxTresorerie.set(v));
+        break;
+      case 'evcap':
+        if (this.evcap()) return;
+        this.fetch(this.svc.getEvcap(y), v => this.evcap.set(v));
         break;
       case 'notes':
         this.fetch(this.svc.getNotes(y), v => this.notes.set(v));

@@ -54,6 +54,11 @@ public class EtatFinancierController {
         return service.getFluxTresorerie(TenantContext.get(), exercice > 0 ? exercice : currentYear());
     }
 
+    @GetMapping("/evcap")
+    public EvcapDto.Response evcap(@RequestParam(defaultValue = "0") int exercice) {
+        return service.getEvcap(TenantContext.get(), exercice > 0 ? exercice : currentYear());
+    }
+
     // ─── Système Minimal de Trésorerie ───────────────────────────────────────
 
     @GetMapping("/smt/recettes-depenses")
