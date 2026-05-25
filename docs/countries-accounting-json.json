@@ -1,0 +1,1612 @@
+{
+  "countries": [
+    {
+      "code": "BJ",
+      "name": "Bénin",
+      "currency": "XOF",
+      "locale": "fr-BJ",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "BF",
+      "name": "Burkina Faso",
+      "currency": "XOF",
+      "locale": "fr-BF",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "CI",
+      "name": "Côte d'Ivoire",
+      "currency": "XOF",
+      "locale": "fr-CI",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "GW",
+      "name": "Guinée-Bissau",
+      "currency": "XOF",
+      "locale": "pt-GW",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "ML",
+      "name": "Mali",
+      "currency": "XOF",
+      "locale": "fr-ML",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "NE",
+      "name": "Niger",
+      "currency": "XOF",
+      "locale": "fr-NE",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "SN",
+      "name": "Sénégal",
+      "currency": "XOF",
+      "locale": "fr-SN",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "TG",
+      "name": "Togo",
+      "currency": "XOF",
+      "locale": "fr-TG",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "CM",
+      "name": "Cameroun",
+      "currency": "XAF",
+      "locale": "fr-CM",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "CF",
+      "name": "République Centrafricaine",
+      "currency": "XAF",
+      "locale": "fr-CF",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "CG",
+      "name": "Congo",
+      "currency": "XAF",
+      "locale": "fr-CG",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "GA",
+      "name": "Gabon",
+      "currency": "XAF",
+      "locale": "fr-GA",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "GQ",
+      "name": "Guinée Équatoriale",
+      "currency": "XAF",
+      "locale": "es-GQ",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "TD",
+      "name": "Tchad",
+      "currency": "XAF",
+      "locale": "fr-TD",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "KM",
+      "name": "Comores",
+      "currency": "KMF",
+      "locale": "fr-KM",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "CD",
+      "name": "République Démocratique du Congo",
+      "currency": "CDF",
+      "locale": "fr-CD",
+      "accountingSystem": "SYSCOHADA",
+      "chartOfAccounts": "AUDCIF"
+    },
+    {
+      "code": "DZ",
+      "name": "Algérie",
+      "currency": "DZD",
+      "locale": "ar-DZ",
+      "accountingSystem": "PCN",
+      "chartOfAccounts": "Plan Comptable National"
+    },
+    {
+      "code": "EG",
+      "name": "Égypte",
+      "currency": "EGP",
+      "locale": "ar-EG",
+      "accountingSystem": "EAS",
+      "chartOfAccounts": "Egyptian Accounting Standards"
+    },
+    {
+      "code": "LY",
+      "name": "Libye",
+      "currency": "LYD",
+      "locale": "ar-LY",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "MA",
+      "name": "Maroc",
+      "currency": "MAD",
+      "locale": "ar-MA",
+      "accountingSystem": "CGNC",
+      "chartOfAccounts": "Code Général de Normalisation Comptable"
+    },
+    {
+      "code": "SD",
+      "name": "Soudan",
+      "currency": "SDG",
+      "locale": "ar-SD",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "TN",
+      "name": "Tunisie",
+      "currency": "TND",
+      "locale": "ar-TN",
+      "accountingSystem": "NCT",
+      "chartOfAccounts": "Normes Comptables Tunisiennes"
+    },
+    {
+      "code": "DJ",
+      "name": "Djibouti",
+      "currency": "DJF",
+      "locale": "fr-DJ",
+      "accountingSystem": "PCF",
+      "chartOfAccounts": "Plan Comptable Français"
+    },
+    {
+      "code": "ER",
+      "name": "Érythrée",
+      "currency": "ERN",
+      "locale": "ti-ER",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "ET",
+      "name": "Éthiopie",
+      "currency": "ETB",
+      "locale": "am-ET",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "KE",
+      "name": "Kenya",
+      "currency": "KES",
+      "locale": "en-KE",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "MG",
+      "name": "Madagascar",
+      "currency": "MGA",
+      "locale": "fr-MG",
+      "accountingSystem": "PCG 2005",
+      "chartOfAccounts": "Plan Comptable Général 2005"
+    },
+    {
+      "code": "MU",
+      "name": "Maurice",
+      "currency": "MUR",
+      "locale": "en-MU",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "UG",
+      "name": "Ouganda",
+      "currency": "UGX",
+      "locale": "en-UG",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "RW",
+      "name": "Rwanda",
+      "currency": "RWF",
+      "locale": "rw-RW",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "SC",
+      "name": "Seychelles",
+      "currency": "SCR",
+      "locale": "en-SC",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "SO",
+      "name": "Somalie",
+      "currency": "SOS",
+      "locale": "so-SO",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "SS",
+      "name": "Soudan du Sud",
+      "currency": "SSP",
+      "locale": "en-SS",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "TZ",
+      "name": "Tanzanie",
+      "currency": "TZS",
+      "locale": "sw-TZ",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "ZA",
+      "name": "Afrique du Sud",
+      "currency": "ZAR",
+      "locale": "en-ZA",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "AO",
+      "name": "Angola",
+      "currency": "AOA",
+      "locale": "pt-AO",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "BW",
+      "name": "Botswana",
+      "currency": "BWP",
+      "locale": "en-BW",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "SZ",
+      "name": "Eswatini",
+      "currency": "SZL",
+      "locale": "en-SZ",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "LS",
+      "name": "Lesotho",
+      "currency": "LSL",
+      "locale": "en-LS",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "MW",
+      "name": "Malawi",
+      "currency": "MWK",
+      "locale": "en-MW",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "MZ",
+      "name": "Mozambique",
+      "currency": "MZN",
+      "locale": "pt-MZ",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "NA",
+      "name": "Namibie",
+      "currency": "NAD",
+      "locale": "en-NA",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "ZM",
+      "name": "Zambie",
+      "currency": "ZMW",
+      "locale": "en-ZM",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "ZW",
+      "name": "Zimbabwe",
+      "currency": "USD",
+      "locale": "en-ZW",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "CV",
+      "name": "Cap-Vert",
+      "currency": "CVE",
+      "locale": "pt-CV",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "GM",
+      "name": "Gambie",
+      "currency": "GMD",
+      "locale": "en-GM",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "GH",
+      "name": "Ghana",
+      "currency": "GHS",
+      "locale": "en-GH",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "GN",
+      "name": "Guinée",
+      "currency": "GNF",
+      "locale": "fr-GN",
+      "accountingSystem": "PCF",
+      "chartOfAccounts": "Plan Comptable Français"
+    },
+    {
+      "code": "LR",
+      "name": "Liberia",
+      "currency": "LRD",
+      "locale": "en-LR",
+      "accountingSystem": "US GAAP",
+      "chartOfAccounts": "US GAAP"
+    },
+    {
+      "code": "NG",
+      "name": "Nigeria",
+      "currency": "NGN",
+      "locale": "en-NG",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "SL",
+      "name": "Sierra Leone",
+      "currency": "SLL",
+      "locale": "en-SL",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "DE",
+      "name": "Allemagne",
+      "currency": "EUR",
+      "locale": "de-DE",
+      "accountingSystem": "HGB",
+      "chartOfAccounts": "SKR"
+    },
+    {
+      "code": "AT",
+      "name": "Autriche",
+      "currency": "EUR",
+      "locale": "de-AT",
+      "accountingSystem": "UGB",
+      "chartOfAccounts": "Austrian GAAP"
+    },
+    {
+      "code": "BE",
+      "name": "Belgique",
+      "currency": "EUR",
+      "locale": "fr-BE",
+      "accountingSystem": "Belgian GAAP",
+      "chartOfAccounts": "Belgian GAAP"
+    },
+    {
+      "code": "CY",
+      "name": "Chypre",
+      "currency": "EUR",
+      "locale": "el-CY",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "HR",
+      "name": "Croatie",
+      "currency": "EUR",
+      "locale": "hr-HR",
+      "accountingSystem": "Croatian GAAP",
+      "chartOfAccounts": "Croatian GAAP"
+    },
+    {
+      "code": "ES",
+      "name": "Espagne",
+      "currency": "EUR",
+      "locale": "es-ES",
+      "accountingSystem": "PGC",
+      "chartOfAccounts": "Plan General de Contabilidad"
+    },
+    {
+      "code": "EE",
+      "name": "Estonie",
+      "currency": "EUR",
+      "locale": "et-EE",
+      "accountingSystem": "Estonian GAAP",
+      "chartOfAccounts": "Estonian GAAP"
+    },
+    {
+      "code": "FI",
+      "name": "Finlande",
+      "currency": "EUR",
+      "locale": "fi-FI",
+      "accountingSystem": "Finnish GAAP",
+      "chartOfAccounts": "Finnish GAAP"
+    },
+    {
+      "code": "FR",
+      "name": "France",
+      "currency": "EUR",
+      "locale": "fr-FR",
+      "accountingSystem": "PCG",
+      "chartOfAccounts": "Plan Comptable Général"
+    },
+    {
+      "code": "GR",
+      "name": "Grèce",
+      "currency": "EUR",
+      "locale": "el-GR",
+      "accountingSystem": "Greek GAAP",
+      "chartOfAccounts": "Greek GAAP"
+    },
+    {
+      "code": "IE",
+      "name": "Irlande",
+      "currency": "EUR",
+      "locale": "en-IE",
+      "accountingSystem": "Irish GAAP",
+      "chartOfAccounts": "Irish GAAP"
+    },
+    {
+      "code": "IT",
+      "name": "Italie",
+      "currency": "EUR",
+      "locale": "it-IT",
+      "accountingSystem": "Italian GAAP",
+      "chartOfAccounts": "Italian GAAP"
+    },
+    {
+      "code": "LV",
+      "name": "Lettonie",
+      "currency": "EUR",
+      "locale": "lv-LV",
+      "accountingSystem": "Latvian GAAP",
+      "chartOfAccounts": "Latvian GAAP"
+    },
+    {
+      "code": "LT",
+      "name": "Lituanie",
+      "currency": "EUR",
+      "locale": "lt-LT",
+      "accountingSystem": "Lithuanian GAAP",
+      "chartOfAccounts": "Lithuanian GAAP"
+    },
+    {
+      "code": "LU",
+      "name": "Luxembourg",
+      "currency": "EUR",
+      "locale": "fr-LU",
+      "accountingSystem": "Luxembourg GAAP",
+      "chartOfAccounts": "Luxembourg GAAP"
+    },
+    {
+      "code": "MT",
+      "name": "Malte",
+      "currency": "EUR",
+      "locale": "mt-MT",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "NL",
+      "name": "Pays-Bas",
+      "currency": "EUR",
+      "locale": "nl-NL",
+      "accountingSystem": "Dutch GAAP",
+      "chartOfAccounts": "Dutch GAAP"
+    },
+    {
+      "code": "PT",
+      "name": "Portugal",
+      "currency": "EUR",
+      "locale": "pt-PT",
+      "accountingSystem": "SNC",
+      "chartOfAccounts": "Sistema de Normalização Contabilística"
+    },
+    {
+      "code": "SK",
+      "name": "Slovaquie",
+      "currency": "EUR",
+      "locale": "sk-SK",
+      "accountingSystem": "Slovak GAAP",
+      "chartOfAccounts": "Slovak GAAP"
+    },
+    {
+      "code": "SI",
+      "name": "Slovénie",
+      "currency": "EUR",
+      "locale": "sl-SI",
+      "accountingSystem": "Slovenian GAAP",
+      "chartOfAccounts": "Slovenian GAAP"
+    },
+    {
+      "code": "AL",
+      "name": "Albanie",
+      "currency": "ALL",
+      "locale": "sq-AL",
+      "accountingSystem": "Albanian GAAP",
+      "chartOfAccounts": "Albanian GAAP"
+    },
+    {
+      "code": "AD",
+      "name": "Andorre",
+      "currency": "EUR",
+      "locale": "ca-AD",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "BY",
+      "name": "Biélorussie",
+      "currency": "BYN",
+      "locale": "be-BY",
+      "accountingSystem": "Belarusian GAAP",
+      "chartOfAccounts": "Belarusian GAAP"
+    },
+    {
+      "code": "BA",
+      "name": "Bosnie-Herzégovine",
+      "currency": "BAM",
+      "locale": "bs-BA",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "BG",
+      "name": "Bulgarie",
+      "currency": "BGN",
+      "locale": "bg-BG",
+      "accountingSystem": "Bulgarian GAAP",
+      "chartOfAccounts": "Bulgarian GAAP"
+    },
+    {
+      "code": "DK",
+      "name": "Danemark",
+      "currency": "DKK",
+      "locale": "da-DK",
+      "accountingSystem": "Danish GAAP",
+      "chartOfAccounts": "Danish GAAP"
+    },
+    {
+      "code": "IS",
+      "name": "Islande",
+      "currency": "ISK",
+      "locale": "is-IS",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "LI",
+      "name": "Liechtenstein",
+      "currency": "CHF",
+      "locale": "de-LI",
+      "accountingSystem": "Swiss GAAP",
+      "chartOfAccounts": "Swiss GAAP"
+    },
+    {
+      "code": "MK",
+      "name": "Macédoine du Nord",
+      "currency": "MKD",
+      "locale": "mk-MK",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "MD",
+      "name": "Moldavie",
+      "currency": "MDL",
+      "locale": "ro-MD",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "MC",
+      "name": "Monaco",
+      "currency": "EUR",
+      "locale": "fr-MC",
+      "accountingSystem": "PCF",
+      "chartOfAccounts": "Plan Comptable Français"
+    },
+    {
+      "code": "ME",
+      "name": "Monténégro",
+      "currency": "EUR",
+      "locale": "sr-ME",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "NO",
+      "name": "Norvège",
+      "currency": "NOK",
+      "locale": "no-NO",
+      "accountingSystem": "Norwegian GAAP",
+      "chartOfAccounts": "Norwegian GAAP"
+    },
+    {
+      "code": "PL",
+      "name": "Pologne",
+      "currency": "PLN",
+      "locale": "pl-PL",
+      "accountingSystem": "Polish GAAP",
+      "chartOfAccounts": "Polish GAAP"
+    },
+    {
+      "code": "CZ",
+      "name": "République Tchèque",
+      "currency": "CZK",
+      "locale": "cs-CZ",
+      "accountingSystem": "Czech GAAP",
+      "chartOfAccounts": "Czech GAAP"
+    },
+    {
+      "code": "RO",
+      "name": "Roumanie",
+      "currency": "RON",
+      "locale": "ro-RO",
+      "accountingSystem": "Romanian GAAP",
+      "chartOfAccounts": "Romanian GAAP"
+    },
+    {
+      "code": "GB",
+      "name": "Royaume-Uni",
+      "currency": "GBP",
+      "locale": "en-GB",
+      "accountingSystem": "UK GAAP",
+      "chartOfAccounts": "UK GAAP"
+    },
+    {
+      "code": "RU",
+      "name": "Russie",
+      "currency": "RUB",
+      "locale": "ru-RU",
+      "accountingSystem": "Russian GAAP",
+      "chartOfAccounts": "Russian GAAP"
+    },
+    {
+      "code": "SM",
+      "name": "Saint-Marin",
+      "currency": "EUR",
+      "locale": "it-SM",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "RS",
+      "name": "Serbie",
+      "currency": "RSD",
+      "locale": "sr-RS",
+      "accountingSystem": "Serbian GAAP",
+      "chartOfAccounts": "Serbian GAAP"
+    },
+    {
+      "code": "SE",
+      "name": "Suède",
+      "currency": "SEK",
+      "locale": "sv-SE",
+      "accountingSystem": "Swedish GAAP",
+      "chartOfAccounts": "Swedish GAAP"
+    },
+    {
+      "code": "CH",
+      "name": "Suisse",
+      "currency": "CHF",
+      "locale": "de-CH",
+      "accountingSystem": "Swiss GAAP",
+      "chartOfAccounts": "Swiss GAAP"
+    },
+    {
+      "code": "UA",
+      "name": "Ukraine",
+      "currency": "UAH",
+      "locale": "uk-UA",
+      "accountingSystem": "Ukrainian GAAP",
+      "chartOfAccounts": "Ukrainian GAAP"
+    },
+    {
+      "code": "VA",
+      "name": "Vatican",
+      "currency": "EUR",
+      "locale": "it-VA",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "CN",
+      "name": "Chine",
+      "currency": "CNY",
+      "locale": "zh-CN",
+      "accountingSystem": "Chinese GAAP",
+      "chartOfAccounts": "Chinese GAAP"
+    },
+    {
+      "code": "KP",
+      "name": "Corée du Nord",
+      "currency": "KPW",
+      "locale": "ko-KP",
+      "accountingSystem": "National Standards",
+      "chartOfAccounts": "National Standards"
+    },
+    {
+      "code": "KR",
+      "name": "Corée du Sud",
+      "currency": "KRW",
+      "locale": "ko-KR",
+      "accountingSystem": "K-IFRS",
+      "chartOfAccounts": "K-IFRS"
+    },
+    {
+      "code": "JP",
+      "name": "Japon",
+      "currency": "JPY",
+      "locale": "ja-JP",
+      "accountingSystem": "Japanese GAAP",
+      "chartOfAccounts": "Japanese GAAP"
+    },
+    {
+      "code": "MN",
+      "name": "Mongolie",
+      "currency": "MNT",
+      "locale": "mn-MN",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "TW",
+      "name": "Taïwan",
+      "currency": "TWD",
+      "locale": "zh-TW",
+      "accountingSystem": "Taiwan GAAP",
+      "chartOfAccounts": "Taiwan GAAP"
+    },
+    {
+      "code": "BN",
+      "name": "Brunei",
+      "currency": "BND",
+      "locale": "ms-BN",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "KH",
+      "name": "Cambodge",
+      "currency": "KHR",
+      "locale": "km-KH",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "ID",
+      "name": "Indonésie",
+      "currency": "IDR",
+      "locale": "id-ID",
+      "accountingSystem": "Indonesian GAAP",
+      "chartOfAccounts": "Indonesian GAAP"
+    },
+    {
+      "code": "LA",
+      "name": "Laos",
+      "currency": "LAK",
+      "locale": "lo-LA",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "MY",
+      "name": "Malaisie",
+      "currency": "MYR",
+      "locale": "ms-MY",
+      "accountingSystem": "Malaysian GAAP",
+      "chartOfAccounts": "Malaysian GAAP"
+    },
+    {
+      "code": "MM",
+      "name": "Myanmar",
+      "currency": "MMK",
+      "locale": "my-MM",
+      "accountingSystem": "Myanmar GAAP",
+      "chartOfAccounts": "Myanmar GAAP"
+    },
+    {
+      "code": "PH",
+      "name": "Philippines",
+      "currency": "PHP",
+      "locale": "en-PH",
+      "accountingSystem": "Philippine GAAP",
+      "chartOfAccounts": "Philippine GAAP"
+    },
+    {
+      "code": "SG",
+      "name": "Singapour",
+      "currency": "SGD",
+      "locale": "en-SG",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "TH",
+      "name": "Thaïlande",
+      "currency": "THB",
+      "locale": "th-TH",
+      "accountingSystem": "Thai GAAP",
+      "chartOfAccounts": "Thai GAAP"
+    },
+    {
+      "code": "TL",
+      "name": "Timor Oriental",
+      "currency": "USD",
+      "locale": "pt-TL",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "VN",
+      "name": "Vietnam",
+      "currency": "VND",
+      "locale": "vi-VN",
+      "accountingSystem": "Vietnamese GAAP",
+      "chartOfAccounts": "Vietnamese GAAP"
+    },
+    {
+      "code": "AF",
+      "name": "Afghanistan",
+      "currency": "AFN",
+      "locale": "fa-AF",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "BD",
+      "name": "Bangladesh",
+      "currency": "BDT",
+      "locale": "bn-BD",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "BT",
+      "name": "Bhoutan",
+      "currency": "BTN",
+      "locale": "dz-BT",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "IN",
+      "name": "Inde",
+      "currency": "INR",
+      "locale": "hi-IN",
+      "accountingSystem": "Ind AS",
+      "chartOfAccounts": "Indian Accounting Standards"
+    },
+    {
+      "code": "MV",
+      "name": "Maldives",
+      "currency": "MVR",
+      "locale": "dv-MV",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "NP",
+      "name": "Népal",
+      "currency": "NPR",
+      "locale": "ne-NP",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "PK",
+      "name": "Pakistan",
+      "currency": "PKR",
+      "locale": "ur-PK",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "LK",
+      "name": "Sri Lanka",
+      "currency": "LKR",
+      "locale": "si-LK",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "KZ",
+      "name": "Kazakhstan",
+      "currency": "KZT",
+      "locale": "kk-KZ",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "KG",
+      "name": "Kirghizistan",
+      "currency": "KGS",
+      "locale": "ky-KG",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "UZ",
+      "name": "Ouzbékistan",
+      "currency": "UZS",
+      "locale": "uz-UZ",
+      "accountingSystem": "Uzbek GAAP",
+      "chartOfAccounts": "Uzbek GAAP"
+    },
+    {
+      "code": "TJ",
+      "name": "Tadjikistan",
+      "currency": "TJS",
+      "locale": "tg-TJ",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "TM",
+      "name": "Turkménistan",
+      "currency": "TMT",
+      "locale": "tk-TM",
+      "accountingSystem": "National Standards",
+      "chartOfAccounts": "National Standards"
+    },
+    {
+      "code": "SA",
+      "name": "Arabie Saoudite",
+      "currency": "SAR",
+      "locale": "ar-SA",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "AM",
+      "name": "Arménie",
+      "currency": "AMD",
+      "locale": "hy-AM",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "AZ",
+      "name": "Azerbaïdjan",
+      "currency": "AZN",
+      "locale": "az-AZ",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "BH",
+      "name": "Bahreïn",
+      "currency": "BHD",
+      "locale": "ar-BH",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "AE",
+      "name": "Émirats Arabes Unis",
+      "currency": "AED",
+      "locale": "ar-AE",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "GE",
+      "name": "Géorgie",
+      "currency": "GEL",
+      "locale": "ka-GE",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "IQ",
+      "name": "Irak",
+      "currency": "IQD",
+      "locale": "ar-IQ",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "IR",
+      "name": "Iran",
+      "currency": "IRR",
+      "locale": "fa-IR",
+      "accountingSystem": "Iranian GAAP",
+      "chartOfAccounts": "Iranian GAAP"
+    },
+    {
+      "code": "IL",
+      "name": "Israël",
+      "currency": "ILS",
+      "locale": "he-IL",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "JO",
+      "name": "Jordanie",
+      "currency": "JOD",
+      "locale": "ar-JO",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "KW",
+      "name": "Koweït",
+      "currency": "KWD",
+      "locale": "ar-KW",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "LB",
+      "name": "Liban",
+      "currency": "LBP",
+      "locale": "ar-LB",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "OM",
+      "name": "Oman",
+      "currency": "OMR",
+      "locale": "ar-OM",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "PS",
+      "name": "Palestine",
+      "currency": "ILS",
+      "locale": "ar-PS",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "QA",
+      "name": "Qatar",
+      "currency": "QAR",
+      "locale": "ar-QA",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "SY",
+      "name": "Syrie",
+      "currency": "SYP",
+      "locale": "ar-SY",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "TR",
+      "name": "Turquie",
+      "currency": "TRY",
+      "locale": "tr-TR",
+      "accountingSystem": "Turkish GAAP",
+      "chartOfAccounts": "Turkish GAAP"
+    },
+    {
+      "code": "YE",
+      "name": "Yémen",
+      "currency": "YER",
+      "locale": "ar-YE",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "CA",
+      "name": "Canada",
+      "currency": "CAD",
+      "locale": "en-CA",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "US",
+      "name": "États-Unis",
+      "currency": "USD",
+      "locale": "en-US",
+      "accountingSystem": "US GAAP",
+      "chartOfAccounts": "US GAAP"
+    },
+    {
+      "code": "MX",
+      "name": "Mexique",
+      "currency": "MXN",
+      "locale": "es-MX",
+      "accountingSystem": "Mexican GAAP",
+      "chartOfAccounts": "Mexican GAAP"
+    },
+    {
+      "code": "BZ",
+      "name": "Belize",
+      "currency": "BZD",
+      "locale": "en-BZ",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "CR",
+      "name": "Costa Rica",
+      "currency": "CRC",
+      "locale": "es-CR",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "GT",
+      "name": "Guatemala",
+      "currency": "GTQ",
+      "locale": "es-GT",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "HN",
+      "name": "Honduras",
+      "currency": "HNL",
+      "locale": "es-HN",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "NI",
+      "name": "Nicaragua",
+      "currency": "NIO",
+      "locale": "es-NI",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "PA",
+      "name": "Panama",
+      "currency": "PAB",
+      "locale": "es-PA",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "SV",
+      "name": "Salvador",
+      "currency": "USD",
+      "locale": "es-SV",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "AG",
+      "name": "Antigua-et-Barbuda",
+      "currency": "XCD",
+      "locale": "en-AG",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "BS",
+      "name": "Bahamas",
+      "currency": "BSD",
+      "locale": "en-BS",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "BB",
+      "name": "Barbade",
+      "currency": "BBD",
+      "locale": "en-BB",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "CU",
+      "name": "Cuba",
+      "currency": "CUP",
+      "locale": "es-CU",
+      "accountingSystem": "Cuban GAAP",
+      "chartOfAccounts": "Cuban GAAP"
+    },
+    {
+      "code": "DM",
+      "name": "Dominique",
+      "currency": "XCD",
+      "locale": "en-DM",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "GD",
+      "name": "Grenade",
+      "currency": "XCD",
+      "locale": "en-GD",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "HT",
+      "name": "Haïti",
+      "currency": "HTG",
+      "locale": "fr-HT",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "JM",
+      "name": "Jamaïque",
+      "currency": "JMD",
+      "locale": "en-JM",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "DO",
+      "name": "République Dominicaine",
+      "currency": "DOP",
+      "locale": "es-DO",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "KN",
+      "name": "Saint-Christophe-et-Niévès",
+      "currency": "XCD",
+      "locale": "en-KN",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "LC",
+      "name": "Sainte-Lucie",
+      "currency": "XCD",
+      "locale": "en-LC",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "VC",
+      "name": "Saint-Vincent-et-les-Grenadines",
+      "currency": "XCD",
+      "locale": "en-VC",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "TT",
+      "name": "Trinité-et-Tobago",
+      "currency": "TTD",
+      "locale": "en-TT",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "AR",
+      "name": "Argentine",
+      "currency": "ARS",
+      "locale": "es-AR",
+      "accountingSystem": "Argentine GAAP",
+      "chartOfAccounts": "Argentine GAAP"
+    },
+    {
+      "code": "BO",
+      "name": "Bolivie",
+      "currency": "BOB",
+      "locale": "es-BO",
+      "accountingSystem": "Bolivian GAAP",
+      "chartOfAccounts": "Bolivian GAAP"
+    },
+    {
+      "code": "BR",
+      "name": "Brésil",
+      "currency": "BRL",
+      "locale": "pt-BR",
+      "accountingSystem": "Brazilian GAAP",
+      "chartOfAccounts": "Brazilian GAAP"
+    },
+    {
+      "code": "CL",
+      "name": "Chili",
+      "currency": "CLP",
+      "locale": "es-CL",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "CO",
+      "name": "Colombie",
+      "currency": "COP",
+      "locale": "es-CO",
+      "accountingSystem": "Colombian GAAP",
+      "chartOfAccounts": "Colombian GAAP"
+    },
+    {
+      "code": "EC",
+      "name": "Équateur",
+      "currency": "USD",
+      "locale": "es-EC",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "GY",
+      "name": "Guyana",
+      "currency": "GYD",
+      "locale": "en-GY",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "PY",
+      "name": "Paraguay",
+      "currency": "PYG",
+      "locale": "es-PY",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "PE",
+      "name": "Pérou",
+      "currency": "PEN",
+      "locale": "es-PE",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "SR",
+      "name": "Suriname",
+      "currency": "SRD",
+      "locale": "nl-SR",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "UY",
+      "name": "Uruguay",
+      "currency": "UYU",
+      "locale": "es-UY",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "VE",
+      "name": "Venezuela",
+      "currency": "VES",
+      "locale": "es-VE",
+      "accountingSystem": "Venezuelan GAAP",
+      "chartOfAccounts": "Venezuelan GAAP"
+    },
+    {
+      "code": "AU",
+      "name": "Australie",
+      "currency": "AUD",
+      "locale": "en-AU",
+      "accountingSystem": "Australian GAAP",
+      "chartOfAccounts": "Australian GAAP"
+    },
+    {
+      "code": "FJ",
+      "name": "Fidji",
+      "currency": "FJD",
+      "locale": "en-FJ",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "KI",
+      "name": "Kiribati",
+      "currency": "AUD",
+      "locale": "en-KI",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "MH",
+      "name": "Îles Marshall",
+      "currency": "USD",
+      "locale": "en-MH",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "FM",
+      "name": "Micronésie",
+      "currency": "USD",
+      "locale": "en-FM",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "NR",
+      "name": "Nauru",
+      "currency": "AUD",
+      "locale": "en-NR",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "NZ",
+      "name": "Nouvelle-Zélande",
+      "currency": "NZD",
+      "locale": "en-NZ",
+      "accountingSystem": "NZ GAAP",
+      "chartOfAccounts": "NZ GAAP"
+    },
+    {
+      "code": "PW",
+      "name": "Palaos",
+      "currency": "USD",
+      "locale": "en-PW",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "PG",
+      "name": "Papouasie-Nouvelle-Guinée",
+      "currency": "PGK",
+      "locale": "en-PG",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "SB",
+      "name": "Îles Salomon",
+      "currency": "SBD",
+      "locale": "en-SB",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "WS",
+      "name": "Samoa",
+      "currency": "WST",
+      "locale": "sm-WS",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "TO",
+      "name": "Tonga",
+      "currency": "TOP",
+      "locale": "to-TO",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "TV",
+      "name": "Tuvalu",
+      "currency": "AUD",
+      "locale": "en-TV",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    },
+    {
+      "code": "VU",
+      "name": "Vanuatu",
+      "currency": "VUV",
+      "locale": "bi-VU",
+      "accountingSystem": "IFRS",
+      "chartOfAccounts": "IFRS"
+    }
+  ],
+  "metadata": {
+    "totalCountries": 195,
+    "lastUpdated": "2024-12-19",
+    "version": "1.0",
+    "accountingSystems": {
+      "SYSCOHADA": {
+        "countries": 16,
+        "description": "Système Comptable OHADA",
+        "region": "Afrique francophone",
+        "chartOfAccounts": "AUDCIF"
+      },
+      "IFRS": {
+        "countries": 120,
+        "description": "International Financial Reporting Standards",
+        "region": "Mondial",
+        "chartOfAccounts": "IFRS"
+      },
+      "US_GAAP": {
+        "countries": 2,
+        "description": "United States Generally Accepted Accounting Principles",
+        "region": "Amérique du Nord",
+        "chartOfAccounts": "US GAAP"
+      },
+      "NATIONAL_GAAP": {
+        "countries": 57,
+        "description": "Standards comptables nationaux",
+        "region": "Divers",
+        "chartOfAccounts": "Varies by country"
+      }
+    },
+    "currencies": {
+      "XOF": {
+        "name": "Franc CFA (UEMOA)",
+        "countries": 8,
+        "region": "Afrique de l'Ouest"
+      },
+      "XAF": {
+        "name": "Franc CFA (CEMAC)",
+        "countries": 6,
+        "region": "Afrique Centrale"
+      },
+      "EUR": {
+        "name": "Euro",
+        "countries": 20,
+        "region": "Europe"
+      },
+      "USD": {
+        "name": "Dollar Américain",
+        "countries": 15,
+        "region": "Mondial"
+      },
+      "XCD": {
+        "name": "Dollar des Caraïbes Orientales",
+        "countries": 8,
+        "region": "Caraïbes"
+      }
+    },
+    "regions": {
+      "SYSCOHADA_COUNTRIES": [
+        "BJ", "BF", "CI", "GW", "ML", "NE", "SN", "TG",
+        "CM", "CF", "CG", "GA", "GQ", "TD", "KM", "CD"
+      ],
+      "EUROZONE": [
+        "DE", "AT", "BE", "CY", "HR", "ES", "EE", "FI",
+        "FR", "GR", "IE", "IT", "LV", "LT", "LU", "MT",
+        "NL", "PT", "SK", "SI"
+      ],
+      "DOLLAR_USERS": [
+        "US", "EC", "SV", "TL", "MH", "FM", "PW", "ZW"
+      ]
+    }
+  }
+}

@@ -43,4 +43,13 @@ public class LigneEcriture {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "axe_analytique_id")
     private AxeAnalytique axeAnalytique;
+
+    @Column(length = 3)
+    private String devise;
+
+    @Column(name = "montant_devise", precision = 15, scale = 2)
+    private BigDecimal montantDevise;
+
+    @Column(name = "taux_saisi", precision = 15, scale = 6)
+    private BigDecimal tauxSaisi;
 }
