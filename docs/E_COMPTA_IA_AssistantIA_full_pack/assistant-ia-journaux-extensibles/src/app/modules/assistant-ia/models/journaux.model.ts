@@ -1,0 +1,2 @@
+export interface Journal { code:string; libelle:string; description?:string; actif:boolean; ordre?:number; }
+export const JOURNAUX_DEFAUT=[{code:'HA',libelle:'Achat',actif:true,ordre:10},{code:'VE',libelle:'Ventes',actif:true,ordre:20},{code:'BQ',libelle:'Banque',actif:true,ordre:30},{code:'CA',libelle:'Caisse',actif:true,ordre:40},{code:'PA',libelle:'Salaires',actif:true,ordre:50},{code:'OD',libelle:'Opérations Diverses',actif:true,ordre:60}];

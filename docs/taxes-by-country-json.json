@@ -1,0 +1,1320 @@
+{
+  "countriesTaxes": [
+    {
+      "code": "BJ",
+      "name": "Bénin",
+      "currency": "XOF",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Impôt sur les Bénéfices Industriels et Commerciaux (BIC)",
+          "rate": 30,
+          "minRate": 30,
+          "maxRate": 30,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "31 mars",
+          "advancePayments": "Acomptes provisionnels trimestriels"
+        },
+        "vat": {
+          "name": "Taxe sur la Valeur Ajoutée (TVA)",
+          "standardRate": 18,
+          "reducedRates": [0],
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant",
+          "exemptions": ["Produits de première nécessité", "Exportations"]
+        },
+        "withholdingTax": {
+          "name": "Tax Deducted at Source (TDS)",
+          "rates": {
+            "salaries": "Progressive 5-30%",
+            "dividends": 10,
+            "interest": 10,
+            "royalties": 10,
+            "services": 2
+          },
+          "declarationPeriod": "Quarterly",
+          "paymentDeadline": "7th of following month"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 13.36,
+            "breakdown": {
+              "EPF": 3.67,
+              "ESI": 3.25,
+              "gratuity": 4.81,
+              "bonus": 1.63
+            }
+          },
+          "employee": {
+            "rate": 12,
+            "breakdown": {
+              "EPF": 12
+            }
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "15th of following month"
+        },
+        "otherTaxes": [
+          {
+            "name": "Professional Tax",
+            "rate": "Variable by state (₹200-2500/year)",
+            "declarationPeriod": "Monthly",
+            "paymentDeadline": "15th of following month"
+          },
+          {
+            "name": "Labour Welfare Fund",
+            "rate": "₹20-40 per employee per year",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 mars"
+          }
+        ]
+      }
+    },
+    {
+      "code": "BR",
+      "name": "Brésil",
+      "currency": "BRL",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Imposto de Renda Pessoa Jurídica (IRPJ)",
+          "rate": 25,
+          "minRate": 15,
+          "maxRate": 25,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "31 mars",
+          "advancePayments": "Monthly estimated payments"
+        },
+        "vat": {
+          "name": "Imposto sobre Circulação de Mercadorias e Serviços (ICMS)",
+          "standardRate": 18,
+          "reducedRates": [7, 12, 25],
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "Variable by state",
+          "exemptions": ["Basic foods", "Medicines"]
+        },
+        "withholdingTax": {
+          "name": "Imposto de Renda Retido na Fonte (IRRF)",
+          "rates": {
+            "salaries": "Progressive 7.5-27.5%",
+            "dividends": 0,
+            "interest": 15,
+            "royalties": 15,
+            "services": 1.5
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "20th of following month"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 28.8,
+            "breakdown": {
+              "INSS": 20,
+              "FGTS": 8,
+              "sistema_S": 0.8
+            }
+          },
+          "employee": {
+            "rate": 11,
+            "breakdown": {
+              "INSS": 11
+            }
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "20th of following month"
+        },
+        "otherTaxes": [
+          {
+            "name": "Contribuição Social sobre o Lucro Líquido (CSLL)",
+            "rate": "9% on net profit",
+            "declarationPeriod": "Monthly",
+            "paymentDeadline": "20th of following month"
+          },
+          {
+            "name": "PIS/COFINS",
+            "rate": "9.25% combined",
+            "declarationPeriod": "Monthly",
+            "paymentDeadline": "25th of following month"
+          }
+        ]
+      }
+    },
+    {
+      "code": "CA",
+      "name": "Canada",
+      "currency": "CAD",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Corporate Income Tax",
+          "rate": 26.5,
+          "minRate": 11.5,
+          "maxRate": 31.62,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "6 months after fiscal year end",
+          "advancePayments": "Monthly installments"
+        },
+        "vat": {
+          "name": "Goods and Services Tax (GST/HST)",
+          "standardRate": 13,
+          "reducedRates": [5, 0],
+          "declarationPeriod": "Monthly/Quarterly/Annual",
+          "paymentDeadline": "End of month following period",
+          "exemptions": ["Basic groceries", "Medical services"]
+        },
+        "withholdingTax": {
+          "name": "Income Tax Withholding",
+          "rates": {
+            "salaries": "Progressive 15-33%",
+            "dividends": 25,
+            "interest": 25,
+            "royalties": 25,
+            "services": 15
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "15th of following month"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 7.37,
+            "breakdown": {
+              "CPP": 5.95,
+              "EI": 1.4,
+              "WCB": "Variable by province"
+            }
+          },
+          "employee": {
+            "rate": 6.95,
+            "breakdown": {
+              "CPP": 5.95,
+              "EI": 1.63
+            }
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "15th of following month"
+        },
+        "otherTaxes": [
+          {
+            "name": "Employer Health Tax",
+            "rate": "Variable by province (0.98-2.925%)",
+            "declarationPeriod": "Monthly/Quarterly",
+            "paymentDeadline": "15th of following month"
+          }
+        ]
+      }
+    },
+    {
+      "code": "AU",
+      "name": "Australie",
+      "currency": "AUD",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Company Tax",
+          "rate": 30,
+          "minRate": 25,
+          "maxRate": 30,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "15 May or 31 October",
+          "advancePayments": "Quarterly PAYG installments"
+        },
+        "vat": {
+          "name": "Goods and Services Tax (GST)",
+          "standardRate": 10,
+          "reducedRates": [0],
+          "declarationPeriod": "Monthly/Quarterly",
+          "paymentDeadline": "21st or 28th of following month",
+          "exemptions": ["Basic food", "Medical services"]
+        },
+        "withholdingTax": {
+          "name": "Pay As You Go (PAYG) Withholding",
+          "rates": {
+            "salaries": "Progressive 19-45%",
+            "dividends": 30,
+            "interest": 10,
+            "royalties": 30,
+            "services": 0
+          },
+          "declarationPeriod": "Monthly/Quarterly",
+          "paymentDeadline": "21st of following month"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 11,
+            "breakdown": {
+              "superannuation": 11
+            }
+          },
+          "employee": {
+            "rate": 2,
+            "breakdown": {
+              "medicare": 2
+            }
+          },
+          "declarationPeriod": "Quarterly",
+          "paymentDeadline": "28th of month following quarter"
+        },
+        "otherTaxes": [
+          {
+            "name": "Payroll Tax",
+            "rate": "Variable by state (1.85-6.85%)",
+            "declarationPeriod": "Monthly",
+            "paymentDeadline": "7th or 21st of following month"
+          },
+          {
+            "name": "Fringe Benefits Tax",
+            "rate": "47% on taxable value",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "21 mai"
+          }
+        ]
+      }
+    },
+    {
+      "code": "ZA",
+      "name": "Afrique du Sud",
+      "currency": "ZAR",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Corporate Income Tax",
+          "rate": 27,
+          "minRate": 27,
+          "maxRate": 27,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "12 months after year end",
+          "advancePayments": "Bi-annual provisional payments"
+        },
+        "vat": {
+          "name": "Value-Added Tax (VAT)",
+          "standardRate": 15,
+          "reducedRates": [0],
+          "declarationPeriod": "Monthly/Bi-monthly",
+          "paymentDeadline": "25th of following month",
+          "exemptions": ["Basic foodstuffs", "Medical services"]
+        },
+        "withholdingTax": {
+          "name": "Employees' Tax (PAYE)",
+          "rates": {
+            "salaries": "Progressive 18-45%",
+            "dividends": 20,
+            "interest": 0,
+            "royalties": 12,
+            "services": 0
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "7th of following month"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 3,
+            "breakdown": {
+              "UIF": 1,
+              "SDL": 1,
+              "WCA": 1
+            }
+          },
+          "employee": {
+            "rate": 1,
+            "breakdown": {
+              "UIF": 1
+            }
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "7th of following month"
+        },
+        "otherTaxes": [
+          {
+            "name": "Skills Development Levy (SDL)",
+            "rate": "1% of payroll",
+            "declarationPeriod": "Monthly",
+            "paymentDeadline": "7th of following month"
+          }
+        ]
+      }
+    },
+    {
+      "code": "NG",
+      "name": "Nigeria",
+      "currency": "NGN",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Companies Income Tax (CIT)",
+          "rate": 30,
+          "minRate": 30,
+          "maxRate": 30,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "30 juin",
+          "advancePayments": "Quarterly advance payments"
+        },
+        "vat": {
+          "name": "Value Added Tax (VAT)",
+          "standardRate": 7.5,
+          "reducedRates": [0],
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "21st of following month",
+          "exemptions": ["Basic food items", "Medical services"]
+        },
+        "withholdingTax": {
+          "name": "Withholding Tax",
+          "rates": {
+            "salaries": "Progressive 7-24%",
+            "dividends": 10,
+            "interest": 10,
+            "royalties": 10,
+            "services": 5
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "21st of following month"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 15,
+            "breakdown": {
+              "pension": 10,
+              "NSITF": 1,
+              "ITF": 1,
+              "NHIS": 3
+            }
+          },
+          "employee": {
+            "rate": 8,
+            "breakdown": {
+              "pension": 8
+            }
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "15th of following month"
+        },
+        "otherTaxes": [
+          {
+            "name": "Education Tax",
+            "rate": "2% of assessable profit",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "30 juin"
+          },
+          {
+            "name": "Technology Tax",
+            "rate": "1% of profit for tech companies",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "30 juin"
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "totalCountries": 20,
+    "lastUpdated": "2024-12-19",
+    "version": "1.0",
+    "taxCategories": {
+      "corporateIncomeTax": {
+        "description": "Impôt sur les bénéfices des sociétés",
+        "averageRate": 26.8,
+        "minGlobal": 9,
+        "maxGlobal": 35
+      },
+      "vat": {
+        "description": "Taxe sur la valeur ajoutée",
+        "averageRate": 15.2,
+        "minGlobal": 0,
+        "maxGlobal": 27
+      },
+      "socialContributions": {
+        "description": "Cotisations sociales employeur + employé",
+        "averageEmployerRate": 18.5,
+        "averageEmployeeRate": 12.3
+      }
+    },
+    "declarationFrequencies": {
+      "monthly": {
+        "taxes": ["VAT", "Withholding Tax", "Social Contributions"],
+        "countries": 18
+      },
+      "quarterly": {
+        "taxes": ["Corporate Income Tax Installments", "VAT (some countries)"],
+        "countries": 15
+      },
+      "annual": {
+        "taxes": ["Corporate Income Tax", "Other specific taxes"],
+        "countries": 20
+      }
+    },
+    "regionalAnalysis": {
+      "SYSCOHADA": {
+        "countries": 6,
+        "avgCorporateRate": 28.75,
+        "avgVATRate": 18.21,
+        "commonFeatures": [
+          "Quarterly corporate tax installments",
+          "Monthly VAT declarations",
+          "Similar social contribution structures"
+        ]
+      },
+      "EU": {
+        "countries": 2,
+        "avgCorporateRate": 27.5,
+        "avgVATRate": 19.5,
+        "commonFeatures": [
+          "EU VAT directives compliance",
+          "Digital tax reporting",
+          "Cross-border coordination"
+        ]
+      },
+      "Americas": {
+        "countries": 3,
+        "avgCorporateRate": 24,
+        "avgVATRate": 13.5,
+        "commonFeatures": [
+          "Federal and state tax systems",
+          "Advanced withholding systems",
+          "Quarterly reporting"
+        ]
+      }
+    },
+    "complianceNotes": {
+      "SYSCOHADA": [
+        "Harmonized tax structures across member countries",
+        "OHADA accounting standards integration",
+        "Common enforcement procedures"
+      ],
+      "international": [
+        "OECD BEPS implementation varying by country",
+        "Digital services tax emerging globally",
+        "Transfer pricing documentation requirements"
+      ]
+    },
+    "trends2024": {
+      "corporateTax": "Slight reduction trend globally",
+      "digitalTax": "Increasing implementation",
+      "socialContributions": "Rising in developing countries",
+      "compliance": "Digitalization accelerating"
+    }
+  },
+  "definitions": {
+    "corporateIncomeTax": "Impôt prélevé sur les bénéfices réalisés par les entreprises",
+    "vat": "Taxe sur la valeur ajoutée prélevée à chaque étape de la chaîne de production/distribution",
+    "withholdingTax": "Impôt prélevé à la source lors du paiement de revenus",
+    "socialContributions": "Cotisations versées aux organismes de sécurité sociale",
+    "declarationPeriod": "Fréquence de déclaration obligatoire auprès de l'administration fiscale",
+    "paymentDeadline": "Date limite de paiement après la période de déclaration"
+  },
+  "disclaimers": [
+    "Les taux peuvent varier selon la taille de l'entreprise et le secteur d'activité",
+    "Les dates limites peuvent être prolongées les week-ends et jours fériés",
+    "Cette information est indicative et peut évoluer - vérifier auprès des autorités fiscales locales",
+    "Certains pays ont des régimes fiscaux préférentiels pour certaines zones ou activités",
+    "Les taux de change peuvent affecter les obligations fiscales des entreprises multinationales"
+  ]
+}name": "Retenue à la Source",
+          "rates": {
+            "salaries": 0,
+            "dividends": 10,
+            "interest": 15,
+            "royalties": 20,
+            "services": 5
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 16.5,
+            "breakdown": {
+              "CNSS": 8.4,
+              "accidentsWork": 2.5,
+              "familyAllowances": 5.6
+            }
+          },
+          "employee": {
+            "rate": 3.6,
+            "breakdown": {
+              "CNSS": 3.6
+            }
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant"
+        },
+        "otherTaxes": [
+          {
+            "name": "Taxe Professionnelle Unique (TPU)",
+            "rate": "Variable selon secteur",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 janvier"
+          },
+          {
+            "name": "Contribution des Patentes",
+            "rate": "Variable selon activité",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 mars"
+          }
+        ]
+      }
+    },
+    {
+      "code": "BF",
+      "name": "Burkina Faso",
+      "currency": "XOF",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Impôt sur les Bénéfices Industriels et Commerciaux (BIC)",
+          "rate": 27.5,
+          "minRate": 27.5,
+          "maxRate": 27.5,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "30 avril",
+          "advancePayments": "Acomptes provisionnels trimestriels"
+        },
+        "vat": {
+          "name": "Taxe sur la Valeur Ajoutée (TVA)",
+          "standardRate": 18,
+          "reducedRates": [0],
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "20 du mois suivant",
+          "exemptions": ["Produits pharmaceutiques", "Exportations"]
+        },
+        "withholdingTax": {
+          "name": "Retenue à la Source",
+          "rates": {
+            "salaries": 0,
+            "dividends": 12.5,
+            "interest": 15,
+            "royalties": 20,
+            "services": 5
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "20 du mois suivant"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 16.75,
+            "breakdown": {
+              "CNSS": 8.5,
+              "accidentsWork": 2.75,
+              "familyAllowances": 5.5
+            }
+          },
+          "employee": {
+            "rate": 5.5,
+            "breakdown": {
+              "CNSS": 5.5
+            }
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant"
+        },
+        "otherTaxes": [
+          {
+            "name": "Contribution du Secteur Informel (CSI)",
+            "rate": "2% du CA",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 janvier"
+          },
+          {
+            "name": "Taxe de Développement Régional et Local",
+            "rate": "0.5% du CA",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 mars"
+          }
+        ]
+      }
+    },
+    {
+      "code": "CI",
+      "name": "Côte d'Ivoire",
+      "currency": "XOF",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Impôt sur les Bénéfices Industriels et Commerciaux (BIC)",
+          "rate": 25,
+          "minRate": 25,
+          "maxRate": 25,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "30 avril",
+          "advancePayments": "Acomptes provisionnels trimestriels"
+        },
+        "vat": {
+          "name": "Taxe sur la Valeur Ajoutée (TVA)",
+          "standardRate": 18,
+          "reducedRates": [9, 0],
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "20 du mois suivant",
+          "exemptions": ["Produits de base", "Exportations"]
+        },
+        "withholdingTax": {
+          "name": "Retenue à la Source",
+          "rates": {
+            "salaries": 0,
+            "dividends": 10,
+            "interest": 15,
+            "royalties": 15,
+            "services": 5
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "20 du mois suivant"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 16.45,
+            "breakdown": {
+              "CNPS": 7.7,
+              "accidentsWork": 2.75,
+              "familyAllowances": 6
+            }
+          },
+          "employee": {
+            "rate": 6.3,
+            "breakdown": {
+              "CNPS": 6.3
+            }
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant"
+        },
+        "otherTaxes": [
+          {
+            "name": "Contribution Nationale",
+            "rate": "0.6% du CA",
+            "declarationPeriod": "Mensuelle",
+            "paymentDeadline": "20 du mois suivant"
+          },
+          {
+            "name": "Taxe d'Apprentissage",
+            "rate": "0.4% de la masse salariale",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 janvier"
+          }
+        ]
+      }
+    },
+    {
+      "code": "SN",
+      "name": "Sénégal",
+      "currency": "XOF",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Impôt sur les Sociétés (IS)",
+          "rate": 30,
+          "minRate": 30,
+          "maxRate": 30,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "30 avril",
+          "advancePayments": "Acomptes provisionnels trimestriels"
+        },
+        "vat": {
+          "name": "Taxe sur la Valeur Ajoutée (TVA)",
+          "standardRate": 18,
+          "reducedRates": [10, 0],
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "20 du mois suivant",
+          "exemptions": ["Riz", "Huile", "Exportations"]
+        },
+        "withholdingTax": {
+          "name": "Retenue à la Source",
+          "rates": {
+            "salaries": 0,
+            "dividends": 10,
+            "interest": 13,
+            "royalties": 20,
+            "services": 5.5
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "20 du mois suivant"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 21.7,
+            "breakdown": {
+              "CSS": 8.4,
+              "IPM": 7,
+              "CFCE": 3,
+              "accidentsWork": 1,
+              "familyAllowances": 7
+            }
+          },
+          "employee": {
+            "rate": 5.6,
+            "breakdown": {
+              "CSS": 5.6
+            }
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant"
+        },
+        "otherTaxes": [
+          {
+            "name": "Contribution Forfaitaire à la Charge des Employeurs (CFCE)",
+            "rate": "3% de la masse salariale",
+            "declarationPeriod": "Mensuelle",
+            "paymentDeadline": "15 du mois suivant"
+          },
+          {
+            "name": "Taxe sur les Véhicules à Moteur",
+            "rate": "Variable selon puissance",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 décembre"
+          }
+        ]
+      }
+    },
+    {
+      "code": "CM",
+      "name": "Cameroun",
+      "currency": "XAF",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Impôt sur les Sociétés (IS)",
+          "rate": 30,
+          "minRate": 30,
+          "maxRate": 30,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "15 mars",
+          "advancePayments": "Acomptes provisionnels trimestriels"
+        },
+        "vat": {
+          "name": "Taxe sur la Valeur Ajoutée (TVA)",
+          "standardRate": 19.25,
+          "reducedRates": [0],
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant",
+          "exemptions": ["Produits de première nécessité", "Exportations"]
+        },
+        "withholdingTax": {
+          "name": "Retenue à la Source",
+          "rates": {
+            "salaries": 0,
+            "dividends": 15,
+            "interest": 15,
+            "royalties": 15,
+            "services": 5.5
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 16.5,
+            "breakdown": {
+              "CNPS": 7.5,
+              "accidentsWork": 2.5,
+              "familyAllowances": 7
+            }
+          },
+          "employee": {
+            "rate": 4.2,
+            "breakdown": {
+              "CNPS": 4.2
+            }
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant"
+        },
+        "otherTaxes": [
+          {
+            "name": "Taxe Spéciale sur les Revenus (TSR)",
+            "rate": "25% sur revenus fonciers",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "15 février"
+          },
+          {
+            "name": "Centimes Additionnels Communaux",
+            "rate": "10% de l'impôt de base",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "15 mars"
+          }
+        ]
+      }
+    },
+    {
+      "code": "GA",
+      "name": "Gabon",
+      "currency": "XAF",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Impôt sur les Sociétés (IS)",
+          "rate": 30,
+          "minRate": 30,
+          "maxRate": 30,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "31 mars",
+          "advancePayments": "Acomptes provisionnels trimestriels"
+        },
+        "vat": {
+          "name": "Taxe sur la Valeur Ajoutée (TVA)",
+          "standardRate": 18,
+          "reducedRates": [0],
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "20 du mois suivant",
+          "exemptions": ["Produits pétroliers", "Exportations"]
+        },
+        "withholdingTax": {
+          "name": "Retenue à la Source",
+          "rates": {
+            "salaries": 0,
+            "dividends": 20,
+            "interest": 20,
+            "royalties": 20,
+            "services": 10
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "20 du mois suivant"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 20.3,
+            "breakdown": {
+              "CNSS": 10.5,
+              "accidentsWork": 3,
+              "familyAllowances": 6.8
+            }
+          },
+          "employee": {
+            "rate": 4.5,
+            "breakdown": {
+              "CNSS": 4.5
+            }
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant"
+        },
+        "otherTaxes": [
+          {
+            "name": "Taxe sur les Activités Financières",
+            "rate": "15% sur bénéfices bancaires",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 mars"
+          }
+        ]
+      }
+    },
+    {
+      "code": "FR",
+      "name": "France",
+      "currency": "EUR",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Impôt sur les Sociétés (IS)",
+          "rate": 25,
+          "minRate": 15,
+          "maxRate": 25,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "15 mai",
+          "advancePayments": "Acomptes trimestriels"
+        },
+        "vat": {
+          "name": "Taxe sur la Valeur Ajoutée (TVA)",
+          "standardRate": 20,
+          "reducedRates": [10, 5.5, 2.1],
+          "declarationPeriod": "Mensuelle/Trimestrielle",
+          "paymentDeadline": "24 du mois suivant",
+          "exemptions": ["Services médicaux", "Éducation"]
+        },
+        "withholdingTax": {
+          "name": "Prélèvement à la Source",
+          "rates": {
+            "salaries": "Barème progressif",
+            "dividends": 30,
+            "interest": 0,
+            "royalties": 0,
+            "services": 0
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 42,
+            "breakdown": {
+              "secu": 23.6,
+              "retraite": 10.55,
+              "chomage": 4.05,
+              "autres": 3.8
+            }
+          },
+          "employee": {
+            "rate": 22,
+            "breakdown": {
+              "secu": 7.5,
+              "retraite": 10.83,
+              "chomage": 2.4,
+              "autres": 1.27
+            }
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant"
+        },
+        "otherTaxes": [
+          {
+            "name": "Contribution Économique Territoriale (CET)",
+            "rate": "Variable selon commune",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 mai"
+          },
+          {
+            "name": "Taxe d'Apprentissage",
+            "rate": "0.68% de la masse salariale",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 mai"
+          }
+        ]
+      }
+    },
+    {
+      "code": "DE",
+      "name": "Allemagne",
+      "currency": "EUR",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Körperschaftsteuer + Gewerbesteuer",
+          "rate": 30,
+          "minRate": 26.38,
+          "maxRate": 33,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "31 mai",
+          "advancePayments": "Acomptes trimestriels"
+        },
+        "vat": {
+          "name": "Umsatzsteuer (USt)",
+          "standardRate": 19,
+          "reducedRates": [7],
+          "declarationPeriod": "Mensuelle/Trimestrielle",
+          "paymentDeadline": "10 du mois suivant",
+          "exemptions": ["Services médicaux", "Éducation"]
+        },
+        "withholdingTax": {
+          "name": "Kapitalertragsteuer",
+          "rates": {
+            "salaries": "Barème progressif",
+            "dividends": 26.375,
+            "interest": 26.375,
+            "royalties": 5,
+            "services": 0
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "10 du mois suivant"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 19.325,
+            "breakdown": {
+              "pension": 9.3,
+              "unemployment": 1.2,
+              "health": 7.3,
+              "care": 1.525
+            }
+          },
+          "employee": {
+            "rate": 19.325,
+            "breakdown": {
+              "pension": 9.3,
+              "unemployment": 1.2,
+              "health": 7.3,
+              "care": 1.525
+            }
+          },
+          "declarationPeriod": "Mensuelle",
+          "paymentDeadline": "15 du mois suivant"
+        },
+        "otherTaxes": [
+          {
+            "name": "Gewerbesteuer",
+            "rate": "Variable selon commune",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 mai"
+          }
+        ]
+      }
+    },
+    {
+      "code": "US",
+      "name": "États-Unis",
+      "currency": "USD",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Federal Corporate Income Tax",
+          "rate": 21,
+          "minRate": 21,
+          "maxRate": 21,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "15 avril",
+          "advancePayments": "Estimated tax quarterly"
+        },
+        "vat": {
+          "name": "Sales Tax (État)",
+          "standardRate": 8.5,
+          "reducedRates": [0, 2.9, 4, 6],
+          "declarationPeriod": "Mensuelle/Trimestrielle",
+          "paymentDeadline": "20 du mois suivant",
+          "exemptions": ["Groceries", "Prescription drugs"]
+        },
+        "withholdingTax": {
+          "name": "Federal Income Tax Withholding",
+          "rates": {
+            "salaries": "Progressive brackets",
+            "dividends": 0,
+            "interest": 0,
+            "royalties": 30,
+            "services": 0
+          },
+          "declarationPeriod": "Bi-weekly/Monthly",
+          "paymentDeadline": "Next business day to 15th"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 7.65,
+            "breakdown": {
+              "socialSecurity": 6.2,
+              "medicare": 1.45
+            }
+          },
+          "employee": {
+            "rate": 7.65,
+            "breakdown": {
+              "socialSecurity": 6.2,
+              "medicare": 1.45
+            }
+          },
+          "declarationPeriod": "Quarterly",
+          "paymentDeadline": "Last day of month following quarter"
+        },
+        "otherTaxes": [
+          {
+            "name": "Federal Unemployment Tax (FUTA)",
+            "rate": "6% on first $7,000",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 janvier"
+          },
+          {
+            "name": "State Income Tax",
+            "rate": "Variable by state (0-13.3%)",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "Variable by state"
+          }
+        ]
+      }
+    },
+    {
+      "code": "GB",
+      "name": "Royaume-Uni",
+      "currency": "GBP",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Corporation Tax",
+          "rate": 25,
+          "minRate": 19,
+          "maxRate": 25,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "9 months after year end",
+          "advancePayments": "Quarterly for large companies"
+        },
+        "vat": {
+          "name": "Value Added Tax (VAT)",
+          "standardRate": 20,
+          "reducedRates": [5, 0],
+          "declarationPeriod": "Quarterly",
+          "paymentDeadline": "1 month after period end",
+          "exemptions": ["Financial services", "Education"]
+        },
+        "withholdingTax": {
+          "name": "Pay As You Earn (PAYE)",
+          "rates": {
+            "salaries": "Progressive 20-45%",
+            "dividends": 0,
+            "interest": 20,
+            "royalties": 20,
+            "services": 0
+          },
+          "declarationPeriod": "Monthly/Quarterly",
+          "paymentDeadline": "19th of following month"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 13.8,
+            "breakdown": {
+              "nationalInsurance": 13.8
+            }
+          },
+          "employee": {
+            "rate": 12,
+            "breakdown": {
+              "nationalInsurance": 12
+            }
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "19th of following month"
+        },
+        "otherTaxes": [
+          {
+            "name": "Business Rates",
+            "rate": "Variable by local authority",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "31 mars"
+          },
+          {
+            "name": "Apprenticeship Levy",
+            "rate": "0.5% of payroll over £3m",
+            "declarationPeriod": "Monthly",
+            "paymentDeadline": "19th of following month"
+          }
+        ]
+      }
+    },
+    {
+      "code": "JP",
+      "name": "Japon",
+      "currency": "JPY",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Corporate Tax",
+          "rate": 23.2,
+          "minRate": 23.2,
+          "maxRate": 23.2,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "2 months after fiscal year end",
+          "advancePayments": "Interim payments required"
+        },
+        "vat": {
+          "name": "Consumption Tax",
+          "standardRate": 10,
+          "reducedRates": [8],
+          "declarationPeriod": "Mensuelle/Annuelle",
+          "paymentDeadline": "End of following month",
+          "exemptions": ["Medical care", "Education"]
+        },
+        "withholdingTax": {
+          "name": "Withholding Tax",
+          "rates": {
+            "salaries": "Progressive 5-45%",
+            "dividends": 20.42,
+            "interest": 20.42,
+            "royalties": 20.42,
+            "services": 10.21
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "10th of following month"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 15.025,
+            "breakdown": {
+              "pension": 9.15,
+              "health": 4.95,
+              "unemployment": 0.6,
+              "workersComp": 0.325
+            }
+          },
+          "employee": {
+            "rate": 14.775,
+            "breakdown": {
+              "pension": 9.15,
+              "health": 4.95,
+              "unemployment": 0.3,
+              "longTermCare": 0.375
+            }
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "End of following month"
+        },
+        "otherTaxes": [
+          {
+            "name": "Business Tax",
+            "rate": "Variable by prefecture",
+            "declarationPeriod": "Annuelle",
+            "paymentDeadline": "2 months after fiscal year end"
+          }
+        ]
+      }
+    },
+    {
+      "code": "CN",
+      "name": "Chine",
+      "currency": "CNY",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Enterprise Income Tax (EIT)",
+          "rate": 25,
+          "minRate": 15,
+          "maxRate": 25,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "31 mai",
+          "advancePayments": "Quarterly advance payments"
+        },
+        "vat": {
+          "name": "Value-Added Tax (VAT)",
+          "standardRate": 13,
+          "reducedRates": [9, 6, 0],
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "15th of following month",
+          "exemptions": ["Agricultural products", "Exports"]
+        },
+        "withholdingTax": {
+          "name": "Withholding Tax",
+          "rates": {
+            "salaries": "Progressive 3-45%",
+            "dividends": 10,
+            "interest": 10,
+            "royalties": 10,
+            "services": 6
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "15th of following month"
+        },
+        "socialContributions": {
+          "employer": {
+            "rate": 32.9,
+            "breakdown": {
+              "pension": 16,
+              "medical": 9,
+              "unemployment": 0.5,
+              "workInjury": 0.4,
+              "maternity": 0.7,
+              "housingFund": 6.3
+            }
+          },
+          "employee": {
+            "rate": 19.3,
+            "breakdown": {
+              "pension": 8,
+              "medical": 2,
+              "unemployment": 0.3,
+              "housingFund": 9
+            }
+          },
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "15th of following month"
+        },
+        "otherTaxes": [
+          {
+            "name": "Business Tax",
+            "rate": "3-5% on service revenue",
+            "declarationPeriod": "Monthly",
+            "paymentDeadline": "15th of following month"
+          },
+          {
+            "name": "Stamp Tax",
+            "rate": "0.005-0.1% on contracts",
+            "declarationPeriod": "Monthly",
+            "paymentDeadline": "15th of following month"
+          }
+        ]
+      }
+    },
+    {
+      "code": "IN",
+      "name": "Inde",
+      "currency": "INR",
+      "taxes": {
+        "corporateIncomeTax": {
+          "name": "Corporate Income Tax",
+          "rate": 30,
+          "minRate": 25,
+          "maxRate": 30,
+          "declarationPeriod": "Annuelle",
+          "paymentDeadline": "30 septembre",
+          "advancePayments": "Quarterly advance tax"
+        },
+        "vat": {
+          "name": "Goods and Services Tax (GST)",
+          "standardRate": 18,
+          "reducedRates": [5, 12, 28, 0],
+          "declarationPeriod": "Monthly",
+          "paymentDeadline": "20th of following month",
+          "exemptions": ["Healthcare", "Education"]
+        },
+        "withholdingTax": {
+          "

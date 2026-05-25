@@ -1,0 +1,12 @@
+E_COMPTA_IA – Assistant IA Full Pack
+Regénéré: 2025-08-15T10:11:27.334714Z
+
+Contenu :
+- assistant-ia-journaux-extensibles.zip
+- assistant-ia-extension-validation-bridge.zip
+- assistant-ia-branch-ecritures.zip
+
+Instructions :
+1) Dézippez chaque fichier et fusionnez avec votre projet.
+2) Appliquez les patchs.
+3) Activez HttpClient si nécessaire.

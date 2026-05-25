@@ -1,0 +1,1 @@
+export interface JournalLineSave{compte:string;debit:number;credit:number;} export interface JournalEntrySave{journal:string;dateEcriture:string;lignes:JournalLineSave[];}

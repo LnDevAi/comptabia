@@ -168,6 +168,15 @@ public interface LigneEcritureRepository extends JpaRepository<LigneEcriture, UU
     List<Object[]> creancesImpayeesParCompte(@Param("eid") UUID entrepriseId);
 
     @Query("""
+            SELECT l FROM LigneEcriture l
+            JOIN l.ecriture e
+            WHERE e.entreprise.id = :eid
+              AND l.devise IS NOT NULL
+              AND e.statut = 'VALIDEE'
+            """)
+    List<LigneEcriture> findWithDevise(@Param("eid") UUID eid);
+
+    @Query("""
             SELECT MONTH(e.dateEcriture),
                    COALESCE(SUM(CASE WHEN SUBSTRING(c.numero, 1, 1) = '7' THEN l.credit ELSE 0 END), 0),
                    COALESCE(SUM(CASE WHEN SUBSTRING(c.numero, 1, 1) = '7' THEN l.debit  ELSE 0 END), 0),
