@@ -113,6 +113,11 @@ export const routes: Routes = [
           import('./features/export/export.component').then(m => m.ExportComponent)
       },
       {
+        path: 'parametres',
+        loadComponent: () =>
+          import('./features/parametres/parametres.component').then(m => m.ParametresComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./features/profile/profile.component').then(m => m.ProfileComponent)
