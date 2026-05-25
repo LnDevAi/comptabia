@@ -26,6 +26,7 @@ public class EcritureService {
 
     private final EcritureComptableRepository ecritureRepo;
     private final CompteComptableRepository   compteRepo;
+    private final AuditService                auditSvc;
 
     @Transactional(readOnly = true)
     public Page<EcritureDto.Response> findAll(
@@ -81,7 +82,10 @@ public class EcritureService {
                     .credit(l.credit())
                     .build());
         }
-        return toResponse(ecritureRepo.save(ecriture));
+        EcritureComptable saved = ecritureRepo.save(ecriture);
+        auditSvc.log(entrepriseId, auteur.getEmail(),
+                "ECRITURE_CREEE", "ECRITURE", saved.getNumeroPiece(), null);
+        return toResponse(saved);
     }
 
     @Transactional
@@ -91,7 +95,9 @@ public class EcritureService {
             throw new IllegalStateException("Seul un brouillon peut être validé");
         }
         ecriture.setStatut(EcritureComptable.Statut.VALIDEE);
-        return toResponse(ecritureRepo.save(ecriture));
+        EcritureComptable saved = ecritureRepo.save(ecriture);
+        auditSvc.logCurrent(entrepriseId, "ECRITURE_VALIDEE", "ECRITURE", saved.getNumeroPiece());
+        return toResponse(saved);
     }
 
     @Transactional
@@ -100,7 +106,9 @@ public class EcritureService {
         if (ecriture.getStatut() != EcritureComptable.Statut.BROUILLON) {
             throw new IllegalStateException("Seule une écriture en brouillon peut être supprimée");
         }
+        String ref = ecriture.getNumeroPiece();
         ecritureRepo.delete(ecriture);
+        auditSvc.logCurrent(entrepriseId, "ECRITURE_SUPPRIMEE", "ECRITURE", ref);
     }
 
     private void validatePartieDuble(List<LigneDto.Request> lignes) {

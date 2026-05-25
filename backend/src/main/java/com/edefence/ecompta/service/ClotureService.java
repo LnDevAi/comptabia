@@ -27,6 +27,7 @@ public class ClotureService {
     private final CompteComptableRepository compteRepo;
     private final EntrepriseRepository entrepriseRepo;
     private final UtilisateurRepository utilisateurRepo;
+    private final AuditService auditSvc;
 
     // ─── Listing ──────────────────────────────────────────────────────────────
 
@@ -148,6 +149,8 @@ public class ClotureService {
 
         log.info("Exercice {} clôturé pour entreprise {} — résultat net : {}",
                 annee, entrepriseId, resultatNet);
+        auditSvc.log(entrepriseId, userEmail, "EXERCICE_CLOTURE", "EXERCICE",
+                String.valueOf(annee), "Résultat net : " + resultatNet);
 
         return new ExerciceDto.ClotureResponse(
                 ex.getId(), ex.getAnnee(), ex.getStatut().name(),

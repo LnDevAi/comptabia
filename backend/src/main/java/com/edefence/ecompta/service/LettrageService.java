@@ -22,6 +22,7 @@ public class LettrageService {
 
     private final LigneEcritureRepository ligneRepo;
     private final CompteComptableRepository compteRepo;
+    private final AuditService auditSvc;
 
     // ─── Lecture ─────────────────────────────────────────────────────────────
 
@@ -81,6 +82,8 @@ public class LettrageService {
 
         String lettre = nextLettre(entrepriseId, compteNumero);
         ligneRepo.lettrer(ligneIds, lettre, LocalDate.now());
+        auditSvc.logCurrent(entrepriseId, "LETTRAGE_APPLIQUE", "COMPTE",
+                compteNumero + " lettre=" + lettre);
         return new LettrageDto.LettrageResult(lettre, lignes.size());
     }
 
@@ -92,6 +95,8 @@ public class LettrageService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lettre requise.");
         }
         ligneRepo.delettrer(lettre.toUpperCase(), entrepriseId, compteNumero);
+        auditSvc.logCurrent(entrepriseId, "LETTRAGE_ANNULE", "COMPTE",
+                compteNumero + " lettre=" + lettre.toUpperCase());
     }
 
     // ─── Calcul prochaine lettre ─────────────────────────────────────────────

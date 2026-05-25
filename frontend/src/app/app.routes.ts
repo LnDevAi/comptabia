@@ -131,6 +131,11 @@ export const routes: Routes = [
         path: 'is',
         loadComponent: () =>
           import('./features/declaration-is/declaration-is.component').then(m => m.DeclarationIsComponent)
+      },
+      {
+        path: 'audit',
+        loadComponent: () =>
+          import('./features/audit/audit.component').then(m => m.AuditComponent)
       }
     ]
   },
