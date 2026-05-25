@@ -138,6 +138,21 @@ public interface LigneEcritureRepository extends JpaRepository<LigneEcriture, UU
                                                @Param("eid") UUID entrepriseId);
 
     @Query("""
+            SELECT c.numero, c.intitule, e.dateEcriture, e.numeroPiece,
+                   COALESCE(SUM(l.debit), 0), COALESCE(SUM(l.credit), 0)
+            FROM LigneEcriture l
+            JOIN l.compte c JOIN l.ecriture e
+            WHERE e.entreprise.id = :eid
+            AND e.statut = 'VALIDEE'
+            AND c.numero LIKE :prefix
+            AND l.lettre IS NULL
+            GROUP BY c.numero, c.intitule, e.dateEcriture, e.numeroPiece
+            ORDER BY c.numero, e.dateEcriture
+            """)
+    List<Object[]> balanceAgeeRaw(@Param("eid") UUID entrepriseId,
+                                   @Param("prefix") String prefix);
+
+    @Query("""
             SELECT c.numero, COALESCE(SUM(l.debit - l.credit), 0)
             FROM LigneEcriture l
             JOIN l.compte c
