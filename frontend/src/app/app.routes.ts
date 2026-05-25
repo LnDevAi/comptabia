@@ -211,6 +211,11 @@ export const routes: Routes = [
         path: 'devises',
         loadComponent: () =>
           import('./features/devises/devises.component').then(m => m.DevisesComponent)
+      },
+      {
+        path: 'regularisations',
+        loadComponent: () =>
+          import('./features/regularisations/regularisations.component').then(m => m.RegularisationsComponent)
       }
     ]
   },
