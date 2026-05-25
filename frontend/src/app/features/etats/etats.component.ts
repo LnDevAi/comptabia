@@ -8,7 +8,7 @@ import { EtatFinancierService } from '../../core/services/etat-financier.service
 import {
   BalanceData, BilanData, CompteResultatData, GrandLivreData,
   JournalLivreData, EtatRecettesDepensesData, EtatTresorerieData,
-  NoteAnnexe, EtatTab
+  FluxTresorerieData, NoteAnnexe, EtatTab
 } from '../../core/models/etats.model';
 
 interface TabDef { id: EtatTab; label: string; group: 'sn' | 'smt' | 'commun'; }
@@ -21,6 +21,7 @@ const TABS: TabDef[] = [
   { id: 'journal',          label: 'Journal',              group: 'sn'     },
   { id: 'recettes-depenses',label: 'Recettes / Dépenses',  group: 'smt'    },
   { id: 'tresorerie',       label: 'Trésorerie (SMT)',     group: 'smt'    },
+  { id: 'flux-tresorerie',  label: 'Flux de trésorerie',   group: 'sn'     },
   { id: 'notes',            label: 'Notes annexes',        group: 'commun' },
 ];
 
@@ -387,6 +388,64 @@ const TABS: TabDef[] = [
         </div>
       }
 
+      <!-- Tableau des Flux de Trésorerie -->
+      @if (activeTab() === 'flux-tresorerie' && fluxTresorerie()) {
+        <div class="p-5 space-y-5">
+          <h2 class="font-semibold text-gray-700">Tableau des Flux de Trésorerie — Exercice {{ fluxTresorerie()!.exercice }}</h2>
+          <p class="text-xs text-gray-400">Méthode indirecte · Soldes cumulés depuis le 01/01</p>
+
+          @for (section of [fluxTresorerie()!.operationnel, fluxTresorerie()!.investissement, fluxTresorerie()!.financement]; track section.code) {
+            <div class="border border-gray-200 rounded-xl overflow-hidden">
+              <div class="bg-gray-800 text-white px-4 py-2 flex items-center justify-between">
+                <span class="text-sm font-semibold">{{ section.titre }}</span>
+                <span class="font-mono font-bold text-sm" [class]="section.total >= 0 ? 'text-green-300' : 'text-red-300'">
+                  {{ section.total | number:'1.2-2' }}
+                </span>
+              </div>
+              <table class="w-full text-sm">
+                <tbody>
+                  @for (ligne of section.lignes; track ligne.libelle) {
+                    @if (ligne.montant !== 0) {
+                      <tr class="border-t border-gray-100 hover:bg-gray-50">
+                        <td class="px-4 py-2 text-gray-700">{{ ligne.libelle }}</td>
+                        <td class="px-4 py-2 text-right font-mono w-36"
+                            [class]="ligne.montant >= 0 ? 'text-blue-700' : 'text-red-600'">
+                          {{ ligne.montant | number:'1.2-2' }}
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+
+          <!-- Synthèse -->
+          <div class="border border-gray-200 rounded-xl overflow-hidden">
+            <div class="bg-gray-50 px-4 py-3 space-y-2">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">Variation nette de trésorerie (A + B + C)</span>
+                <span class="font-mono font-bold" [class]="fluxTresorerie()!.variationNette >= 0 ? 'text-green-700' : 'text-red-700'">
+                  {{ fluxTresorerie()!.variationNette | number:'1.2-2' }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-500">Trésorerie d'ouverture (N-1)</span>
+                <span class="font-mono text-gray-400">{{ fluxTresorerie()!.tresorerieOuverture | number:'1.2-2' }}</span>
+              </div>
+              <div class="flex items-center justify-between text-sm border-t border-gray-200 pt-2">
+                <span class="font-semibold text-gray-700">Trésorerie de clôture (51x-57x)</span>
+                <span class="font-mono font-bold text-gray-800">{{ fluxTresorerie()!.tresorerieCloture | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-xs text-gray-400">
+            Note : la trésorerie d'ouverture nécessite les données comparatives N-1 (prochaine version).
+          </p>
+        </div>
+      }
+
       <!-- Notes annexes -->
       @if (activeTab() === 'notes') {
         <div class="p-4 space-y-4">
@@ -476,8 +535,9 @@ export class EtatsComponent implements OnInit {
   grandLivre     = signal<GrandLivreData | null>(null);
   journalLivre   = signal<JournalLivreData | null>(null);
   recettesDepenses = signal<EtatRecettesDepensesData | null>(null);
-  tresorerie     = signal<EtatTresorerieData | null>(null);
-  notes          = signal<NoteAnnexe[]>([]);
+  tresorerie      = signal<EtatTresorerieData | null>(null);
+  fluxTresorerie  = signal<FluxTresorerieData | null>(null);
+  notes           = signal<NoteAnnexe[]>([]);
 
   glCompte = '';
   noteFormOpen  = signal(false);
@@ -522,7 +582,8 @@ export class EtatsComponent implements OnInit {
   private clearData() {
     this.balance.set(null); this.bilan.set(null); this.compteResultat.set(null);
     this.grandLivre.set(null); this.journalLivre.set(null);
-    this.recettesDepenses.set(null); this.tresorerie.set(null); this.notes.set([]);
+    this.recettesDepenses.set(null); this.tresorerie.set(null);
+    this.fluxTresorerie.set(null); this.notes.set([]);
   }
 
   private loadTab(tab: EtatTab) {
@@ -554,6 +615,10 @@ export class EtatsComponent implements OnInit {
       case 'tresorerie':
         if (this.tresorerie()) return;
         this.fetch(this.svc.getTresorerie(y), v => this.tresorerie.set(v));
+        break;
+      case 'flux-tresorerie':
+        if (this.fluxTresorerie()) return;
+        this.fetch(this.svc.getFluxTresorerie(y), v => this.fluxTresorerie.set(v));
         break;
       case 'notes':
         this.fetch(this.svc.getNotes(y), v => this.notes.set(v));

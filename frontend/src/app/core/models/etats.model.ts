@@ -142,4 +142,26 @@ export interface NoteAnnexeUpdate {
   ordre?: number;
 }
 
-export type EtatTab = 'balance' | 'bilan' | 'compte-resultat' | 'grand-livre' | 'journal' | 'recettes-depenses' | 'tresorerie' | 'notes';
+export interface FluxLigne {
+  libelle: string;
+  montant: number;
+}
+
+export interface FluxSection {
+  titre: string;
+  code:  string;
+  lignes: FluxLigne[];
+  total:  number;
+}
+
+export interface FluxTresorerieData {
+  exercice:              number;
+  operationnel:          FluxSection;
+  investissement:        FluxSection;
+  financement:           FluxSection;
+  variationNette:        number;
+  tresorerieOuverture:   number;
+  tresorerieCloture:     number;
+}
+
+export type EtatTab = 'balance' | 'bilan' | 'compte-resultat' | 'grand-livre' | 'journal' | 'recettes-depenses' | 'tresorerie' | 'flux-tresorerie' | 'notes';

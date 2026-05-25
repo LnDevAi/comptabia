@@ -255,7 +255,108 @@ public class EtatFinancierService {
         if (deleted == 0) throw new EntityNotFoundException("Note not found");
     }
 
+    // ─── Tableau des Flux de Trésorerie (méthode indirecte) ─────────────────
+
+    @Transactional(readOnly = true)
+    public FluxTresorerieDto.Response getFluxTresorerie(UUID entrepriseId, int exercice) {
+        BalanceDto balance = getBalance(entrepriseId, exercice);
+
+        // ── A. Activités opérationnelles ────────────────────────────────────
+        BigDecimal produits = balance.lignes().stream()
+            .filter(l -> l.numero().startsWith("7"))
+            .map(l -> l.totalCredit().subtract(l.totalDebit()))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal charges = balance.lignes().stream()
+            .filter(l -> l.numero().startsWith("6"))
+            .map(l -> l.totalDebit().subtract(l.totalCredit()))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal resultatNet = produits.subtract(charges);
+
+        // Add back non-cash items: dotations(68x) + reprises(78x)
+        // reprises(78x) has net credit → sumNets("78") < 0 → adds negatively, removing non-cash income
+        BigDecimal dotations = netDebit(balance, "68");
+        BigDecimal reprises  = netDebit(balance, "78");
+
+        // Working capital adjustments: Δ = -(net debit movement) for each group
+        BigDecimal varStocks       = netDebit(balance, "3").negate();
+        BigDecimal varClients      = netDebit(balance, "41").negate();
+        BigDecimal varFournisseurs = netDebit(balance, "40").negate();
+        BigDecimal varAutres       = netDebit(balance, "44", "45", "47", "48").negate();
+
+        BigDecimal totalA = resultatNet.add(dotations).add(reprises)
+            .add(varStocks).add(varClients).add(varFournisseurs).add(varAutres);
+
+        List<FluxTresorerieDto.Ligne> lignesA = List.of(
+            new FluxTresorerieDto.Ligne("Résultat net de l'exercice",                    resultatNet),
+            new FluxTresorerieDto.Ligne("+ Dotations aux amortissements / provisions (68x)", dotations),
+            new FluxTresorerieDto.Ligne("- Reprises sur provisions (78x)",               reprises.negate()),
+            new FluxTresorerieDto.Ligne("Variation des stocks (3x)",                     varStocks),
+            new FluxTresorerieDto.Ligne("Variation des créances clients (41x)",          varClients),
+            new FluxTresorerieDto.Ligne("Variation des dettes fournisseurs (40x)",       varFournisseurs),
+            new FluxTresorerieDto.Ligne("Variation autres créances / dettes (44x-48x)", varAutres)
+        );
+
+        // ── B. Activités d'investissement ───────────────────────────────────
+        BigDecimal mouvImmos = BigDecimal.ZERO;
+        for (BalanceDto.Ligne l : balance.lignes()) {
+            String n = l.numero();
+            if (n.startsWith("2") && !n.startsWith("28") && !n.startsWith("29")) {
+                mouvImmos = mouvImmos.add(l.totalDebit().subtract(l.totalCredit()));
+            }
+        }
+        BigDecimal totalB = mouvImmos.negate(); // net debit = acquisitions outflow → negative CF
+
+        List<FluxTresorerieDto.Ligne> lignesB = List.of(
+            new FluxTresorerieDto.Ligne("Acquisitions nettes d'immobilisations (2x)", totalB)
+        );
+
+        // ── C. Activités de financement ─────────────────────────────────────
+        BigDecimal emprunts    = netDebit(balance, "16").negate(); // net credit = new loans
+        BigDecimal augCapital  = netDebit(balance, "10", "11").negate(); // net credit = capital
+        BigDecimal dividendes  = netDebit(balance, "465");        // net debit = dividends out
+        BigDecimal totalC      = emprunts.add(augCapital).subtract(dividendes);
+
+        List<FluxTresorerieDto.Ligne> lignesC = List.of(
+            new FluxTresorerieDto.Ligne("Variation nette des emprunts (16x)",       emprunts),
+            new FluxTresorerieDto.Ligne("Augmentation de capital (10x-11x)",        augCapital),
+            new FluxTresorerieDto.Ligne("Dividendes versés (465x)",                 dividendes.negate())
+        );
+
+        // ── Trésorerie clôture (soldes 51x+52x+53x+57x) ─────────────────────
+        BigDecimal tresorerieCloture = BigDecimal.ZERO;
+        for (BalanceDto.Ligne l : balance.lignes()) {
+            String n = l.numero();
+            if (n.startsWith("51") || n.startsWith("52")
+                    || n.startsWith("53") || n.startsWith("57")) {
+                tresorerieCloture = tresorerieCloture.add(
+                    l.totalDebit().subtract(l.totalCredit()));
+            }
+        }
+        BigDecimal variationNette = totalA.add(totalB).add(totalC);
+
+        return new FluxTresorerieDto.Response(
+            exercice,
+            new FluxTresorerieDto.Section("A. Flux des activités opérationnelles",  "A", lignesA, totalA),
+            new FluxTresorerieDto.Section("B. Flux des activités d'investissement", "B", lignesB, totalB),
+            new FluxTresorerieDto.Section("C. Flux des activités de financement",   "C", lignesC, totalC),
+            variationNette,
+            BigDecimal.ZERO,    // ouverture non disponible sans données comparatives N-1
+            tresorerieCloture
+        );
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    private BigDecimal netDebit(BalanceDto balance, String... prefixes) {
+        return balance.lignes().stream()
+            .filter(l -> {
+                String n = l.numero();
+                for (String p : prefixes) { if (n.startsWith(p)) return true; }
+                return false;
+            })
+            .map(l -> l.totalDebit().subtract(l.totalCredit()))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 
     private static LocalDate debut(int exercice) { return LocalDate.of(exercice, 1, 1); }
     private static LocalDate fin(int exercice)   { return LocalDate.of(exercice, 12, 31); }
