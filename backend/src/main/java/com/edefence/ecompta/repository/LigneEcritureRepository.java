@@ -166,4 +166,22 @@ public interface LigneEcritureRepository extends JpaRepository<LigneEcriture, UU
             ORDER BY c.numero ASC
             """)
     List<Object[]> creancesImpayeesParCompte(@Param("eid") UUID entrepriseId);
+
+    @Query("""
+            SELECT MONTH(e.dateEcriture),
+                   COALESCE(SUM(CASE WHEN SUBSTRING(c.numero, 1, 1) = '7' THEN l.credit ELSE 0 END), 0),
+                   COALESCE(SUM(CASE WHEN SUBSTRING(c.numero, 1, 1) = '7' THEN l.debit  ELSE 0 END), 0),
+                   COALESCE(SUM(CASE WHEN SUBSTRING(c.numero, 1, 1) = '6' THEN l.debit  ELSE 0 END), 0),
+                   COALESCE(SUM(CASE WHEN SUBSTRING(c.numero, 1, 1) = '6' THEN l.credit ELSE 0 END), 0)
+            FROM LigneEcriture l JOIN l.compte c JOIN l.ecriture e
+            WHERE e.entreprise.id = :eid
+              AND e.statut = 'VALIDEE'
+              AND e.dateEcriture >= :from
+              AND e.dateEcriture <= :to
+            GROUP BY MONTH(e.dateEcriture)
+            ORDER BY MONTH(e.dateEcriture)
+            """)
+    List<Object[]> tendanceMensuelle(@Param("eid") UUID eid,
+                                     @Param("from") LocalDate from,
+                                     @Param("to") LocalDate to);
 }
