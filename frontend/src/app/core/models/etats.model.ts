@@ -164,4 +164,22 @@ export interface FluxTresorerieData {
   tresorerieCloture:     number;
 }
 
-export type EtatTab = 'balance' | 'bilan' | 'compte-resultat' | 'grand-livre' | 'journal' | 'recettes-depenses' | 'tresorerie' | 'flux-tresorerie' | 'notes';
+export interface EvcapLigne {
+  numero:        string;
+  intitule:      string;
+  soldeDebut:    number;
+  augmentations: number;
+  diminutions:   number;
+  soldeFin:      number;
+}
+
+export interface EvcapData {
+  exercice:            number;
+  lignes:              EvcapLigne[];
+  totalDebut:          number;
+  totalAugmentations:  number;
+  totalDiminutions:    number;
+  totalFin:            number;
+}
+
+export type EtatTab = 'balance' | 'bilan' | 'compte-resultat' | 'grand-livre' | 'journal' | 'recettes-depenses' | 'tresorerie' | 'flux-tresorerie' | 'notes' | 'evcap';

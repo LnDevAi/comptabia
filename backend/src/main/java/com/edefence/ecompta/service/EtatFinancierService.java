@@ -17,7 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
 @Service
@@ -343,6 +347,73 @@ public class EtatFinancierService {
             BigDecimal.ZERO,    // ouverture non disponible sans données comparatives N-1
             tresorerieCloture
         );
+    }
+
+    // ─── EVCAP (État de Variation des Capitaux Propres) ──────────────────────
+
+    @Transactional(readOnly = true)
+    public EvcapDto.Response getEvcap(UUID entrepriseId, int exercice) {
+        LocalDate origin = LocalDate.of(2000, 1, 1);
+        LocalDate endN1  = LocalDate.of(exercice - 1, 12, 31);
+        LocalDate startN = debut(exercice);
+        LocalDate endN   = fin(exercice);
+
+        List<Object[]> histRows = ligneRepo.balanceParCompte(entrepriseId, origin, endN1);
+        List<Object[]> mouvRows = ligneRepo.balanceParCompte(entrepriseId, startN, endN);
+
+        record DS(BigDecimal d, BigDecimal c, String lib) {}
+        Map<String, DS> hist = new LinkedHashMap<>();
+        Map<String, DS> mouv = new LinkedHashMap<>();
+
+        for (Object[] r : histRows) {
+            String num = (String) r[0];
+            if (!isEquityAccount(num)) continue;
+            hist.put(num, new DS((BigDecimal) r[3], (BigDecimal) r[4], (String) r[1]));
+        }
+        for (Object[] r : mouvRows) {
+            String num = (String) r[0];
+            if (!isEquityAccount(num)) continue;
+            mouv.put(num, new DS((BigDecimal) r[3], (BigDecimal) r[4], (String) r[1]));
+        }
+
+        Set<String> all = new TreeSet<>();
+        all.addAll(hist.keySet());
+        all.addAll(mouv.keySet());
+
+        List<EvcapDto.Ligne> lignes = new ArrayList<>();
+        BigDecimal ZERO = BigDecimal.ZERO;
+        BigDecimal totDebut = ZERO, totAug = ZERO, totDim = ZERO, totFin = ZERO;
+
+        for (String num : all) {
+            DS h = hist.getOrDefault(num, new DS(ZERO, ZERO, ""));
+            DS m = mouv.getOrDefault(num, new DS(ZERO, ZERO, ""));
+            String lib = !h.lib().isEmpty() ? h.lib() : m.lib();
+
+            BigDecimal soldeDebut = h.c().subtract(h.d());
+            BigDecimal aug        = m.c();
+            BigDecimal dim        = m.d();
+            BigDecimal soldeFin   = soldeDebut.add(aug).subtract(dim);
+
+            if (soldeDebut.compareTo(ZERO) == 0 && aug.compareTo(ZERO) == 0 && dim.compareTo(ZERO) == 0) continue;
+
+            lignes.add(new EvcapDto.Ligne(num, lib, soldeDebut, aug, dim, soldeFin));
+            totDebut = totDebut.add(soldeDebut);
+            totAug   = totAug.add(aug);
+            totDim   = totDim.add(dim);
+            totFin   = totFin.add(soldeFin);
+        }
+
+        return new EvcapDto.Response(exercice, lignes, totDebut, totAug, totDim, totFin);
+    }
+
+    private static boolean isEquityAccount(String num) {
+        if (!num.startsWith("1") || num.length() < 2) return false;
+        try {
+            int sub = Integer.parseInt(num.substring(0, 2));
+            return sub >= 10 && sub <= 15;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
