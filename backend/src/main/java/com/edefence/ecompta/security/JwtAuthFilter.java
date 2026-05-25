@@ -32,13 +32,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain chain) throws ServletException, IOException {
 
+        // Standard header first; fallback to query param for SSE (EventSource can't set headers)
         final String header = request.getHeader("Authorization");
-        if (header == null || !header.startsWith("Bearer ")) {
-            chain.doFilter(request, response);
-            return;
+        final String token;
+        if (header != null && header.startsWith("Bearer ")) {
+            token = header.substring(7);
+        } else {
+            String queryToken = request.getParameter("token");
+            if (queryToken != null && !queryToken.isBlank()) {
+                token = queryToken;
+            } else {
+                chain.doFilter(request, response);
+                return;
+            }
         }
-
-        final String token = header.substring(7);
 
         // Redis blacklist check (token-level)
         if (Boolean.TRUE.equals(redisTemplate.hasKey("blacklist:" + token))) {

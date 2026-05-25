@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { AlerteService } from '../../../core/services/alerte.service';
+import { SseNotificationService } from '../../../core/services/sse-notification.service';
 
 @Component({
   selector: 'app-layout',
@@ -151,7 +152,8 @@ import { AlerteService } from '../../../core/services/alerte.service';
           </a>
         </nav>
 
-        <div class="flex items-center gap-3 text-sm">
+        <!-- Right side: user info + notification bell -->
+        <div class="flex items-center gap-3 text-sm shrink-0">
           <span class="text-gray-500">{{ user()?.nomEntreprise }}</span>
           <a routerLink="/dashboard/profile"
              class="font-medium text-gray-800 hover:text-blue-600 transition">
@@ -161,6 +163,63 @@ import { AlerteService } from '../../../core/services/alerte.service';
                 [class]="roleClass()">
             {{ user()?.role }}
           </span>
+
+          <!-- Notification bell -->
+          <div class="relative">
+            <button (click)="toggleNotifPanel($event)"
+                    class="relative p-1.5 rounded-lg hover:bg-gray-100 transition text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              @if (sseSvc.unread() > 0) {
+                <span class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-[16px] h-4 px-0.5 rounded-full text-xs font-bold"
+                      [ngClass]="hasNotifDanger() ? 'bg-red-500 text-white' : 'bg-orange-400 text-white'">
+                  {{ sseSvc.unread() }}
+                </span>
+              }
+            </button>
+
+            <!-- Notification dropdown -->
+            @if (notifPanelOpen) {
+              <div class="absolute right-0 top-9 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50"
+                   (click)="$event.stopPropagation()">
+                <div class="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
+                  <span class="text-sm font-semibold text-gray-800">Notifications temps réel</span>
+                  @if (sseSvc.unread() > 0) {
+                    <button (click)="sseSvc.markAllRead()"
+                            class="text-xs text-blue-600 hover:text-blue-800">
+                      Tout marquer lu
+                    </button>
+                  }
+                </div>
+
+                @if (sseSvc.notifications().length === 0) {
+                  <p class="text-sm text-gray-400 text-center py-6">Aucune notification</p>
+                } @else {
+                  <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                    @for (n of sseSvc.notifications(); track n.timestamp) {
+                      @if (n.type !== 'HEARTBEAT' && n.type !== 'CONNECTED') {
+                        <div class="flex items-start gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer transition"
+                             [ngClass]="n.read ? 'opacity-60' : ''"
+                             (click)="sseSvc.navigate(n.link); notifPanelOpen = false; sseSvc.markAllRead()">
+                          <span class="mt-0.5 w-2 h-2 rounded-full shrink-0"
+                                [ngClass]="severityDot(n.severity)"></span>
+                          <div class="flex-1 min-w-0">
+                            <p class="text-xs font-medium text-gray-800 truncate">{{ n.message }}</p>
+                            <p class="text-xs text-gray-400 mt-0.5">{{ n.timestamp | date:'HH:mm:ss' }}</p>
+                          </div>
+                          @if (!n.read) {
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></span>
+                          }
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
           <button (click)="logout()"
                   class="text-gray-400 hover:text-red-600 transition text-xs">
             Déconnexion
@@ -175,13 +234,41 @@ import { AlerteService } from '../../../core/services/alerte.service';
     </div>
   `
 })
-export class LayoutComponent implements OnInit {
+export class LayoutComponent implements OnInit, OnDestroy {
 
-  constructor(private auth: AuthService, readonly alerteSvc: AlerteService) {}
+  constructor(
+    private auth: AuthService,
+    readonly alerteSvc: AlerteService,
+    readonly sseSvc: SseNotificationService
+  ) {}
 
   user = this.auth.user;
+  notifPanelOpen = false;
 
-  ngOnInit() { this.alerteSvc.charger(); }
+  ngOnInit() {
+    this.alerteSvc.charger();
+    this.sseSvc.connect();
+  }
+
+  ngOnDestroy() { this.sseSvc.disconnect(); }
+
+  @HostListener('document:click')
+  onDocumentClick() { this.notifPanelOpen = false; }
+
+  toggleNotifPanel(event: MouseEvent) {
+    event.stopPropagation();
+    this.notifPanelOpen = !this.notifPanelOpen;
+  }
+
+  hasNotifDanger(): boolean {
+    return this.sseSvc.notifications().some(n => n.severity === 'DANGER' && !n.read);
+  }
+
+  severityDot(severity: string): string {
+    if (severity === 'DANGER')  return 'bg-red-500';
+    if (severity === 'WARNING') return 'bg-orange-400';
+    return 'bg-blue-400';
+  }
 
   roleClass(): string {
     const role = this.user()?.role;
@@ -190,5 +277,8 @@ export class LayoutComponent implements OnInit {
     return 'bg-gray-100 text-gray-600';
   }
 
-  logout() { this.auth.logout(); }
+  logout() {
+    this.sseSvc.disconnect();
+    this.auth.logout();
+  }
 }
