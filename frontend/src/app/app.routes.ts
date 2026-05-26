@@ -319,5 +319,10 @@ export const routes: Routes = [
       }
     ]
   },
+  {
+    path: 'portail/:entrepriseId',
+    loadComponent: () =>
+      import('./features/client-portail/client-portail.component').then(m => m.ClientPortailComponent)
+  },
   { path: '**', redirectTo: '/dashboard' }
 ];

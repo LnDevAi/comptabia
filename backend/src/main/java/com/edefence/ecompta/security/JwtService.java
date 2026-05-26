@@ -35,6 +35,20 @@ public class JwtService {
                 .compact();
     }
 
+    public String generatePortal(String clientEmail, UUID entrepriseId, UUID tiersId) {
+        return Jwts.builder()
+                .subject(clientEmail)
+                .claims(Map.of(
+                    "entrepriseId", entrepriseId.toString(),
+                    "tiersId", tiersId.toString(),
+                    "role", "PORTAIL"
+                ))
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 3_600_000L))
+                .signWith(key)
+                .compact();
+    }
+
     public Claims parse(String token) {
         return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
     }
