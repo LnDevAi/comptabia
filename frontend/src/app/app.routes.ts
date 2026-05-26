@@ -365,6 +365,12 @@ export const routes: Routes = [
         path: 'commercial',
         loadComponent: () =>
           import('./features/commercial/commercial.component').then(m => m.CommercialComponent)
+      },
+      {
+        path: 'stocks',
+        canActivate: [licenceGuard('IMMOBILISATIONS')],
+        loadComponent: () =>
+          import('./features/stocks/stocks.component').then(m => m.StocksComponent)
       }
     ]
   },

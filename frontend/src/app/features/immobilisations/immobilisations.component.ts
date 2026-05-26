@@ -14,6 +14,7 @@ interface FormState {
   code: string; designation: string; categorie: CategorieImmo;
   compteNumero: string; compteAmortNumero: string;
   dateAcquisition: string; valeurBrute: string; dureeAmortissement: string;
+  methode: string;
 }
 
 function blankForm(): FormState {
@@ -21,7 +22,7 @@ function blankForm(): FormState {
     code: '', designation: '', categorie: 'CORPORELLE',
     compteNumero: '', compteAmortNumero: '',
     dateAcquisition: new Date().toISOString().slice(0, 10),
-    valeurBrute: '', dureeAmortissement: '5',
+    valeurBrute: '', dureeAmortissement: '5', methode: 'LINEAIRE',
   };
 }
 
@@ -314,7 +315,7 @@ const STATUT_META: Record<StatutImmo, { label: string; css: string }> = {
       <div class="flex gap-6 text-sm text-gray-600">
         <span>Valeur brute : <strong class="text-gray-900">{{ planData()!.valeurBrute | number:'1.2-2' }}</strong></span>
         <span>Durée : <strong class="text-gray-900">{{ planData()!.dureeAmortissement }} ans</strong></span>
-        <span>Méthode : <strong class="text-gray-900">Linéaire</strong></span>
+        <span>Méthode : <strong class="text-gray-900">{{ planData()!.methode === 'DEGRESSIF' ? 'Dégressive' : 'Linéaire' }}</strong></span>
       </div>
 
       <table class="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
@@ -492,6 +493,7 @@ export class ImmobilisationsComponent implements OnInit {
       compteNumero: i.compteNumero ?? '', compteAmortNumero: i.compteAmortNumero ?? '',
       dateAcquisition: i.dateAcquisition,
       valeurBrute: String(i.valeurBrute), dureeAmortissement: String(i.dureeAmortissement),
+      methode: i.methode ?? 'LINEAIRE',
     };
     this.formError.set(null); this.showForm.set(true);
   }
@@ -512,6 +514,7 @@ export class ImmobilisationsComponent implements OnInit {
       dateAcquisition:    this.form.dateAcquisition,
       valeurBrute:        parseFloat(this.form.valeurBrute),
       dureeAmortissement: parseInt(this.form.dureeAmortissement, 10),
+      methode:            this.form.methode,
     };
     this.saving.set(true); this.formError.set(null);
     const req = this.editingId()

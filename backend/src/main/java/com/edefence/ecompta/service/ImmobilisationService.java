@@ -50,7 +50,8 @@ public class ImmobilisationService {
         List<ImmobilisationDto.LignePlan> lignes = buildPlan(immo);
         return new ImmobilisationDto.PlanAmortissement(
                 immo.getId(), immo.getCode(), immo.getDesignation(),
-                immo.getValeurBrute(), immo.getDureeAmortissement(), lignes);
+                immo.getValeurBrute(), immo.getDureeAmortissement(),
+                immo.getMethode().name(), lignes);
     }
 
     @Transactional(readOnly = true)
@@ -73,6 +74,9 @@ public class ImmobilisationService {
         Entreprise entreprise = entrepriseRepo.findById(entrepriseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Entreprise introuvable"));
 
+        Immobilisation.Methode methode = dto.methode() != null && !dto.methode().isBlank()
+                ? Immobilisation.Methode.valueOf(dto.methode()) : Immobilisation.Methode.LINEAIRE;
+
         Immobilisation immo = Immobilisation.builder()
                 .entreprise(entreprise)
                 .code(dto.code().toUpperCase().trim())
@@ -83,6 +87,7 @@ public class ImmobilisationService {
                 .dateAcquisition(dto.dateAcquisition())
                 .valeurBrute(dto.valeurBrute())
                 .dureeAmortissement(dto.dureeAmortissement())
+                .methode(methode)
                 .build();
 
         return toResponse(immoRepo.save(immo), BigDecimal.ZERO);
@@ -110,6 +115,9 @@ public class ImmobilisationService {
         immo.setDateAcquisition(dto.dateAcquisition());
         immo.setValeurBrute(dto.valeurBrute());
         immo.setDureeAmortissement(dto.dureeAmortissement());
+        if (dto.methode() != null && !dto.methode().isBlank()) {
+            immo.setMethode(Immobilisation.Methode.valueOf(dto.methode()));
+        }
 
         return toResponse(immoRepo.save(immo), cumulFor(immo));
     }
@@ -151,10 +159,10 @@ public class ImmobilisationService {
                     "La dotation pour l'exercice " + exercice + " a déjà été enregistrée.");
         }
 
-        BigDecimal dotation = immo.getValeurBrute()
-                .divide(BigDecimal.valueOf(immo.getDureeAmortissement()), 2, RoundingMode.HALF_UP);
-
         BigDecimal cumulAvant = amortRepo.cumulAvantExercice(immo.getId(), exercice);
+        BigDecimal vnca = immo.getValeurBrute().subtract(cumulAvant);
+        BigDecimal dotation = calculerDotation(immo, vnca, cumulAvant);
+
         BigDecimal nouveauCumul = cumulAvant.add(dotation);
 
         // Cap at valeur brute (last year adjustment)
@@ -250,9 +258,25 @@ public class ImmobilisationService {
         return "6811";
     }
 
-    private List<ImmobilisationDto.LignePlan> buildPlan(Immobilisation immo) {
-        BigDecimal dotation = immo.getValeurBrute()
+    private BigDecimal calculerDotation(Immobilisation immo, BigDecimal vnc, BigDecimal cumulAvant) {
+        if (immo.getMethode() == Immobilisation.Methode.DEGRESSIF) {
+            // Taux dégressif SYSCOHADA: coefficient selon durée
+            double coeff = immo.getDureeAmortissement() <= 3 ? 1.0
+                    : immo.getDureeAmortissement() <= 5 ? 1.5
+                    : immo.getDureeAmortissement() <= 10 ? 2.0 : 2.5;
+            BigDecimal tauxDegressif = BigDecimal.valueOf(coeff)
+                    .divide(BigDecimal.valueOf(immo.getDureeAmortissement()), 6, RoundingMode.HALF_UP);
+            BigDecimal dotDegressive = vnc.multiply(tauxDegressif).setScale(2, RoundingMode.HALF_UP);
+            // Si dotation linéaire >= dégressive → basculer sur linéaire (règle fiscale)
+            BigDecimal dotLineaire = immo.getValeurBrute()
+                    .divide(BigDecimal.valueOf(immo.getDureeAmortissement()), 2, RoundingMode.HALF_UP);
+            return dotDegressive.compareTo(dotLineaire) >= 0 ? dotDegressive : dotLineaire;
+        }
+        return immo.getValeurBrute()
                 .divide(BigDecimal.valueOf(immo.getDureeAmortissement()), 2, RoundingMode.HALF_UP);
+    }
+
+    private List<ImmobilisationDto.LignePlan> buildPlan(Immobilisation immo) {
         int anneeDebut = immo.getDateAcquisition().getYear();
 
         List<Amortissement> existing = amortRepo.findByImmobilisationIdOrderByExerciceAsc(immo.getId());
@@ -261,7 +285,8 @@ public class ImmobilisationService {
         BigDecimal cumul = BigDecimal.ZERO;
         for (int i = 0; i < immo.getDureeAmortissement(); i++) {
             int exercice = anneeDebut + i;
-            BigDecimal dot = dotation;
+            BigDecimal vnc = immo.getValeurBrute().subtract(cumul);
+            BigDecimal dot = calculerDotation(immo, vnc, cumul);
             BigDecimal newCumul = cumul.add(dot);
             if (newCumul.compareTo(immo.getValeurBrute()) > 0) {
                 dot = immo.getValeurBrute().subtract(cumul);

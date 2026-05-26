@@ -21,7 +21,8 @@ public final class ImmobilisationDto {
             @Size(max = 20)            String compteAmortNumero,
             @NotNull                   LocalDate dateAcquisition,
             @NotNull @DecimalMin("0.01") BigDecimal valeurBrute,
-            @NotNull @Min(1) @Max(50)  int dureeAmortissement
+            @NotNull @Min(1) @Max(50)  int dureeAmortissement,
+            String methode
     ) {}
 
     public record Response(
@@ -56,6 +57,7 @@ public final class ImmobilisationDto {
             String designation,
             BigDecimal valeurBrute,
             int dureeAmortissement,
+            String methode,
             List<LignePlan> lignes
     ) {}
 

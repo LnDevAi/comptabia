@@ -43,6 +43,7 @@ public class LicenceInterceptor implements HandlerInterceptor {
             entry("/api/tiers",            TIERS),
             // IMMOBILISATIONS
             entry("/api/immobilisations",  IMMOBILISATIONS),
+            entry("/api/stocks",           IMMOBILISATIONS),
             // FISCAL
             entry("/api/tva",              FISCAL),
             entry("/api/is",               FISCAL),
