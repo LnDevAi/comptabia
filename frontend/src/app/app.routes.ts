@@ -276,6 +276,11 @@ export const routes: Routes = [
         path: 'prets',
         loadComponent: () =>
           import('./features/prets/prets.component').then(m => m.PretsComponent)
+      },
+      {
+        path: 'mon-espace',
+        loadComponent: () =>
+          import('./features/portail-collaborateur/portail-collaborateur.component').then(m => m.PortailCollaborateurComponent)
       }
     ]
   },
