@@ -45,4 +45,15 @@ public interface FactureRepository extends JpaRepository<Facture, UUID> {
 
     @Query("SELECT COALESCE(SUM(f.montantTtc), 0) FROM Facture f WHERE f.entreprise.id = :eid AND f.statut = 'EMISE'")
     java.math.BigDecimal sumMontantTtcEmises(@Param("eid") UUID eid);
+
+    @Query("""
+            SELECT f FROM Facture f LEFT JOIN FETCH f.tiers
+            WHERE f.entreprise.id = :eid
+              AND f.tiers.id = :tiersId
+              AND f.statut <> 'BROUILLON'
+            ORDER BY f.dateFacture DESC
+            """)
+    List<Facture> findByTiersPortail(@Param("eid") UUID eid, @Param("tiersId") UUID tiersId);
+
+    java.util.Optional<Facture> findByIdAndEntrepriseId(UUID id, UUID entrepriseId);
 }
