@@ -168,6 +168,16 @@ import { SseNotificationService } from '../../../core/services/sse-notification.
               Docs réglementaires
             </a>
           }
+          @if (user()?.typeEntite === 'ASSURANCE') {
+            <a routerLink="/dashboard/provisions-techniques" routerLinkActive="bg-indigo-50 text-indigo-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Provisions CIMA
+            </a>
+            <a routerLink="/dashboard/etats-assurance" routerLinkActive="bg-indigo-50 text-indigo-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              États CIMA
+            </a>
+          }
           <a routerLink="/dashboard/abonnements" routerLinkActive="bg-blue-50 text-blue-700"
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             Abonnements

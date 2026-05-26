@@ -63,9 +63,11 @@ public class AuthService {
                    .tauxTvaDefaut(ref.getTauxTva())
                    .referentielComptable(ref.getSystemeComptable());
         }
-        // Surcharger le référentiel si association
+        // Surcharger le référentiel selon le type d'entité
         if (typeEntite == Entreprise.TypeEntite.ASSOCIATION) {
             builder.referentielComptable("SYCEBNL");
+        } else if (typeEntite == Entreprise.TypeEntite.ASSURANCE) {
+            builder.referentielComptable("CIMA");
         }
 
         Entreprise entreprise = entrepriseRepo.save(builder.build());
@@ -83,6 +85,8 @@ public class AuthService {
         // Seed plan de comptes selon le type d'entité
         if (typeEntite == Entreprise.TypeEntite.ASSOCIATION) {
             compteService.seedSycebnlForEntreprise(entreprise);
+        } else if (typeEntite == Entreprise.TypeEntite.ASSURANCE) {
+            compteService.seedCimaForEntreprise(entreprise);
         } else {
             compteService.seedSyscohadaForEntreprise(entreprise);
         }

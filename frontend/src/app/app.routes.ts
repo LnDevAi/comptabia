@@ -321,6 +321,16 @@ export const routes: Routes = [
         path: 'documents-reglementaires',
         loadComponent: () =>
           import('./features/documents-reglementaires/documents-reglementaires.component').then(m => m.DocumentsReglementairesComponent)
+      },
+      {
+        path: 'provisions-techniques',
+        loadComponent: () =>
+          import('./features/provisions-techniques/provisions-techniques.component').then(m => m.ProvisionsTechniquesComponent)
+      },
+      {
+        path: 'etats-assurance',
+        loadComponent: () =>
+          import('./features/etats-assurance/etats-assurance.component').then(m => m.EtatsAssuranceComponent)
       }
     ]
   },

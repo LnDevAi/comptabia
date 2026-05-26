@@ -1,6 +1,8 @@
 package com.edefence.ecompta.controller;
 
 import com.edefence.ecompta.dto.etats.*;
+import com.edefence.ecompta.dto.etats.BilanCimaDto;
+import com.edefence.ecompta.dto.etats.CompteResultatCimaDto;
 import com.edefence.ecompta.service.EtatFinancierService;
 import com.edefence.ecompta.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -114,6 +116,18 @@ public class EtatFinancierController {
             @RequestParam(defaultValue = "0") int exercice) throws IOException {
         int annee = exercice > 0 ? exercice : currentYear();
         return service.genererDepuisBalance(TenantContext.get(), file, annee);
+    }
+
+    // ─── États financiers CIMA ───────────────────────────────────────────────
+
+    @GetMapping("/cima/bilan")
+    public BilanCimaDto bilanCima(@RequestParam(defaultValue = "0") int exercice) {
+        return service.getBilanCima(TenantContext.get(), exercice > 0 ? exercice : currentYear());
+    }
+
+    @GetMapping("/cima/resultat-technique")
+    public CompteResultatCimaDto compteResultatCima(@RequestParam(defaultValue = "0") int exercice) {
+        return service.getCompteResultatCima(TenantContext.get(), exercice > 0 ? exercice : currentYear());
     }
 
     @PostMapping(value = "/import-balance-6col", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

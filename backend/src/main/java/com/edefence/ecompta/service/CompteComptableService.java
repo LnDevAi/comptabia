@@ -120,6 +120,26 @@ public class CompteComptableService {
         }
     }
 
+    @Transactional
+    public void seedCimaForEntreprise(Entreprise entreprise) {
+        try {
+            ClassPathResource resource = new ClassPathResource("cima.json");
+            List<Map<String, Object>> entries = objectMapper.readValue(
+                    resource.getInputStream(), new TypeReference<>() {});
+            List<CompteComptable> comptes = entries.stream()
+                    .map(e -> CompteComptable.builder()
+                            .numero((String) e.get("numero"))
+                            .intitule((String) e.get("intitule"))
+                            .classe((Integer) e.get("classe"))
+                            .entreprise(entreprise)
+                            .build())
+                    .toList();
+            repository.saveAll(comptes);
+        } catch (IOException e) {
+            throw new IllegalStateException("Erreur lors du chargement du référentiel CIMA", e);
+        }
+    }
+
     private CompteComptable findCompteOrThrow(UUID id, UUID entrepriseId) {
         CompteComptable compte = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Compte introuvable : " + id));

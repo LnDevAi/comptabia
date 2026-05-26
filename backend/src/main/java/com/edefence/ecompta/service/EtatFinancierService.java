@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -725,5 +726,182 @@ public class EtatFinancierService {
     private NoteAnnexeDto.Response toNoteResponse(NoteAnnexe n) {
         return new NoteAnnexeDto.Response(n.getId(), n.getExercice(), n.getNumeroNote(),
                 n.getTitre(), n.getContenu(), n.getOrdre(), n.getCreatedAt(), n.getUpdatedAt());
+    }
+
+    // ─── Bilan CIMA ───────────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public com.edefence.ecompta.dto.etats.BilanCimaDto getBilanCima(UUID entrepriseId, int exercice) {
+        BalanceDto balance = getBalance(entrepriseId, exercice);
+        return computeBilanCima(balance);
+    }
+
+    private com.edefence.ecompta.dto.etats.BilanCimaDto computeBilanCima(BalanceDto balance) {
+        List<com.edefence.ecompta.dto.etats.BilanCimaDto.Poste> actifIncCorp = new ArrayList<>();
+        List<com.edefence.ecompta.dto.etats.BilanCimaDto.Poste> placements   = new ArrayList<>();
+        List<com.edefence.ecompta.dto.etats.BilanCimaDto.Poste> opsActif     = new ArrayList<>();
+        List<com.edefence.ecompta.dto.etats.BilanCimaDto.Poste> autresActifs = new ArrayList<>();
+        List<com.edefence.ecompta.dto.etats.BilanCimaDto.Poste> tresorerie   = new ArrayList<>();
+        List<com.edefence.ecompta.dto.etats.BilanCimaDto.Poste> fondsPropres = new ArrayList<>();
+        List<com.edefence.ecompta.dto.etats.BilanCimaDto.Poste> provTech     = new ArrayList<>();
+        List<com.edefence.ecompta.dto.etats.BilanCimaDto.Poste> autresPassif = new ArrayList<>();
+
+        for (BalanceDto.Ligne l : balance.lignes()) {
+            String num = l.numero();
+            int c = l.classe();
+            BigDecimal sd = l.soldeDebiteur();
+            BigDecimal sc = l.soldeCrediteur();
+
+            if (c == 2) {
+                // 20-21 = actifs incorporels/corporels, 22-28 = placements financiers
+                if (num.startsWith("20") || num.startsWith("21")) {
+                    BigDecimal m = sd.subtract(sc);
+                    if (m.compareTo(BigDecimal.ZERO) != 0)
+                        actifIncCorp.add(new com.edefence.ecompta.dto.etats.BilanCimaDto.Poste("Actifs incorporels et corporels", num, l.intitule(), m));
+                } else {
+                    BigDecimal m = sd.subtract(sc);
+                    if (m.compareTo(BigDecimal.ZERO) != 0)
+                        placements.add(new com.edefence.ecompta.dto.etats.BilanCimaDto.Poste("Placements", num, l.intitule(), m));
+                }
+            } else if (c == 3) {
+                if (sd.compareTo(BigDecimal.ZERO) > 0)
+                    opsActif.add(new com.edefence.ecompta.dto.etats.BilanCimaDto.Poste("Opérations d'assurance (actif)", num, l.intitule(), sd));
+                if (sc.compareTo(BigDecimal.ZERO) > 0)
+                    autresPassif.add(new com.edefence.ecompta.dto.etats.BilanCimaDto.Poste("Opérations d'assurance (passif)", num, l.intitule(), sc));
+            } else if (c == 4) {
+                if (sd.compareTo(BigDecimal.ZERO) > 0)
+                    autresActifs.add(new com.edefence.ecompta.dto.etats.BilanCimaDto.Poste("Autres actifs", num, l.intitule(), sd));
+                if (sc.compareTo(BigDecimal.ZERO) > 0)
+                    autresPassif.add(new com.edefence.ecompta.dto.etats.BilanCimaDto.Poste("Autres passifs", num, l.intitule(), sc));
+            } else if (c == 5) {
+                if (sd.compareTo(BigDecimal.ZERO) > 0)
+                    tresorerie.add(new com.edefence.ecompta.dto.etats.BilanCimaDto.Poste("Trésorerie", num, l.intitule(), sd));
+            } else if (c == 1) {
+                if (num.startsWith("18")) {
+                    BigDecimal m = sc.subtract(sd);
+                    if (m.compareTo(BigDecimal.ZERO) != 0)
+                        provTech.add(new com.edefence.ecompta.dto.etats.BilanCimaDto.Poste("Provisions techniques", num, l.intitule(), m));
+                } else {
+                    BigDecimal m = sc.subtract(sd);
+                    if (m.compareTo(BigDecimal.ZERO) != 0)
+                        fondsPropres.add(new com.edefence.ecompta.dto.etats.BilanCimaDto.Poste("Fonds propres", num, l.intitule(), m));
+                }
+            }
+        }
+
+        BigDecimal totActif = Stream.of(actifIncCorp, placements, opsActif, autresActifs, tresorerie)
+                .flatMap(List::stream).map(com.edefence.ecompta.dto.etats.BilanCimaDto.Poste::montant)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totPassif = Stream.of(fondsPropres, provTech, autresPassif)
+                .flatMap(List::stream).map(com.edefence.ecompta.dto.etats.BilanCimaDto.Poste::montant)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new com.edefence.ecompta.dto.etats.BilanCimaDto(
+                balance.exercice(),
+                actifIncCorp, placements, opsActif, autresActifs, tresorerie, totActif,
+                fondsPropres, provTech, autresPassif, totPassif
+        );
+    }
+
+    // ─── Compte de résultat technique CIMA ───────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public com.edefence.ecompta.dto.etats.CompteResultatCimaDto getCompteResultatCima(UUID entrepriseId, int exercice) {
+        BalanceDto balance = getBalance(entrepriseId, exercice);
+        return computeCompteResultatCima(balance);
+    }
+
+    private com.edefence.ecompta.dto.etats.CompteResultatCimaDto computeCompteResultatCima(BalanceDto balance) {
+        // Primes Non-Vie
+        BigDecimal primesNonVie    = sumCreditLignes(balance, "700", "702");
+        BigDecimal primesVie       = sumCreditLignes(balance, "701");
+        BigDecimal primesCedees    = sumDebitLignes(balance, "601");
+        BigDecimal primesCedeesNV  = primesCedees.multiply(safeRatio(primesNonVie, primesNonVie.add(primesVie)));
+        BigDecimal primesCedeesV   = primesCedees.subtract(primesCedeesNV);
+
+        // Produits placements alloués (73x)
+        BigDecimal pdtPlacAlloues  = sumCreditLignes(balance, "73");
+
+        // Sinistres Non-Vie
+        BigDecimal sinistresNV     = sumDebitLignes(balance, "610", "611");
+        BigDecimal prestationsVie  = sumDebitLignes(balance, "614");
+
+        // Variations provisions
+        BigDecimal varProvNV       = sumDebitLignes(balance, "620", "621", "622", "626", "627");
+        BigDecimal varProvVie      = sumDebitLignes(balance, "624", "625");
+
+        // Frais acquisition & administration
+        BigDecimal fraisAcqNV      = sumDebitLignes(balance, "640", "641", "642");
+        BigDecimal fraisAdmNV      = sumDebitLignes(balance, "650", "651", "652");
+
+        // Autres charges techniques
+        BigDecimal autresCtNV      = sumDebitLignes(balance, "660", "668");
+
+        // Produits des placements (71x)
+        BigDecimal pdtPlacements   = sumCreditLignes(balance, "710", "711", "712", "713");
+
+        // Frais gestion placements (63x)
+        BigDecimal fraisGestPl     = sumDebitLignes(balance, "630", "631");
+
+        // Autres produits/charges non-techniques
+        BigDecimal autresPdtNT     = sumCreditLignes(balance, "74", "75", "76", "77", "78");
+        BigDecimal autresChNT      = sumDebitLignes(balance, "63", "66", "80");
+
+        BigDecimal resNV  = primesNonVie.subtract(primesCedeesNV)
+                .add(pdtPlacAlloues)
+                .subtract(sinistresNV).subtract(varProvNV)
+                .subtract(fraisAcqNV).subtract(fraisAdmNV).subtract(autresCtNV);
+        BigDecimal resVie = primesVie.subtract(primesCedeesV)
+                .add(pdtPlacements)
+                .subtract(prestationsVie).subtract(varProvVie)
+                .subtract(fraisGestPl);
+
+        BigDecimal pdtPlacNets     = pdtPlacements.subtract(fraisGestPl);
+        BigDecimal resAvantIS      = resNV.add(resVie).add(autresPdtNT).subtract(autresChNT);
+        BigDecimal is              = sumDebitLignes(balance, "840");
+        BigDecimal resNet          = resAvantIS.subtract(is);
+
+        return new com.edefence.ecompta.dto.etats.CompteResultatCimaDto(
+                balance.exercice(),
+                primesNonVie, primesCedeesNV, primesNonVie.subtract(primesCedeesNV),
+                pdtPlacAlloues, sumCreditLignes(balance, "72"),
+                sinistresNV, varProvNV, fraisAcqNV, fraisAdmNV, autresCtNV, resNV,
+                primesVie, primesCedeesV, primesVie.subtract(primesCedeesV),
+                pdtPlacements, prestationsVie, varProvVie, sumDebitLignes(balance, "660"),
+                fraisGestPl, resVie,
+                pdtPlacNets, fraisGestPl, autresPdtNT, autresChNT,
+                resAvantIS, is, resNet
+        );
+    }
+
+    private BigDecimal sumDebitLignes(BalanceDto balance, String... prefixes) {
+        BigDecimal sum = BigDecimal.ZERO;
+        for (BalanceDto.Ligne l : balance.lignes()) {
+            for (String p : prefixes) {
+                if (l.numero().startsWith(p)) {
+                    sum = sum.add(l.totalDebit().subtract(l.totalCredit()).max(BigDecimal.ZERO));
+                    break;
+                }
+            }
+        }
+        return sum;
+    }
+
+    private BigDecimal sumCreditLignes(BalanceDto balance, String... prefixes) {
+        BigDecimal sum = BigDecimal.ZERO;
+        for (BalanceDto.Ligne l : balance.lignes()) {
+            for (String p : prefixes) {
+                if (l.numero().startsWith(p)) {
+                    sum = sum.add(l.totalCredit().subtract(l.totalDebit()).max(BigDecimal.ZERO));
+                    break;
+                }
+            }
+        }
+        return sum;
+    }
+
+    private BigDecimal safeRatio(BigDecimal num, BigDecimal den) {
+        if (den == null || den.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO;
+        return num.divide(den, 4, java.math.RoundingMode.HALF_UP);
     }
 }
