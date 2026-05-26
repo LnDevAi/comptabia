@@ -5,7 +5,7 @@ import {
   JournalLivreData, EtatRecettesDepensesData, EtatTresorerieData,
   FluxTresorerieData, EvcapData,
   NoteAnnexe, NoteAnnexeCreate, NoteAnnexeUpdate,
-  NoteCatalogue, NoteComputeeData
+  NoteCatalogue, NoteComputeeData, EtatsDepuisBalance
 } from '../models/etats.model';
 
 @Injectable({ providedIn: 'root' })
@@ -37,4 +37,11 @@ export class EtatFinancierService {
 
   getCatalogue()                                    { return this.http.get<NoteCatalogue[]>(`${this.base}/notes-catalogue`); }
   getNoteData(numero: number, exercice: number)     { return this.http.get<NoteComputeeData>(`${this.base}/notes-catalogue/${numero}/data`, { params: this.params(exercice) }); }
+
+  importBalance(file: File, exercice: number) {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('exercice', String(exercice));
+    return this.http.post<EtatsDepuisBalance>(`${this.base}/import-balance`, form);
+  }
 }

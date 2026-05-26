@@ -216,4 +216,13 @@ export interface EvcapData {
   totalFin:            number;
 }
 
-export type EtatTab = 'balance' | 'bilan' | 'compte-resultat' | 'grand-livre' | 'journal' | 'recettes-depenses' | 'tresorerie' | 'flux-tresorerie' | 'notes' | 'evcap';
+export type EtatTab = 'balance' | 'bilan' | 'compte-resultat' | 'grand-livre' | 'journal' |
+  'recettes-depenses' | 'tresorerie' | 'flux-tresorerie' | 'notes' | 'evcap' | 'import-externe';
+
+export interface EtatsDepuisBalance {
+  referentiel:   string;
+  nbLignes:      number;
+  balance:       BalanceData;
+  bilan:         BilanData;
+  compteResultat: CompteResultatData;
+}

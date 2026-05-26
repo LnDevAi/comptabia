@@ -5,6 +5,7 @@ import com.edefence.ecompta.domain.Entreprise;
 import com.edefence.ecompta.domain.LigneEcriture;
 import com.edefence.ecompta.domain.NoteAnnexe;
 import com.edefence.ecompta.dto.etats.*;
+import com.edefence.ecompta.dto.etats.EtatsDepuisBalanceDto;
 import com.edefence.ecompta.repository.EcritureComptableRepository;
 import com.edefence.ecompta.repository.EntrepriseRepository;
 import com.edefence.ecompta.repository.LigneEcritureRepository;
@@ -15,7 +16,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -63,9 +68,11 @@ public class EtatFinancierService {
         BalanceDto balance = getBalance(entrepriseId, exercice);
         Entreprise entreprise = entrepriseRepo.findById(entrepriseId)
                 .orElseThrow(() -> new EntityNotFoundException("Entreprise not found"));
-        ReferentielMapping.BilanRubrique r =
-                ReferentielMapping.getRubriques(entreprise.getReferentielComptable());
+        return computeBilan(balance, entreprise.getReferentielComptable());
+    }
 
+    private BilanDto computeBilan(BalanceDto balance, String referentiel) {
+        ReferentielMapping.BilanRubrique r = ReferentielMapping.getRubriques(referentiel);
         List<BilanDto.Poste> actif  = new ArrayList<>();
         List<BilanDto.Poste> passif = new ArrayList<>();
 
@@ -97,14 +104,17 @@ public class EtatFinancierService {
 
         BigDecimal totActif  = actif.stream().map(BilanDto.Poste::montant).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal totPassif = passif.stream().map(BilanDto.Poste::montant).reduce(BigDecimal.ZERO, BigDecimal::add);
-        return new BilanDto(exercice, actif, passif, totActif, totPassif);
+        return new BilanDto(balance.exercice(), actif, passif, totActif, totPassif);
     }
 
     // ─── Compte de résultat (SN) ─────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public CompteResultatDto getCompteResultat(UUID entrepriseId, int exercice) {
-        BalanceDto balance = getBalance(entrepriseId, exercice);
+        return computeCompteResultat(getBalance(entrepriseId, exercice));
+    }
+
+    private CompteResultatDto computeCompteResultat(BalanceDto balance) {
         List<CompteResultatDto.Poste> charges  = new ArrayList<>();
         List<CompteResultatDto.Poste> produits = new ArrayList<>();
 
@@ -123,7 +133,7 @@ public class EtatFinancierService {
         BigDecimal totCharges  = charges.stream().map(CompteResultatDto.Poste::montant).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal totProduits = produits.stream().map(CompteResultatDto.Poste::montant).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal resultat    = totProduits.subtract(totCharges);
-        return new CompteResultatDto(exercice, charges, produits, totCharges, totProduits, resultat);
+        return new CompteResultatDto(balance.exercice(), charges, produits, totCharges, totProduits, resultat);
     }
 
     // ─── Grand Livre ─────────────────────────────────────────────────────────
@@ -438,6 +448,124 @@ public class EtatFinancierService {
 
     private static LocalDate debut(int exercice) { return LocalDate.of(exercice, 1, 1); }
     private static LocalDate fin(int exercice)   { return LocalDate.of(exercice, 12, 31); }
+
+    // ─── Import balance externe → génération états financiers ────────────────
+
+    @Transactional(readOnly = true)
+    public EtatsDepuisBalanceDto genererDepuisBalance(UUID entrepriseId, MultipartFile file,
+                                                       int exercice) throws IOException {
+        Entreprise entreprise = entrepriseRepo.findById(entrepriseId)
+                .orElseThrow(() -> new EntityNotFoundException("Entreprise not found"));
+        String referentiel = entreprise.getReferentielComptable();
+
+        BalanceDto balance       = parseCsvBalance(file, exercice);
+        BilanDto bilan           = computeBilan(balance, referentiel);
+        CompteResultatDto cr     = computeCompteResultat(balance);
+
+        return new EtatsDepuisBalanceDto(referentiel, balance.lignes().size(), balance, bilan, cr);
+    }
+
+    private BalanceDto parseCsvBalance(MultipartFile file, int exercice) throws IOException {
+        byte[] bytes = file.getBytes();
+        String raw = new String(bytes, StandardCharsets.UTF_8);
+        // Strip BOM
+        if (raw.startsWith("﻿")) raw = raw.substring(1);
+
+        String[] lines = raw.split("\\r?\\n");
+        if (lines.length < 2)
+            throw new IllegalArgumentException("Fichier vide ou invalide — au moins une ligne d'en-tête et une ligne de données attendues.");
+
+        String sep     = detectSep(lines[0]);
+        String[] heads = lines[0].split(sep, -1);
+
+        int iNum  = findCol(heads, "NUMERO","COMPTE","N_COMPTE","CODE","N°");
+        int iLib  = findCol(heads, "INTITULE","LIBELLE","DESIGNATION","NOM");
+        int iCl   = findCol(heads, "CLASSE","CL");
+        int iDeb  = findCol(heads, "DEBIT","DEBIT_TOTAL","TOTAL_DEBIT","MVT_DEBIT","MOUVEMENTS_DEBIT","SOLDE_DEBITEUR","D");
+        int iCre  = findCol(heads, "CREDIT","CREDIT_TOTAL","TOTAL_CREDIT","MVT_CREDIT","MOUVEMENTS_CREDIT","SOLDE_CREDITEUR","C");
+
+        if (iNum < 0 || iDeb < 0 || iCre < 0)
+            throw new IllegalArgumentException(
+                "Colonnes requises manquantes. Format attendu : NUMERO;INTITULE;DEBIT;CREDIT (séparateur ; , ou tabulation).");
+
+        List<BalanceDto.Ligne> lignes = new ArrayList<>();
+        BigDecimal totD = BigDecimal.ZERO, totC = BigDecimal.ZERO;
+
+        for (int i = 1; i < lines.length; i++) {
+            String line = lines[i].trim();
+            if (line.isEmpty()) continue;
+            String[] cols = line.split(sep, -1);
+
+            String numero = safeGet(cols, iNum).replaceAll("^\"|\"$", "").trim();
+            if (numero.isEmpty()) continue;
+
+            String intitule = iLib >= 0 ? safeGet(cols, iLib).replaceAll("^\"|\"$", "").trim() : "";
+            int    classe;
+            if (iCl >= 0 && !safeGet(cols, iCl).isBlank()) {
+                try { classe = Integer.parseInt(safeGet(cols, iCl).trim()); }
+                catch (NumberFormatException e) { classe = charToDigit(numero); }
+            } else { classe = charToDigit(numero); }
+
+            BigDecimal d = parseMontant(safeGet(cols, iDeb));
+            BigDecimal c = parseMontant(safeGet(cols, iCre));
+            BigDecimal solD = d.compareTo(c) > 0 ? d.subtract(c) : BigDecimal.ZERO;
+            BigDecimal solC = c.compareTo(d) > 0 ? c.subtract(d) : BigDecimal.ZERO;
+
+            lignes.add(new BalanceDto.Ligne(numero, intitule, classe, d, c, solD, solC));
+            totD = totD.add(d);
+            totC = totC.add(c);
+        }
+
+        if (lignes.isEmpty())
+            throw new IllegalArgumentException("Aucune ligne de balance valide trouvée dans le fichier.");
+
+        return new BalanceDto(exercice, lignes, totD, totC);
+    }
+
+    private static String detectSep(String firstLine) {
+        long sc = firstLine.chars().filter(c -> c == ';').count();
+        long cm = firstLine.chars().filter(c -> c == ',').count();
+        long tb = firstLine.chars().filter(c -> c == '\t').count();
+        long pi = firstLine.chars().filter(c -> c == '|').count();
+        if (sc >= cm && sc >= tb && sc >= pi) return ";";
+        if (cm >= tb && cm >= pi)             return ",";
+        if (tb >= pi)                          return "\t";
+        return "\\|";
+    }
+
+    private static int findCol(String[] headers, String... names) {
+        for (int i = 0; i < headers.length; i++) {
+            String h = headers[i].trim().replaceAll("^\"|\"$","").toUpperCase()
+                                  .replace(" ","_").replace(".","_").replace("-","_");
+            for (String name : names) {
+                if (h.equals(name) || h.startsWith(name + "_") || h.startsWith(name)) return i;
+            }
+        }
+        return -1;
+    }
+
+    private static String safeGet(String[] cols, int idx) {
+        return idx >= 0 && idx < cols.length ? cols[idx] : "";
+    }
+
+    private static int charToDigit(String numero) {
+        if (numero.isEmpty()) return 0;
+        char c = numero.charAt(0);
+        return Character.isDigit(c) ? Character.getNumericValue(c) : 0;
+    }
+
+    private static BigDecimal parseMontant(String s) {
+        if (s == null) return BigDecimal.ZERO;
+        s = s.trim().replaceAll("^\"|\"$","").replaceAll("\\s","");
+        if (s.isEmpty() || s.equals("-") || s.equals("—")) return BigDecimal.ZERO;
+        // Format européen: 1.234,56 → 1234.56
+        if (s.matches(".*\\..*,.*")) s = s.replace(".","").replace(",",".");
+        // Virgule décimale seule: 1234,56 → 1234.56
+        else if (s.contains(",") && !s.contains(".")) s = s.replace(",",".");
+        // Signe trailing: 1234- → -1234
+        if (s.endsWith("-")) s = "-" + s.substring(0, s.length() - 1);
+        try { return new BigDecimal(s); } catch (NumberFormatException e) { return BigDecimal.ZERO; }
+    }
 
     private NoteAnnexeDto.Response toNoteResponse(NoteAnnexe n) {
         return new NoteAnnexeDto.Response(n.getId(), n.getExercice(), n.getNumeroNote(),

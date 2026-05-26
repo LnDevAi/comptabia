@@ -6,8 +6,11 @@ import com.edefence.ecompta.tenant.TenantContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -94,5 +97,15 @@ public class EtatFinancierController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteNote(@PathVariable UUID id) {
         service.deleteNote(TenantContext.get(), id);
+    }
+
+    // ─── Import balance externe ───────────────────────────────────────────────
+
+    @PostMapping(value = "/import-balance", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public EtatsDepuisBalanceDto importBalance(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(defaultValue = "0") int exercice) throws IOException {
+        int annee = exercice > 0 ? exercice : currentYear();
+        return service.genererDepuisBalance(TenantContext.get(), file, annee);
     }
 }
