@@ -15,6 +15,7 @@ public record ProfileDto(
         String nomEntreprise,
         String pays,
         Entreprise.PlanType plan,
+        Entreprise.TypeEntite typeEntite,
         OffsetDateTime createdAt,
         boolean totpEnabled
 ) {}

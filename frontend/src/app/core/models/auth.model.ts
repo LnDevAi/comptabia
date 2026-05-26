@@ -1,3 +1,5 @@
+export type TypeEntite = 'ENTREPRISE' | 'ASSOCIATION' | 'ASSURANCE' | 'MICROFINANCE';
+
 export interface AuthResponse {
   token: string | null;
   email: string;
@@ -17,6 +19,7 @@ export interface LoginPayload {
 export interface RegisterPayload {
   nomEntreprise: string;
   pays: string;
+  typeEntite: TypeEntite;
   nomUtilisateur: string;
   email: string;
   motDePasse: string;
@@ -38,6 +41,7 @@ export interface ProfileResponse {
   nomEntreprise: string;
   pays: string;
   plan: 'FREE' | 'PRO' | 'ENTERPRISE';
+  typeEntite: TypeEntite;
   createdAt: string;
   totpEnabled: boolean;
 }

@@ -100,7 +100,13 @@ public class Entreprise {
     @Builder.Default
     private List<CompteComptable> comptes = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type_entite", nullable = false, length = 30)
+    @Builder.Default
+    private TypeEntite typeEntite = TypeEntite.ENTREPRISE;
+
     public enum PlanType { FREE, PRO, ENTERPRISE }
     public enum SystemeComptable { NORMAL, SMT }
     public enum RegimeFiscal { RNI, RSI, CME }
+    public enum TypeEntite { ENTREPRISE, ASSOCIATION, ASSURANCE, MICROFINANCE }
 }

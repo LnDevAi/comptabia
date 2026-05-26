@@ -316,6 +316,11 @@ export const routes: Routes = [
         path: 'liasse-fiscale',
         loadComponent: () =>
           import('./features/liasse-fiscale/liasse-fiscale.component').then(m => m.LiasseFiscaleComponent)
+      },
+      {
+        path: 'documents-reglementaires',
+        loadComponent: () =>
+          import('./features/documents-reglementaires/documents-reglementaires.component').then(m => m.DocumentsReglementairesComponent)
       }
     ]
   },

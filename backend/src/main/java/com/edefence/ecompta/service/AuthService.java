@@ -49,15 +49,23 @@ public class AuthService {
         // Résolution du référentiel fiscal par code pays
         ReferentielFiscalPays ref = referentielRepo.findByCode(dto.pays().toUpperCase()).orElse(null);
 
+        Entreprise.TypeEntite typeEntite = dto.typeEntite() != null
+                ? dto.typeEntite() : Entreprise.TypeEntite.ENTREPRISE;
+
         Entreprise.EntrepriseBuilder builder = Entreprise.builder()
                 .nom(dto.nomEntreprise())
                 .pays(dto.pays())
-                .codePays(dto.pays().toUpperCase());
+                .codePays(dto.pays().toUpperCase())
+                .typeEntite(typeEntite);
 
         if (ref != null) {
             builder.devise(ref.getDevise())
                    .tauxTvaDefaut(ref.getTauxTva())
                    .referentielComptable(ref.getSystemeComptable());
+        }
+        // Surcharger le référentiel si association
+        if (typeEntite == Entreprise.TypeEntite.ASSOCIATION) {
+            builder.referentielComptable("SYCEBNL");
         }
 
         Entreprise entreprise = entrepriseRepo.save(builder.build());
@@ -72,8 +80,12 @@ public class AuthService {
                         .build()
         );
 
-        // Auto-seed SYSCOHADA plan de comptes
-        compteService.seedSyscohadaForEntreprise(entreprise);
+        // Seed plan de comptes selon le type d'entité
+        if (typeEntite == Entreprise.TypeEntite.ASSOCIATION) {
+            compteService.seedSycebnlForEntreprise(entreprise);
+        } else {
+            compteService.seedSyscohadaForEntreprise(entreprise);
+        }
 
         String token = jwtService.generate(user.getEmail(), entreprise.getId(), user.getRole().name());
         return toResponse(token, user, entreprise);
@@ -105,7 +117,7 @@ public class AuthService {
         Entreprise e = user.getEntreprise();
         return new ProfileDto(user.getId(), user.getNom(), user.getEmail(),
                 user.getRole().name(), e.getId(), e.getNom(), e.getPays(), e.getPlan(),
-                user.getCreatedAt(), user.isTotpEnabled());
+                e.getTypeEntite(), user.getCreatedAt(), user.isTotpEnabled());
     }
 
     @Transactional
@@ -133,7 +145,7 @@ public class AuthService {
         Entreprise e = user.getEntreprise();
         return new ProfileDto(user.getId(), user.getNom(), user.getEmail(),
                 user.getRole().name(), e.getId(), e.getNom(), e.getPays(), e.getPlan(),
-                user.getCreatedAt(), user.isTotpEnabled());
+                e.getTypeEntite(), user.getCreatedAt(), user.isTotpEnabled());
     }
 
     private AuthResponseDto toResponse(String token, Utilisateur user, Entreprise entreprise) {
