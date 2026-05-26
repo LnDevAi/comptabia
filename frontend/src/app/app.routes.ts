@@ -296,6 +296,11 @@ export const routes: Routes = [
         path: 'reporting',
         loadComponent: () =>
           import('./features/reporting/reporting.component').then(m => m.ReportingComponent)
+      },
+      {
+        path: 'pilotage-global',
+        loadComponent: () =>
+          import('./features/pilotage-global/pilotage-global.component').then(m => m.PilotageGlobalComponent)
       }
     ]
   },
