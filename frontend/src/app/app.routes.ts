@@ -331,6 +331,16 @@ export const routes: Routes = [
         path: 'etats-assurance',
         loadComponent: () =>
           import('./features/etats-assurance/etats-assurance.component').then(m => m.EtatsAssuranceComponent)
+      },
+      {
+        path: 'portefeuille-sfd',
+        loadComponent: () =>
+          import('./features/portefeuille-sfd/portefeuille-sfd.component').then(m => m.PortefeuilleSfdComponent)
+      },
+      {
+        path: 'etats-sfd',
+        loadComponent: () =>
+          import('./features/etats-sfd/etats-sfd.component').then(m => m.EtatsSfdComponent)
       }
     ]
   },

@@ -904,4 +904,61 @@ public class EtatFinancierService {
         if (den == null || den.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO;
         return num.divide(den, 4, java.math.RoundingMode.HALF_UP);
     }
+
+    // ─── État de résultat SFD (BCEAO/UMOA) ───────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public com.edefence.ecompta.dto.etats.EtatResultatSfdDto getEtatResultatSfd(UUID entrepriseId, int exercice) {
+        BalanceDto balance = getBalance(entrepriseId, exercice);
+        return computeEtatResultatSfd(balance);
+    }
+
+    private com.edefence.ecompta.dto.etats.EtatResultatSfdDto computeEtatResultatSfd(BalanceDto balance) {
+        // Produits
+        BigDecimal interetsCreditCl = sumCreditLignes(balance, "71");
+        BigDecimal produitsInterbanc = sumCreditLignes(balance, "70");
+        BigDecimal pdtDivers = sumCreditLignes(balance, "73", "74");
+        // Charges de ressources
+        BigDecimal intDepots = sumDebitLignes(balance, "61");
+        BigDecimal chInterbanc = sumDebitLignes(balance, "60");
+
+        // PNB
+        BigDecimal pnb = interetsCreditCl.add(produitsInterbanc).add(pdtDivers)
+                .subtract(intDepots).subtract(chInterbanc);
+
+        // Charges d'exploitation
+        BigDecimal autresChargesDivers  = sumDebitLignes(balance, "63");
+        BigDecimal chargesGenerales     = sumDebitLignes(balance, "64");
+        BigDecimal dotAmortProv         = sumDebitLignes(balance, "65");
+        BigDecimal pertesCreances       = sumDebitLignes(balance, "66");
+        BigDecimal repriseProv          = sumCreditLignes(balance, "75", "78");
+
+        BigDecimal resExploitation = pnb
+                .subtract(autresChargesDivers)
+                .subtract(chargesGenerales)
+                .subtract(dotAmortProv)
+                .subtract(pertesCreances)
+                .add(repriseProv);
+
+        // Éléments exceptionnels + IS
+        BigDecimal pdtExcept     = sumCreditLignes(balance, "76");
+        BigDecimal subventions   = sumCreditLignes(balance, "77");
+        BigDecimal chExcept      = sumDebitLignes(balance, "67");
+        BigDecimal is            = sumDebitLignes(balance, "68");
+        BigDecimal resultatNet   = resExploitation.add(pdtExcept).add(subventions).subtract(chExcept).subtract(is);
+
+        BigDecimal ratioChargesPnb = safeRatio(chargesGenerales.add(dotAmortProv), pnb)
+                .multiply(BigDecimal.valueOf(100)).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal ratioProvPnb = safeRatio(dotAmortProv, pnb)
+                .multiply(BigDecimal.valueOf(100)).setScale(2, java.math.RoundingMode.HALF_UP);
+
+        return new com.edefence.ecompta.dto.etats.EtatResultatSfdDto(
+                balance.exercice(),
+                interetsCreditCl, produitsInterbanc, pdtDivers, intDepots, chInterbanc, pnb,
+                chargesGenerales, dotAmortProv, pertesCreances, autresChargesDivers, repriseProv,
+                resExploitation,
+                pdtExcept, subventions, chExcept, is, resultatNet,
+                ratioChargesPnb, ratioProvPnb
+        );
+    }
 }

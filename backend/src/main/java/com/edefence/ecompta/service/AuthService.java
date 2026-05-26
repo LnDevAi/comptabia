@@ -68,6 +68,8 @@ public class AuthService {
             builder.referentielComptable("SYCEBNL");
         } else if (typeEntite == Entreprise.TypeEntite.ASSURANCE) {
             builder.referentielComptable("CIMA");
+        } else if (typeEntite == Entreprise.TypeEntite.MICROFINANCE) {
+            builder.referentielComptable("SFD");
         }
 
         Entreprise entreprise = entrepriseRepo.save(builder.build());
@@ -87,6 +89,8 @@ public class AuthService {
             compteService.seedSycebnlForEntreprise(entreprise);
         } else if (typeEntite == Entreprise.TypeEntite.ASSURANCE) {
             compteService.seedCimaForEntreprise(entreprise);
+        } else if (typeEntite == Entreprise.TypeEntite.MICROFINANCE) {
+            compteService.seedSfdForEntreprise(entreprise);
         } else {
             compteService.seedSyscohadaForEntreprise(entreprise);
         }
