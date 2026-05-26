@@ -246,6 +246,11 @@ export const routes: Routes = [
         path: 'notes-annexes-fiscales',
         loadComponent: () =>
           import('./features/notes-annexes-fiscales/notes-annexes-fiscales.component').then(m => m.NotesAnnexesFiscalesComponent)
+      },
+      {
+        path: 'formation',
+        loadComponent: () =>
+          import('./features/formation/formation.component').then(m => m.FormationComponent)
       }
     ]
   },
