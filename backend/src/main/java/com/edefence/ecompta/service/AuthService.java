@@ -70,6 +70,8 @@ public class AuthService {
             builder.referentielComptable("CIMA");
         } else if (typeEntite == Entreprise.TypeEntite.MICROFINANCE) {
             builder.referentielComptable("SFD");
+        } else if (typeEntite == Entreprise.TypeEntite.FINANCE_ISLAMIQUE) {
+            builder.referentielComptable("ISLAMIQUE");
         }
 
         Entreprise entreprise = entrepriseRepo.save(builder.build());
@@ -91,6 +93,8 @@ public class AuthService {
             compteService.seedCimaForEntreprise(entreprise);
         } else if (typeEntite == Entreprise.TypeEntite.MICROFINANCE) {
             compteService.seedSfdForEntreprise(entreprise);
+        } else if (typeEntite == Entreprise.TypeEntite.FINANCE_ISLAMIQUE) {
+            compteService.seedFinanceIslamiqueForEntreprise(entreprise);
         } else {
             compteService.seedSyscohadaForEntreprise(entreprise);
         }

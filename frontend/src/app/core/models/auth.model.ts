@@ -1,4 +1,4 @@
-export type TypeEntite = 'ENTREPRISE' | 'ASSOCIATION' | 'ASSURANCE' | 'MICROFINANCE';
+export type TypeEntite = 'ENTREPRISE' | 'ASSOCIATION' | 'ASSURANCE' | 'MICROFINANCE' | 'FINANCE_ISLAMIQUE';
 
 export interface AuthResponse {
   token: string | null;

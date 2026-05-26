@@ -192,6 +192,12 @@ import { SseNotificationService } from '../../../core/services/sse-notification.
               États SFD
             </a>
           }
+          @if (user()?.typeEntite === 'FINANCE_ISLAMIQUE') {
+            <a routerLink="/dashboard/finance-islamique" routerLinkActive="bg-emerald-50 text-emerald-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Finance Islamique
+            </a>
+          }
           <a routerLink="/dashboard/abonnements" routerLinkActive="bg-blue-50 text-blue-700"
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             Abonnements

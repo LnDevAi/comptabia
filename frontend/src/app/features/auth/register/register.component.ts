@@ -63,6 +63,7 @@ const passwordMatch: ValidatorFn = (group: AbstractControl): ValidationErrors | 
                 <option value="ASSOCIATION">Association / ONG</option>
                 <option value="ASSURANCE">Compagnie d'assurance</option>
                 <option value="MICROFINANCE">Institution de microfinance</option>
+                <option value="FINANCE_ISLAMIQUE">Établissement de finance islamique</option>
               </select>
             </div>
 

@@ -108,5 +108,5 @@ public class Entreprise {
     public enum PlanType { FREE, PRO, ENTERPRISE }
     public enum SystemeComptable { NORMAL, SMT }
     public enum RegimeFiscal { RNI, RSI, CME }
-    public enum TypeEntite { ENTREPRISE, ASSOCIATION, ASSURANCE, MICROFINANCE }
+    public enum TypeEntite { ENTREPRISE, ASSOCIATION, ASSURANCE, MICROFINANCE, FINANCE_ISLAMIQUE }
 }
