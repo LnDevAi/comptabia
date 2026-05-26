@@ -266,6 +266,11 @@ export const routes: Routes = [
         path: 'temps-presences',
         loadComponent: () =>
           import('./features/temps-presences/temps-presences.component').then(m => m.TempsPresencesComponent)
+      },
+      {
+        path: 'recrutement',
+        loadComponent: () =>
+          import('./features/recrutement/recrutement.component').then(m => m.RecrutementComponent)
       }
     ]
   },
