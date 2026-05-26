@@ -207,6 +207,7 @@ export const routes: Routes = [
       },
       {
         path: 'documents',
+        canActivate: [licenceGuard('DOCUMENTS')],
         loadComponent: () =>
           import('./features/documents/documents.component').then(m => m.DocumentsComponent)
       },

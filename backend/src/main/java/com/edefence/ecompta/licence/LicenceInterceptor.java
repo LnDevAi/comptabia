@@ -62,8 +62,9 @@ public class LicenceInterceptor implements HandlerInterceptor {
             // EXPORT
             entry("/api/export",           EXPORT),
             entry("/api/import-fec",       EXPORT),
-            // DOCUMENTS
+            // DOCUMENTS / GED
             entry("/api/documents",        DOCUMENTS),
+            entry("/api/ged",              DOCUMENTS),
             // PAIE_RH
             entry("/api/paie",             PAIE_RH),
             entry("/api/budget-rh",        PAIE_RH),
