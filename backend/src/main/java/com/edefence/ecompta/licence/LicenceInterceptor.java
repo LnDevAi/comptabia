@@ -53,8 +53,9 @@ public class LicenceInterceptor implements HandlerInterceptor {
             // BUDGET
             entry("/api/budgets",          BUDGET),
             // TRESORERIE
-            entry("/api/rapprochement",    TRESORERIE),
+            entry("/api/rapprochement",         TRESORERIE),
             entry("/api/previsions-tresorerie", TRESORERIE),
+            entry("/api/tresorerie",            TRESORERIE),
             // FACTURATION
             entry("/api/factures",         FACTURATION),
             entry("/api/devis",            FACTURATION),

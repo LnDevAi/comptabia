@@ -114,13 +114,17 @@ import { LicenceService } from '../../../core/services/licence.service';
             </a>
           }
           @if (licenceSvc.hasModule('TRESORERIE')) {
+            <a routerLink="/dashboard/tresorerie-avancee" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Trésorerie
+            </a>
             <a routerLink="/dashboard/rapprochement" routerLinkActive="bg-blue-50 text-blue-700"
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
               Rapprochement
             </a>
             <a routerLink="/dashboard/previsions-tresorerie" routerLinkActive="bg-blue-50 text-blue-700"
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-              Trésorerie
+              Prévisions
             </a>
           }
           @if (licenceSvc.hasModule('FACTURATION')) {

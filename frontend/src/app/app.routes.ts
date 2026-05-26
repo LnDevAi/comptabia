@@ -95,6 +95,12 @@ export const routes: Routes = [
           import('./features/rapprochement/rapprochement.component').then(m => m.RapprochementComponent)
       },
       {
+        path: 'tresorerie-avancee',
+        canActivate: [licenceGuard('TRESORERIE')],
+        loadComponent: () =>
+          import('./features/tresorerie-avancee/tresorerie-avancee.component').then(m => m.TresorerieAvanceeComponent)
+      },
+      {
         path: 'tva',
         loadComponent: () =>
           import('./features/tva/tva.component').then(m => m.TvaComponent)
