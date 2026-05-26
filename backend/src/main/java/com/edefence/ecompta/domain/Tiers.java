@@ -42,6 +42,9 @@ public class Tiers {
     @Column(name = "compte_numero", length = 20)
     private String compteNumero;
 
+    @Column(length = 20)
+    private String ifu;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean actif = true;

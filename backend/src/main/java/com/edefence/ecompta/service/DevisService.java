@@ -140,6 +140,7 @@ public class DevisService {
                 devis.getTiers() != null ? devis.getTiers().getId() : null,
                 devis.getNomTiers(),
                 devis.getAdresseTiers(),
+                devis.getTiers() != null ? devis.getTiers().getIfu() : null,
                 "Devis " + devis.getNumero() + (devis.getObjet() != null ? " — " + devis.getObjet() : ""),
                 devis.getLignes().stream()
                         .map(l -> new FactureDto.LigneRequest(

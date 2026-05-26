@@ -88,6 +88,13 @@ public class FactureController {
         return svc.annuler(id, TenantContext.get());
     }
 
+    @PostMapping("/{id}/normaliser")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('COMPTABLE')")
+    public FactureDto.Response normaliser(@PathVariable UUID id,
+                                          @Valid @RequestBody FactureDto.NormalisationRequest req) {
+        return svc.normaliser(id, TenantContext.get(), req);
+    }
+
     private Entreprise loadEntreprise() {
         return entrepriseRepo.findById(TenantContext.get())
                 .orElseThrow(() -> new EntityNotFoundException("Entreprise introuvable"));

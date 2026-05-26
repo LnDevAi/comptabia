@@ -133,6 +133,7 @@ public class AbonnementService {
                 a.getTiers() != null ? a.getTiers().getId() : null,
                 a.getTiers() != null ? a.getTiers().getNom() : a.getNom(),
                 a.getTiers() != null ? a.getTiers().getAdresse() : null,
+                a.getTiers() != null ? a.getTiers().getIfu() : null,
                 "Abonnement : " + a.getNom(),
                 List.of(new FactureDto.LigneRequest(
                         a.getNom() + (a.getDescription() != null ? " — " + a.getDescription() : ""),

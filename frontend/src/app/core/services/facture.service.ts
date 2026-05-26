@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { FactureDetail, FactureResume, FactureCreateRequest, FactureStatut, PayerRequest } from '../models/facture.model';
+import {
+  FactureDetail, FactureResume, FactureCreateRequest, FactureStatut,
+  PayerRequest, NormalisationRequest
+} from '../models/facture.model';
 
 export interface PagedFactures {
   content:          FactureResume[];
@@ -45,5 +48,9 @@ export class FactureService {
 
   annuler(id: string) {
     return this.http.post<FactureDetail>(`/api/factures/${id}/annuler`, {});
+  }
+
+  normaliser(id: string, req: NormalisationRequest) {
+    return this.http.post<FactureDetail>(`/api/factures/${id}/normaliser`, req);
   }
 }

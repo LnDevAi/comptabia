@@ -28,6 +28,17 @@ public class Entreprise {
 
     private String nif;
 
+    @Column(length = 20)
+    private String ifu;
+
+    @Column(length = 50)
+    private String rccm;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "regime_fiscal", length = 10)
+    @Builder.Default
+    private RegimeFiscal regimeFiscal = RegimeFiscal.RNI;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
@@ -91,4 +102,5 @@ public class Entreprise {
 
     public enum PlanType { FREE, PRO, ENTERPRISE }
     public enum SystemeComptable { NORMAL, SMT }
+    public enum RegimeFiscal { RNI, RSI, CME }
 }

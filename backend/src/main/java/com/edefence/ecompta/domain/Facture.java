@@ -77,6 +77,24 @@ public class Facture {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(length = 50)
+    private String nfn;
+
+    @Column(name = "code_controle", length = 100)
+    private String codeControle;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "statut_normalisation", length = 30, nullable = false)
+    @Builder.Default
+    private StatutNormalisation statutNormalisation = StatutNormalisation.NON_NORMALISEE;
+
+    @Column(name = "est_normalisee", nullable = false)
+    @Builder.Default
+    private boolean estNormalisee = false;
+
+    @Column(name = "ifu_client", length = 20)
+    private String ifuClient;
+
     @OneToMany(mappedBy = "facture", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("ordre ASC")
     @Builder.Default
@@ -91,4 +109,5 @@ public class Facture {
     private OffsetDateTime updatedAt;
 
     public enum Statut { BROUILLON, EMISE, PAYEE, ANNULEE }
+    public enum StatutNormalisation { NON_NORMALISEE, EN_ATTENTE, NORMALISEE }
 }

@@ -1,12 +1,13 @@
 import {
-  ChangeDetectionStrategy, Component, OnInit, signal, computed, inject
+  ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, signal, computed, inject
 } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FactureService } from '../../core/services/facture.service';
 import { TiersService } from '../../core/services/tiers.service';
 import {
-  FactureResume, FactureDetail, FactureStatut, LigneFactureForm, FactureCreateRequest
+  FactureResume, FactureDetail, FactureStatut, StatutNormalisation,
+  LigneFactureForm, FactureCreateRequest, NormalisationRequest
 } from '../../core/models/facture.model';
 import { Tiers } from '../../core/models/tiers.model';
 
@@ -21,11 +22,21 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
   PAYEE:     'bg-green-100 text-green-700',
   ANNULEE:   'bg-red-100 text-red-700',
 };
+const NFN_LABELS: Record<StatutNormalisation, string> = {
+  NON_NORMALISEE: 'Non normalisée',
+  EN_ATTENTE:     'En attente DGI',
+  NORMALISEE:     'Normalisée',
+};
+const NFN_CLASSES: Record<StatutNormalisation, string> = {
+  NON_NORMALISEE: 'bg-gray-100 text-gray-600',
+  EN_ATTENTE:     'bg-amber-100 text-amber-700',
+  NORMALISEE:     'bg-green-100 text-green-700',
+};
 
 @Component({
   selector: 'app-facturation',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.Default,
   imports: [CommonModule, FormsModule, DecimalPipe, DatePipe],
   template: `
 <div class="p-6 space-y-5">
@@ -59,9 +70,7 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
     @if (loading()) {
       <div class="flex items-center justify-center h-48 text-gray-400 text-sm">Chargement…</div>
     } @else if (factures().length === 0) {
-      <div class="flex items-center justify-center h-48 text-gray-400 text-sm">
-        Aucune facture
-      </div>
+      <div class="flex items-center justify-center h-48 text-gray-400 text-sm">Aucune facture</div>
     } @else {
       <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <table class="w-full text-sm">
@@ -71,10 +80,10 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
               <th class="px-4 py-2.5 text-left">Client</th>
               <th class="px-4 py-2.5 text-right">Date</th>
               <th class="px-4 py-2.5 text-right">Échéance</th>
-              <th class="px-4 py-2.5 text-right">Montant HT</th>
-              <th class="px-4 py-2.5 text-right">TVA</th>
+              <th class="px-4 py-2.5 text-right">HT</th>
               <th class="px-4 py-2.5 text-right">TTC</th>
               <th class="px-4 py-2.5 text-center">Statut</th>
+              <th class="px-4 py-2.5 text-center">DGI</th>
               <th class="px-4 py-2.5"></th>
             </tr>
           </thead>
@@ -82,9 +91,7 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
             @for (f of factures(); track f.id) {
               <tr class="hover:bg-gray-50 cursor-pointer" (click)="openDetail(f.id)">
                 <td class="px-4 py-3 font-mono text-xs text-gray-800 font-medium">{{ f.numero }}</td>
-                <td class="px-4 py-3 text-gray-800 max-w-[180px] truncate">
-                  {{ f.nomTiers || '—' }}
-                </td>
+                <td class="px-4 py-3 text-gray-800 max-w-[160px] truncate">{{ f.nomTiers || '—' }}</td>
                 <td class="px-4 py-3 text-right text-gray-500 text-xs whitespace-nowrap">
                   {{ f.dateFacture | date:'dd/MM/yyyy' }}
                 </td>
@@ -94,38 +101,35 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
                   @if (f.enRetard) { <span class="ml-1 text-xs text-red-500">⚠</span> }
                 </td>
                 <td class="px-4 py-3 text-right font-mono text-xs">{{ f.montantHt | number:'1.0-0' }}</td>
-                <td class="px-4 py-3 text-right font-mono text-xs text-gray-500">{{ f.montantTva | number:'1.0-0' }}</td>
                 <td class="px-4 py-3 text-right font-mono text-xs font-semibold text-gray-800">{{ f.montantTtc | number:'1.0-0' }}</td>
                 <td class="px-4 py-3 text-center">
-                  <span class="px-2 py-0.5 rounded-full text-xs font-semibold"
-                        [class]="statutClass(f.statut)">
+                  <span class="px-2 py-0.5 rounded-full text-xs font-semibold" [class]="statutClass(f.statut)">
                     {{ statutLabel(f.statut) }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span class="px-2 py-0.5 rounded-full text-xs font-semibold" [class]="nfnClass(f.statutNormalisation)">
+                    {{ nfnLabel(f.statutNormalisation) }}
                   </span>
                 </td>
                 <td class="px-4 py-3 text-right" (click)="$event.stopPropagation()">
                   <div class="flex items-center justify-end gap-1">
                     @if (f.statut === 'BROUILLON') {
-                      <button (click)="openEdit(f.id)"
-                              class="text-xs text-blue-600 hover:underline">Modifier</button>
+                      <button (click)="openEdit(f.id)" class="text-xs text-blue-600 hover:underline">Modifier</button>
                       <span class="text-gray-300">|</span>
-                      <button (click)="doEmettre(f.id)"
-                              class="text-xs text-green-600 hover:underline">Émettre</button>
+                      <button (click)="doEmettre(f.id)" class="text-xs text-green-600 hover:underline">Émettre</button>
                       <span class="text-gray-300">|</span>
-                      <button (click)="doDelete(f.id)"
-                              class="text-xs text-red-500 hover:underline">Suppr.</button>
+                      <button (click)="doDelete(f.id)" class="text-xs text-red-500 hover:underline">Suppr.</button>
                     }
                     @if (f.statut === 'EMISE') {
-                      <button (click)="openPayer(f.id)"
-                              class="text-xs text-green-600 hover:underline font-semibold">Payer</button>
+                      <button (click)="openPayer(f.id)" class="text-xs text-green-600 hover:underline font-semibold">Payer</button>
                       <span class="text-gray-300">|</span>
-                      <button (click)="doAnnuler(f.id)"
-                              class="text-xs text-red-500 hover:underline">Annuler</button>
+                      <button (click)="doAnnuler(f.id)" class="text-xs text-red-500 hover:underline">Annuler</button>
                     }
                     @if (f.statut === 'BROUILLON' || f.statut === 'EMISE') {
                       <span class="text-gray-300">|</span>
                     }
-                    <button (click)="openDetail(f.id)"
-                            class="text-xs text-gray-500 hover:underline">Détail</button>
+                    <button (click)="openDetail(f.id)" class="text-xs text-gray-500 hover:underline">Détail</button>
                   </div>
                 </td>
               </tr>
@@ -134,7 +138,6 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
         </table>
       </div>
 
-      <!-- Pagination -->
       @if (totalPages() > 1) {
         <div class="flex items-center justify-center gap-2">
           <button (click)="goPage(currentPage() - 1)" [disabled]="currentPage() === 0"
@@ -147,7 +150,7 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
     }
   }
 
-  <!-- ── FORM VIEW (create / edit) ── -->
+  <!-- ── FORM VIEW ── -->
   @if (view() === 'form') {
     <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
       <div class="bg-gray-800 text-white px-4 py-2.5 text-sm font-semibold flex items-center justify-between">
@@ -180,9 +183,9 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
           </div>
         </div>
 
-        <!-- Nom / adresse libre si pas de tiers lié -->
-        @if (!form.tiersId) {
-          <div class="grid grid-cols-2 gap-4">
+        <!-- Nom / adresse / IFU client -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          @if (!form.tiersId) {
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1">Nom du client *</label>
               <input type="text" [(ngModel)]="form.nomTiers" placeholder="Nom du client"
@@ -193,15 +196,19 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
               <input type="text" [(ngModel)]="form.adresseTiers" placeholder="Adresse (optionnel)"
                      class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
+          }
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">IFU client <span class="text-gray-400">(B2B)</span></label>
+            <input type="text" [(ngModel)]="form.ifuClient" placeholder="Ex : BF-2024-12345"
+                   class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
-        }
+        </div>
 
         <!-- Lignes -->
         <div>
           <div class="flex items-center justify-between mb-2">
             <label class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Lignes de facturation</label>
-            <button (click)="addLigne()"
-                    class="text-xs text-blue-600 hover:underline">+ Ajouter une ligne</button>
+            <button (click)="addLigne()" class="text-xs text-blue-600 hover:underline">+ Ajouter une ligne</button>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -298,13 +305,19 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
       <button (click)="backToList()" class="text-sm text-blue-600 hover:underline">← Retour à la liste</button>
 
       <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <!-- Header facture -->
         <div class="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
-          <div>
+          <div class="flex items-center gap-3">
             <span class="font-bold font-mono">{{ selectedFacture()!.numero }}</span>
-            <span class="ml-3 px-2 py-0.5 rounded-full text-xs font-semibold"
-                  [class]="statutClass(selectedFacture()!.statut)">
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold" [class]="statutClass(selectedFacture()!.statut)">
               {{ statutLabel(selectedFacture()!.statut) }}
             </span>
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold" [class]="nfnClass(selectedFacture()!.statutNormalisation)">
+              {{ nfnLabel(selectedFacture()!.statutNormalisation) }}
+            </span>
+            @if (selectedFacture()!.nfn) {
+              <span class="font-mono text-xs text-green-300">NFN : {{ selectedFacture()!.nfn }}</span>
+            }
           </div>
           <div class="flex items-center gap-2">
             @if (selectedFacture()!.statut === 'BROUILLON') {
@@ -314,21 +327,33 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
                       class="px-3 py-1 bg-green-600 hover:bg-green-700 text-xs rounded-lg">Émettre</button>
             }
             @if (selectedFacture()!.statut === 'EMISE') {
+              @if (selectedFacture()!.statutNormalisation === 'EN_ATTENTE') {
+                <button (click)="openNormaliserModal()"
+                        class="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-xs rounded-lg font-semibold">
+                  Saisir NFN (DGI)
+                </button>
+              }
               <button (click)="openPayer(selectedFacture()!.id)"
-                      class="px-3 py-1 bg-green-600 hover:bg-green-700 text-xs rounded-lg font-semibold">Enregistrer paiement</button>
+                      class="px-3 py-1 bg-green-600 hover:bg-green-700 text-xs rounded-lg font-semibold">
+                Enregistrer paiement
+              </button>
               <button (click)="doAnnuler(selectedFacture()!.id)"
                       class="px-3 py-1 bg-red-600 hover:bg-red-700 text-xs rounded-lg">Annuler</button>
             }
           </div>
         </div>
+
         <div class="p-5 space-y-4">
-          <!-- Infos client -->
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+          <!-- Infos client + normalisation -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <p class="text-xs text-gray-500 uppercase tracking-wide">Client</p>
               <p class="font-semibold text-gray-800 mt-0.5">{{ selectedFacture()!.nomTiers || '—' }}</p>
               @if (selectedFacture()!.adresseTiers) {
                 <p class="text-xs text-gray-500 mt-0.5">{{ selectedFacture()!.adresseTiers }}</p>
+              }
+              @if (selectedFacture()!.ifuClient) {
+                <p class="text-xs text-blue-600 mt-0.5 font-mono">IFU : {{ selectedFacture()!.ifuClient }}</p>
               }
             </div>
             <div>
@@ -342,6 +367,28 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
                 {{ selectedFacture()!.dateEcheance ? (selectedFacture()!.dateEcheance | date:'dd/MM/yyyy') : '—' }}
                 @if (selectedFacture()!.enRetard) { <span class="text-red-500 text-xs"> — EN RETARD</span> }
               </p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 uppercase tracking-wide">Normalisation DGI</p>
+              @if (selectedFacture()!.estNormalisee) {
+                <p class="font-mono text-xs text-green-700 mt-0.5 break-all">
+                  NFN : {{ selectedFacture()!.nfn }}
+                </p>
+                <p class="font-mono text-xs text-gray-500 mt-0.5 break-all">
+                  Code : {{ selectedFacture()!.codeControle }}
+                </p>
+                <!-- Zone QR Code (placeholder visuel) -->
+                <div class="mt-2 w-16 h-16 bg-gray-100 border border-gray-300 rounded flex items-center justify-center text-xs text-gray-400">
+                  QR
+                </div>
+              } @else {
+                <p class="text-xs mt-0.5" [class]="nfnClass(selectedFacture()!.statutNormalisation)">
+                  {{ nfnLabel(selectedFacture()!.statutNormalisation) }}
+                </p>
+                @if (selectedFacture()!.statutNormalisation === 'EN_ATTENTE') {
+                  <p class="text-xs text-amber-600 mt-0.5">En attente de synchronisation eSINTAX</p>
+                }
+              }
             </div>
           </div>
 
@@ -364,7 +411,13 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
                   <td class="px-4 py-2.5 text-gray-800">{{ l.description }}</td>
                   <td class="px-4 py-2.5 text-right text-gray-600 font-mono text-xs">{{ l.quantite | number:'1.0-3' }}</td>
                   <td class="px-4 py-2.5 text-right font-mono text-xs">{{ l.prixUnitaire | number:'1.0-0' }}</td>
-                  <td class="px-4 py-2.5 text-right text-gray-500 text-xs">{{ l.tauxTva }}%</td>
+                  <td class="px-4 py-2.5 text-right text-gray-500 text-xs">
+                    @if (l.tauxTva === 0) {
+                      <span class="text-orange-500 font-semibold">Exonéré</span>
+                    } @else {
+                      {{ l.tauxTva }}%
+                    }
+                  </td>
                   <td class="px-4 py-2.5 text-right font-mono text-xs">{{ l.montantHt | number:'1.0-0' }}</td>
                   <td class="px-4 py-2.5 text-right font-mono text-xs text-gray-500">{{ l.montantTva | number:'1.0-0' }}</td>
                   <td class="px-4 py-2.5 text-right font-mono text-xs font-semibold">{{ l.montantTtc | number:'1.0-0' }}</td>
@@ -410,9 +463,7 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
           <input type="text" [(ngModel)]="payForm.compteReglement" placeholder="521"
                  class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
-        @if (formError()) {
-          <p class="text-red-600 text-sm">{{ formError() }}</p>
-        }
+        @if (formError()) { <p class="text-red-600 text-sm">{{ formError() }}</p> }
         <div class="flex gap-3 justify-end">
           <button (click)="backToList()" class="px-4 py-1.5 border border-gray-300 text-sm rounded-lg">Annuler</button>
           <button (click)="confirmPayer()" [disabled]="saving()"
@@ -425,17 +476,56 @@ const STATUT_CLASSES: Record<FactureStatut, string> = {
   }
 
 </div>
+
+<!-- ── MODAL NORMALISATION DGI ── -->
+@if (showNormaliserModal()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+      <div class="bg-amber-600 text-white px-4 py-3 rounded-t-xl flex items-center justify-between">
+        <span class="font-semibold text-sm">Saisir NFN (Numéro Facture Normalisée — DGI)</span>
+        <button (click)="showNormaliserModal.set(false)" class="text-amber-100 hover:text-white text-xs">✕</button>
+      </div>
+      <div class="p-5 space-y-4">
+        <p class="text-xs text-gray-500">
+          Saisissez le NFN et le Code de Contrôle fournis par le portail eSINTAX de la DGI Burkina Faso.
+          Ces informations seront intégrées dans la facture et permettront au client de valider la facture.
+        </p>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">NFN — Numéro Unique Facture Normalisée *</label>
+          <input type="text" [(ngModel)]="nfnForm.nfn" placeholder="Ex : NFN-2024-BF-000123"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Code de Contrôle (signature électronique) *</label>
+          <input type="text" [(ngModel)]="nfnForm.codeControle" placeholder="Code fourni par eSINTAX"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+        </div>
+        @if (nfnError()) { <p class="text-red-600 text-sm">{{ nfnError() }}</p> }
+        <div class="flex gap-3 justify-end">
+          <button (click)="showNormaliserModal.set(false)"
+                  class="px-4 py-1.5 border border-gray-300 text-sm rounded-lg">Annuler</button>
+          <button (click)="confirmNormaliser()" [disabled]="saving()"
+                  class="px-6 py-1.5 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 disabled:opacity-50">
+            {{ saving() ? '…' : 'Enregistrer la normalisation' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
   `
 })
 export class FacturationComponent implements OnInit {
 
   private factureSvc = inject(FactureService);
   private tiersSvc   = inject(TiersService);
+  private cdr        = inject(ChangeDetectorRef);
 
   view          = signal<View>('list');
   loading       = signal(false);
   saving        = signal(false);
   formError     = signal<string | null>(null);
+  nfnError      = signal<string | null>(null);
 
   factures      = signal<FactureResume[]>([]);
   totalElements = signal(0);
@@ -443,17 +533,20 @@ export class FacturationComponent implements OnInit {
   currentPage   = signal(0);
   filterStatut  = signal<FactureStatut | ''>('');
 
-  clients       = signal<Tiers[]>([]);
+  clients         = signal<Tiers[]>([]);
   selectedFacture = signal<FactureDetail | null>(null);
-  editingId     = signal<string | null>(null);
-  payingId      = signal<string | null>(null);
+  editingId       = signal<string | null>(null);
+  payingId        = signal<string | null>(null);
+  normalisingId   = signal<string | null>(null);
+  showNormaliserModal = signal(false);
 
   form: FactureCreateRequest & { dateEcheance: string } = this.emptyForm();
   lignesCalc: { ht: number; tva: number; ttc: number }[] = [];
 
   payForm = { dateReglement: new Date().toISOString().substring(0, 10), compteReglement: '521' };
+  nfnForm: NormalisationRequest = { nfn: '', codeControle: '' };
 
-  totalHt = computed(() => this.lignesCalc.reduce((s, l) => s + (l?.ht ?? 0), 0));
+  totalHt  = computed(() => this.lignesCalc.reduce((s, l) => s + (l?.ht  ?? 0), 0));
   totalTtc = computed(() => this.lignesCalc.reduce((s, l) => s + (l?.ttc ?? 0), 0));
 
   ngOnInit() {
@@ -495,13 +588,14 @@ export class FacturationComponent implements OnInit {
     this.factureSvc.findOne(id).subscribe(f => {
       this.editingId.set(id);
       this.form = {
-        dateFacture:   f.dateFacture,
-        dateEcheance:  f.dateEcheance ?? '',
-        tiersId:       f.tiersId ?? '',
-        nomTiers:      f.nomTiers ?? '',
-        adresseTiers:  f.adresseTiers ?? '',
-        notes:         f.notes ?? '',
-        lignes:        f.lignes.map(l => ({
+        dateFacture:  f.dateFacture,
+        dateEcheance: f.dateEcheance ?? '',
+        tiersId:      f.tiersId ?? '',
+        nomTiers:     f.nomTiers ?? '',
+        adresseTiers: f.adresseTiers ?? '',
+        ifuClient:    f.ifuClient ?? '',
+        notes:        f.notes ?? '',
+        lignes: f.lignes.map(l => ({
           description:   l.description,
           quantite:      l.quantite,
           prixUnitaire:  l.prixUnitaire,
@@ -530,6 +624,13 @@ export class FacturationComponent implements OnInit {
     this.view.set('payer');
   }
 
+  openNormaliserModal() {
+    this.nfnForm = { nfn: '', codeControle: '' };
+    this.nfnError.set(null);
+    this.normalisingId.set(this.selectedFacture()!.id);
+    this.showNormaliserModal.set(true);
+  }
+
   backToList() {
     this.view.set('list');
     this.selectedFacture.set(null);
@@ -540,13 +641,17 @@ export class FacturationComponent implements OnInit {
   onTiersChange(id: string) {
     const t = this.clients().find(c => c.id === id);
     if (t) {
-      this.form.nomTiers = t.nom;
+      this.form.nomTiers    = t.nom;
       this.form.adresseTiers = (t as any).adresse ?? '';
+      this.form.ifuClient   = (t as any).ifu ?? '';
     }
   }
 
   addLigne() {
-    const l: LigneFactureForm = { description: '', quantite: 1, prixUnitaire: 0, tauxTva: 18, compteProduit: '706', ordre: this.form.lignes.length };
+    const l: LigneFactureForm = {
+      description: '', quantite: 1, prixUnitaire: 0, tauxTva: 18,
+      compteProduit: '706', ordre: this.form.lignes.length
+    };
     this.form.lignes.push(l);
     this.lignesCalc.push(this.calcLigne(l));
   }
@@ -561,7 +666,7 @@ export class FacturationComponent implements OnInit {
   }
 
   private calcLigne(l: LigneFactureForm) {
-    const ht = (l.quantite ?? 0) * (l.prixUnitaire ?? 0);
+    const ht  = (l.quantite ?? 0) * (l.prixUnitaire ?? 0);
     const tva = ht * (l.tauxTva ?? 0) / 100;
     return { ht: Math.round(ht * 100) / 100, tva: Math.round(tva * 100) / 100, ttc: Math.round((ht + tva) * 100) / 100 };
   }
@@ -573,7 +678,8 @@ export class FacturationComponent implements OnInit {
 
     const req: FactureCreateRequest = {
       ...this.form,
-      tiersId:      this.form.tiersId || null,
+      tiersId:      this.form.tiersId      || null,
+      ifuClient:    this.form.ifuClient    || undefined,
       dateEcheance: this.form.dateEcheance || null,
       lignes:       this.form.lignes.map((l, i) => ({ ...l, ordre: i }))
     };
@@ -592,7 +698,7 @@ export class FacturationComponent implements OnInit {
 
   doEmettre(id: string) {
     this.factureSvc.emettre(id).subscribe({
-      next: () => this.loadList(),
+      next: () => { this.loadList(); if (this.view() === 'detail') this.openDetail(id); },
       error: (e: any) => alert(e?.error?.message ?? 'Erreur')
     });
   }
@@ -604,7 +710,7 @@ export class FacturationComponent implements OnInit {
 
   doAnnuler(id: string) {
     if (!confirm('Annuler cette facture ?')) return;
-    this.factureSvc.annuler(id).subscribe({ next: () => this.loadList() });
+    this.factureSvc.annuler(id).subscribe({ next: () => { this.loadList(); this.backToList(); } });
   }
 
   confirmPayer() {
@@ -616,8 +722,27 @@ export class FacturationComponent implements OnInit {
     });
   }
 
-  statutLabel(s: FactureStatut): string { return STATUT_LABELS[s] ?? s; }
-  statutClass(s: FactureStatut): string { return STATUT_CLASSES[s] ?? 'bg-gray-100 text-gray-700'; }
+  confirmNormaliser() {
+    if (!this.nfnForm.nfn.trim())          { this.nfnError.set('Le NFN est obligatoire.'); return; }
+    if (!this.nfnForm.codeControle.trim()) { this.nfnError.set('Le Code de Contrôle est obligatoire.'); return; }
+    this.saving.set(true);
+    this.nfnError.set(null);
+    this.factureSvc.normaliser(this.normalisingId()!, this.nfnForm).subscribe({
+      next: f => {
+        this.saving.set(false);
+        this.showNormaliserModal.set(false);
+        this.selectedFacture.set(f);
+        this.loadList();
+        this.cdr.markForCheck();
+      },
+      error: (e: any) => { this.nfnError.set(e?.error?.message ?? 'Erreur'); this.saving.set(false); }
+    });
+  }
+
+  statutLabel(s: FactureStatut):        string { return STATUT_LABELS[s] ?? s; }
+  statutClass(s: FactureStatut):        string { return STATUT_CLASSES[s] ?? 'bg-gray-100 text-gray-700'; }
+  nfnLabel(s: StatutNormalisation):     string { return NFN_LABELS[s] ?? s; }
+  nfnClass(s: StatutNormalisation):     string { return NFN_CLASSES[s] ?? 'bg-gray-100 text-gray-600'; }
 
   private emptyForm(): FactureCreateRequest & { dateEcheance: string } {
     return {
@@ -626,8 +751,9 @@ export class FacturationComponent implements OnInit {
       tiersId:      '',
       nomTiers:     '',
       adresseTiers: '',
+      ifuClient:    '',
       notes:        '',
-      lignes:       [{ description: '', quantite: 1, prixUnitaire: 0, tauxTva: 18, compteProduit: '706', ordre: 0 }]
+      lignes: [{ description: '', quantite: 1, prixUnitaire: 0, tauxTva: 18, compteProduit: '706', ordre: 0 }]
     };
   }
 }

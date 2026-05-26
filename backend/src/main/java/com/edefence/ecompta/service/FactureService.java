@@ -48,6 +48,9 @@ public class FactureService {
                                        Entreprise entreprise, Utilisateur auteur) {
         String numero = generateNumero(eid, req.dateFacture().getYear());
         Tiers tiers = req.tiersId() != null ? resolveTiers(req.tiersId(), eid) : null;
+        boolean exonere = estExonere(entreprise);
+
+        String ifuClient = resolveIfuClient(req.ifuClient(), tiers);
 
         Facture facture = Facture.builder()
                 .entreprise(entreprise)
@@ -57,10 +60,11 @@ public class FactureService {
                 .tiers(tiers)
                 .nomTiers(tiers != null ? tiers.getNom() : req.nomTiers())
                 .adresseTiers(tiers != null ? tiers.getAdresse() : req.adresseTiers())
+                .ifuClient(ifuClient)
                 .notes(req.notes())
                 .build();
 
-        buildLignes(facture, req.lignes());
+        buildLignes(facture, req.lignes(), exonere);
         recalcTotaux(facture);
         return toResponse(factureRepo.save(facture), LocalDate.now());
     }
@@ -73,15 +77,17 @@ public class FactureService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Seule une facture en brouillon peut être modifiée");
         }
+        boolean exonere = estExonere(entreprise);
         Tiers tiers = req.tiersId() != null ? resolveTiers(req.tiersId(), eid) : null;
         facture.setDateFacture(req.dateFacture());
         facture.setDateEcheance(req.dateEcheance());
         facture.setTiers(tiers);
         facture.setNomTiers(tiers != null ? tiers.getNom() : req.nomTiers());
         facture.setAdresseTiers(tiers != null ? tiers.getAdresse() : req.adresseTiers());
+        facture.setIfuClient(resolveIfuClient(req.ifuClient(), tiers));
         facture.setNotes(req.notes());
         facture.getLignes().clear();
-        buildLignes(facture, req.lignes());
+        buildLignes(facture, req.lignes(), exonere);
         recalcTotaux(facture);
         return toResponse(factureRepo.save(facture), LocalDate.now());
     }
@@ -110,9 +116,6 @@ public class FactureService {
                 && facture.getTiers().getCompteNumero() != null
                 ? facture.getTiers().getCompteNumero() : "411";
         CompteComptable c411 = getOrCreate(entreprise, numClient, "Clients", 4);
-
-        // Compte 447 TVA collectée
-        CompteComptable c447 = getOrCreate(entreprise, "447", "État — TVA collectée", 4);
 
         EcritureComptable ecriture = EcritureComptable.builder()
                 .entreprise(entreprise)
@@ -146,8 +149,10 @@ public class FactureService {
                     .build());
         }
 
-        // CR 447 TVA (si > 0)
-        if (facture.getMontantTva().compareTo(BigDecimal.ZERO) > 0) {
+        // CR 447 TVA collectée (seulement si régime TVA — pas CME)
+        if (facture.getMontantTva().compareTo(BigDecimal.ZERO) > 0
+                && !estExonere(entreprise)) {
+            CompteComptable c447 = getOrCreate(entreprise, "447", "État — TVA collectée", 4);
             ecriture.getLignes().add(LigneEcriture.builder()
                     .ecriture(ecriture).compte(c447)
                     .libelle("TVA facture " + facture.getNumero())
@@ -158,6 +163,26 @@ public class FactureService {
         EcritureComptable saved = ecritureRepo.save(ecriture);
         facture.setStatut(Facture.Statut.EMISE);
         facture.setEcritureVente(saved);
+        // Passage automatique en EN_ATTENTE de normalisation DGI
+        facture.setStatutNormalisation(Facture.StatutNormalisation.EN_ATTENTE);
+        return toResponse(factureRepo.save(facture), LocalDate.now());
+    }
+
+    @Transactional
+    public FactureDto.Response normaliser(UUID id, UUID eid, FactureDto.NormalisationRequest req) {
+        Facture facture = findOrThrow(id, eid);
+        if (facture.getStatut() == Facture.Statut.BROUILLON) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "La facture doit être émise avant normalisation");
+        }
+        if (facture.isEstNormalisee()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Facture déjà normalisée (NFN : " + facture.getNfn() + ")");
+        }
+        facture.setNfn(req.nfn());
+        facture.setCodeControle(req.codeControle());
+        facture.setStatutNormalisation(Facture.StatutNormalisation.NORMALISEE);
+        facture.setEstNormalisee(true);
         return toResponse(factureRepo.save(facture), LocalDate.now());
     }
 
@@ -190,13 +215,11 @@ public class FactureService {
                 .statut(EcritureComptable.Statut.VALIDEE)
                 .build();
 
-        // DR Banque
         ecriture.getLignes().add(LigneEcriture.builder()
                 .ecriture(ecriture).compte(cBanque)
                 .libelle("Règlement " + facture.getNumero())
                 .debit(facture.getMontantTtc()).credit(BigDecimal.ZERO)
                 .build());
-        // CR 411
         ecriture.getLignes().add(LigneEcriture.builder()
                 .ecriture(ecriture).compte(c411)
                 .libelle(orEmpty(facture.getNomTiers()))
@@ -222,6 +245,16 @@ public class FactureService {
 
     // ─── Helpers ────────────────────────────────────────────────────────────
 
+    private boolean estExonere(Entreprise e) {
+        return e.getRegimeFiscal() == Entreprise.RegimeFiscal.CME;
+    }
+
+    private String resolveIfuClient(String ifuFromReq, Tiers tiers) {
+        if (ifuFromReq != null && !ifuFromReq.isBlank()) return ifuFromReq;
+        if (tiers != null && tiers.getIfu() != null) return tiers.getIfu();
+        return null;
+    }
+
     private String generateNumero(UUID eid, int year) {
         String prefix = "FAC-" + year + "-";
         Integer max = factureRepo.maxNumeroSeq(eid, prefix + "%");
@@ -229,17 +262,18 @@ public class FactureService {
         return prefix + String.format("%04d", seq);
     }
 
-    private void buildLignes(Facture facture, List<FactureDto.LigneRequest> dtos) {
+    private void buildLignes(Facture facture, List<FactureDto.LigneRequest> dtos, boolean exonere) {
         int ordre = 0;
         for (FactureDto.LigneRequest l : dtos) {
-            BigDecimal ht  = l.quantite().multiply(l.prixUnitaire()).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal tva = ht.multiply(l.tauxTva()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            BigDecimal taux = exonere ? BigDecimal.ZERO : l.tauxTva();
+            BigDecimal ht   = l.quantite().multiply(l.prixUnitaire()).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal tva  = ht.multiply(taux).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
             facture.getLignes().add(LigneFacture.builder()
                     .facture(facture)
                     .description(l.description())
                     .quantite(l.quantite())
                     .prixUnitaire(l.prixUnitaire())
-                    .tauxTva(l.tauxTva())
+                    .tauxTva(taux)
                     .montantHt(ht)
                     .montantTva(tva)
                     .montantTtc(ht.add(tva))
@@ -296,10 +330,11 @@ public class FactureService {
         return new FactureDto.Response(
                 f.getId(), f.getNumero(), f.getDateFacture(), f.getDateEcheance(),
                 f.getTiers() != null ? f.getTiers().getId() : null,
-                f.getNomTiers(), f.getAdresseTiers(),
+                f.getNomTiers(), f.getAdresseTiers(), f.getIfuClient(),
                 f.getStatut(), f.getMontantHt(), f.getMontantTva(), f.getMontantTtc(),
                 f.getNotes(), lignes,
-                isEnRetard(f, today));
+                isEnRetard(f, today),
+                f.getNfn(), f.getCodeControle(), f.getStatutNormalisation(), f.isEstNormalisee());
     }
 
     private FactureDto.Resume toResume(Facture f, LocalDate today) {
@@ -308,7 +343,8 @@ public class FactureService {
                 f.getTiers() != null ? f.getTiers().getId() : null,
                 f.getNomTiers(), f.getStatut(),
                 f.getMontantHt(), f.getMontantTva(), f.getMontantTtc(),
-                isEnRetard(f, today));
+                isEnRetard(f, today),
+                f.getStatutNormalisation(), f.isEstNormalisee());
     }
 
     private boolean isEnRetard(Facture f, LocalDate today) {

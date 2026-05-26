@@ -41,6 +41,7 @@ public class FactureDto {
             UUID tiersId,
             String nomTiers,
             String adresseTiers,
+            String ifuClient,
             String notes,
             @NotEmpty List<LigneRequest> lignes
     ) {}
@@ -51,6 +52,7 @@ public class FactureDto {
             UUID tiersId,
             String nomTiers,
             String adresseTiers,
+            String ifuClient,
             String notes,
             @NotEmpty List<LigneRequest> lignes
     ) {}
@@ -58,6 +60,11 @@ public class FactureDto {
     public record PayerRequest(
             @NotNull LocalDate dateReglement,
             String compteReglement
+    ) {}
+
+    public record NormalisationRequest(
+            @NotBlank String nfn,
+            @NotBlank String codeControle
     ) {}
 
     public record Response(
@@ -68,13 +75,18 @@ public class FactureDto {
             UUID tiersId,
             String nomTiers,
             String adresseTiers,
+            String ifuClient,
             Facture.Statut statut,
             BigDecimal montantHt,
             BigDecimal montantTva,
             BigDecimal montantTtc,
             String notes,
             List<LigneResponse> lignes,
-            boolean enRetard
+            boolean enRetard,
+            String nfn,
+            String codeControle,
+            Facture.StatutNormalisation statutNormalisation,
+            boolean estNormalisee
     ) {}
 
     public record Resume(
@@ -88,6 +100,8 @@ public class FactureDto {
             BigDecimal montantHt,
             BigDecimal montantTva,
             BigDecimal montantTtc,
-            boolean enRetard
+            boolean enRetard,
+            Facture.StatutNormalisation statutNormalisation,
+            boolean estNormalisee
     ) {}
 }
