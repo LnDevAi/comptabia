@@ -25,4 +25,13 @@ public interface FeuillePaieRepository extends JpaRepository<FeuillePaie, UUID> 
             """)
     java.math.BigDecimal sumMasseSalarialeByExercice(@Param("eid") UUID eid,
                                                       @Param("exercice") int exercice);
+
+    @Query("""
+            SELECT COALESCE(SUM(f.netAPayer), 0)
+            FROM FeuillePaie f
+            WHERE f.entreprise.id = :eid AND f.exercice = :exercice
+            AND f.statut = 'COMPTABILISEE'
+            """)
+    java.math.BigDecimal sumNetAPayerByExercice(@Param("eid") UUID eid,
+                                                 @Param("exercice") int exercice);
 }

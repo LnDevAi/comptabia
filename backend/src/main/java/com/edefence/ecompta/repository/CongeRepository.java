@@ -51,4 +51,22 @@ public interface CongeRepository extends JpaRepository<Conge, UUID> {
           AND c.dateDebut <= :today AND c.dateFin >= :today
         """)
     long countEnCours(@Param("eid") UUID eid, @Param("today") java.time.LocalDate today);
+
+    @Query("""
+        SELECT COUNT(c) FROM Conge c
+        WHERE c.entreprise.id = :eid AND c.statut = 'APPROUVEE'
+          AND c.dateDebut >= :debut AND c.dateDebut <= :fin
+        """)
+    long countApprouveesInPeriod(@Param("eid") UUID eid,
+                                  @Param("debut") java.time.LocalDate debut,
+                                  @Param("fin") java.time.LocalDate fin);
+
+    @Query("""
+        SELECT COALESCE(SUM(c.nombreJours), 0) FROM Conge c
+        WHERE c.entreprise.id = :eid AND c.statut = 'APPROUVEE'
+          AND c.dateDebut >= :debut AND c.dateDebut <= :fin
+        """)
+    java.math.BigDecimal sumJoursApprouvesInPeriod(@Param("eid") UUID eid,
+                                                    @Param("debut") java.time.LocalDate debut,
+                                                    @Param("fin") java.time.LocalDate fin);
 }

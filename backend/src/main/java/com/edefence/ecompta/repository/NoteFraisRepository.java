@@ -45,4 +45,22 @@ public interface NoteFraisRepository extends JpaRepository<NoteFrais, UUID> {
 
     @Query("SELECT COALESCE(SUM(n.montant), 0) FROM NoteFrais n WHERE n.entreprise.id = :eid AND n.statut = 'SOUMISE'")
     java.math.BigDecimal sumMontantSoumises(@Param("eid") UUID eid);
+
+    @Query("""
+        SELECT COUNT(n) FROM NoteFrais n
+        WHERE n.entreprise.id = :eid AND n.statut = 'REMBOURSEE'
+          AND n.dateDebut >= :debut AND n.dateDebut <= :fin
+        """)
+    long countRembourseesInPeriod(@Param("eid") UUID eid,
+                                   @Param("debut") java.time.LocalDate debut,
+                                   @Param("fin") java.time.LocalDate fin);
+
+    @Query("""
+        SELECT COALESCE(SUM(n.montant), 0) FROM NoteFrais n
+        WHERE n.entreprise.id = :eid AND n.statut = 'REMBOURSEE'
+          AND n.dateDebut >= :debut AND n.dateDebut <= :fin
+        """)
+    java.math.BigDecimal sumMontantRembourseesInPeriod(@Param("eid") UUID eid,
+                                                        @Param("debut") java.time.LocalDate debut,
+                                                        @Param("fin") java.time.LocalDate fin);
 }

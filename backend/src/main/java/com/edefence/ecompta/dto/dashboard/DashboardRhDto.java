@@ -1,6 +1,7 @@
 package com.edefence.ecompta.dto.dashboard;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class DashboardRhDto {
 
@@ -34,5 +35,34 @@ public class DashboardRhDto {
             KpiFormation formation,
             KpiEvaluations evaluations,
             KpiNotesFrais notesFrais
+    ) {}
+
+    // ─── Comparatif N vs N-1 ─────────────────────────────────────────────────
+
+    public record ComparatifSection(
+            BigDecimal valeurN,
+            BigDecimal valeurN1,
+            BigDecimal variation,
+            double variationPourcent
+    ) {}
+
+    public record PaiesMensuel(
+            int mois,
+            BigDecimal masseBrute,
+            BigDecimal netAPayer,
+            int nbSalaries
+    ) {}
+
+    public record ComparatifRh(
+            int anneeN,
+            int anneeN1,
+            ComparatifSection masseSalariale,
+            ComparatifSection netAPayer,
+            ComparatifSection congesJours,
+            ComparatifSection congesNb,
+            ComparatifSection notesFraisMontant,
+            ComparatifSection notesFraisNb,
+            List<PaiesMensuel> paiesMensuellesN,
+            List<PaiesMensuel> paiesMensuellesN1
     ) {}
 }
