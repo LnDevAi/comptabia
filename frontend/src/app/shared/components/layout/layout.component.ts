@@ -267,6 +267,15 @@ import { ToastComponent } from '../toast/toast.component';
                 Audit
               </a>
             }
+            <a routerLink="/dashboard/notifications" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 relative">
+              Notifications
+              @if (sseSvc.unread() > 0) {
+                <span class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">
+                  {{ sseSvc.unread() > 9 ? '9+' : sseSvc.unread() }}
+                </span>
+              }
+            </a>
             @if (licenceSvc.hasModule('CONSOLIDATION')) {
               <a routerLink="/dashboard/consolidation" routerLinkActive="bg-blue-50 text-blue-700"
                  class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">

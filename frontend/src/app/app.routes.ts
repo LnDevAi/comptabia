@@ -161,6 +161,11 @@ export const routes: Routes = [
           import('./features/audit/audit.component').then(m => m.AuditComponent)
       },
       {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/notifications/notifications.component').then(m => m.NotificationsComponent)
+      },
+      {
         path: 'modeles',
         loadComponent: () =>
           import('./features/modeles/modeles.component').then(m => m.ModelesComponent)

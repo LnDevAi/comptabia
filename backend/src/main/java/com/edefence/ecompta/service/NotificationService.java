@@ -1,6 +1,5 @@
 package com.edefence.ecompta.service;
 
-import com.edefence.ecompta.domain.Facture;
 import com.edefence.ecompta.dto.alerte.AlerteDto;
 import com.edefence.ecompta.dto.notification.NotificationDto;
 import com.edefence.ecompta.repository.EcritureComptableRepository;
@@ -27,9 +26,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private final AlerteService               alerteService;
-    private final EcritureComptableRepository ecritureRepo;
-    private final FactureRepository           factureRepo;
+    private final AlerteService                alerteService;
+    private final EcritureComptableRepository  ecritureRepo;
+    private final FactureRepository            factureRepo;
+    private final NotificationHistoryService   historyService;
 
     private final ConcurrentHashMap<UUID, CopyOnWriteArrayList<SseEmitter>> emitters =
             new ConcurrentHashMap<>();
@@ -37,7 +37,7 @@ public class NotificationService {
     // ─── Subscribe ────────────────────────────────────────────────────────────
 
     public SseEmitter subscribe(UUID entrepriseId) {
-        SseEmitter emitter = new SseEmitter(180_000L); // 3-min timeout → Angular reconnects
+        SseEmitter emitter = new SseEmitter(180_000L);
 
         emitters.computeIfAbsent(entrepriseId, k -> new CopyOnWriteArrayList<>()).add(emitter);
 
@@ -49,7 +49,6 @@ public class NotificationService {
         emitter.onTimeout(remove);
         emitter.onError(e -> remove.run());
 
-        // Send initial snapshot immediately
         try {
             emitter.send(SseEmitter.event().name("CONNECTED").data("ok"));
         } catch (IOException ignored) {}
@@ -64,6 +63,9 @@ public class NotificationService {
     // ─── Broadcast ────────────────────────────────────────────────────────────
 
     public void broadcast(UUID entrepriseId, NotificationDto dto) {
+        // Persist to history (non-blocking, skips HEARTBEAT/CONNECTED)
+        try { historyService.save(entrepriseId, dto); } catch (Exception ignored) {}
+
         CopyOnWriteArrayList<SseEmitter> list = emitters.get(entrepriseId);
         if (list == null || list.isEmpty()) return;
 
@@ -103,7 +105,6 @@ public class NotificationService {
     private void broadcastStats(UUID eid) {
         LocalDate today = LocalDate.now();
 
-        // Brouillons en attente
         long brouillons = ecritureRepo.countBrouillonsByEntrepriseId(eid);
         if (brouillons > 0) {
             broadcast(eid, new NotificationDto(
@@ -113,7 +114,6 @@ public class NotificationService {
                     "/dashboard/ecritures", Instant.now()));
         }
 
-        // Écritures en attente d'approbation
         long enAttente = ecritureRepo.countEnAttenteByEntrepriseId(eid);
         if (enAttente > 0) {
             broadcast(eid, new NotificationDto(
@@ -123,7 +123,6 @@ public class NotificationService {
                     "/dashboard/approbations", Instant.now()));
         }
 
-        // Alertes comptables
         AlerteDto.AlerteResponse alertes = alerteService.getAlertes(eid);
         if (alertes.countDanger() > 0) {
             broadcast(eid, new NotificationDto(
@@ -139,7 +138,6 @@ public class NotificationService {
                     "/dashboard/alertes", Instant.now()));
         }
 
-        // Factures EMISE en retard
         long retard = factureRepo.findAllEmises(eid).stream()
                 .filter(f -> {
                     LocalDate due = f.getDateEcheance() != null
@@ -148,11 +146,10 @@ public class NotificationService {
                     return today.isAfter(due);
                 }).count();
         if (retard > 0) {
-            int retardInt = (int) Math.min(retard, Integer.MAX_VALUE);
             broadcast(eid, new NotificationDto(
                     "FACTURE_EN_RETARD",
                     retard + " facture(s) en retard de paiement",
-                    retardInt, "DANGER",
+                    (int) Math.min(retard, Integer.MAX_VALUE), "DANGER",
                     "/dashboard/facturation", Instant.now()));
         }
     }
