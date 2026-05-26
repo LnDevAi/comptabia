@@ -130,6 +130,14 @@ public class EtatFinancierController {
         return service.getCompteResultatCima(TenantContext.get(), exercice > 0 ? exercice : currentYear());
     }
 
+    // ─── États financiers SFD (BCEAO/UMOA) ──────────────────────────────────
+
+    @GetMapping("/sfd/resultat")
+    public com.edefence.ecompta.dto.etats.EtatResultatSfdDto etatResultatSfd(
+            @RequestParam(defaultValue = "0") int exercice) {
+        return service.getEtatResultatSfd(TenantContext.get(), exercice > 0 ? exercice : currentYear());
+    }
+
     @PostMapping(value = "/import-balance-6col", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public com.edefence.ecompta.dto.etats.BalanceSixColonnesDto importBalance6Col(
             @RequestParam("file") MultipartFile file,

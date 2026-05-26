@@ -178,6 +178,16 @@ import { SseNotificationService } from '../../../core/services/sse-notification.
               États CIMA
             </a>
           }
+          @if (user()?.typeEntite === 'MICROFINANCE') {
+            <a routerLink="/dashboard/portefeuille-sfd" routerLinkActive="bg-teal-50 text-teal-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Portefeuille SFD
+            </a>
+            <a routerLink="/dashboard/etats-sfd" routerLinkActive="bg-teal-50 text-teal-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              États SFD
+            </a>
+          }
           <a routerLink="/dashboard/abonnements" routerLinkActive="bg-blue-50 text-blue-700"
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             Abonnements
