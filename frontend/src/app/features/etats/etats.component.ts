@@ -10,10 +10,11 @@ import {
   JournalLivreData, EtatRecettesDepensesData, EtatTresorerieData,
   FluxTresorerieData, EvcapData,
   NoteAnnexe, NoteAnnexeCreate,
-  NoteCatalogue, NoteComputeeData, NotesGroupe, EtatTab
+  NoteCatalogue, NoteComputeeData, NotesGroupe, EtatTab,
+  EtatsDepuisBalance
 } from '../../core/models/etats.model';
 
-interface TabDef { id: EtatTab; label: string; group: 'sn' | 'smt' | 'commun'; }
+interface TabDef { id: EtatTab; label: string; group: 'sn' | 'smt' | 'commun' | 'import'; }
 
 const TABS: TabDef[] = [
   { id: 'balance',          label: 'Balance',              group: 'sn'     },
@@ -26,6 +27,7 @@ const TABS: TabDef[] = [
   { id: 'flux-tresorerie',  label: 'Flux de trésorerie',   group: 'sn'     },
   { id: 'evcap',            label: 'Var. Capitaux Propres', group: 'sn'    },
   { id: 'notes',            label: 'Notes annexes',        group: 'commun' },
+  { id: 'import-externe',   label: 'Import balance',       group: 'import' },
 ];
 
 @Component({
@@ -75,7 +77,9 @@ const TABS: TabDef[] = [
   <!-- Content -->
   <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
 
-    @if (loading()) {
+    @if (activeTab() === 'import-externe') {
+      <!-- Import balance externe — toujours visible, pas de loading server -->
+    } @else if (loading()) {
       <div class="flex items-center justify-center h-40 text-gray-400 text-sm">Chargement…</div>
     } @else if (error()) {
       <div class="flex items-center justify-center h-40 text-red-500 text-sm">{{ error() }}</div>
@@ -514,6 +518,227 @@ const TABS: TabDef[] = [
         </div>
       }
 
+      <!-- Import balance externe -->
+      @if (activeTab() === 'import-externe') {
+        <div class="p-5 space-y-5">
+
+          <!-- Bandeau info -->
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 space-y-1">
+            <p class="font-semibold">Générer vos états financiers depuis une balance externe</p>
+            <p class="text-xs text-blue-700">
+              Importez votre balance en CSV (séparateur <code class="bg-blue-100 px-1 rounded">;</code>,
+              <code class="bg-blue-100 px-1 rounded">,</code> ou tabulation).
+              Colonnes requises : <strong>NUMERO</strong> · <strong>DEBIT</strong> · <strong>CREDIT</strong>.
+              Colonne optionnelle : <strong>INTITULE</strong>.
+            </p>
+            <p class="text-xs text-blue-600">
+              Exemple : <code class="bg-blue-100 px-1 rounded">NUMERO;INTITULE;DEBIT;CREDIT</code>
+            </p>
+          </div>
+
+          <!-- Upload zone -->
+          <div class="flex items-center gap-4 flex-wrap">
+            <label class="flex flex-col items-center justify-center w-full max-w-sm h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                   [class.border-blue-500]="importFile()"
+                   [class.bg-blue-50]="importFile()">
+              <input type="file" accept=".csv,.txt" class="hidden" (change)="onFileSelected($event)" />
+              @if (importFile()) {
+                <div class="text-center">
+                  <p class="text-sm font-medium text-blue-700">{{ importFile()!.name }}</p>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ (importFile()!.size / 1024).toFixed(1) }} Ko</p>
+                </div>
+              } @else {
+                <div class="text-center text-gray-400">
+                  <p class="text-2xl mb-1">📂</p>
+                  <p class="text-sm">Cliquer pour sélectionner un fichier CSV</p>
+                  <p class="text-xs mt-0.5">ou glisser-déposer</p>
+                </div>
+              }
+            </label>
+
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <label class="text-sm text-gray-600">Exercice :</label>
+                <select [(ngModel)]="importExercice"
+                        class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm">
+                  @for (y of years(); track y) {
+                    <option [value]="y">{{ y }}</option>
+                  }
+                </select>
+              </div>
+              <button (click)="lancerImport()"
+                      [disabled]="!importFile() || importLoading()"
+                      class="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                @if (importLoading()) {
+                  <span class="animate-spin text-sm">⟳</span> Analyse en cours…
+                } @else {
+                  Générer les états financiers
+                }
+              </button>
+            </div>
+          </div>
+
+          @if (importError()) {
+            <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
+              {{ importError() }}
+            </div>
+          }
+
+          <!-- Résultats -->
+          @if (importResult()) {
+            <div class="space-y-4">
+
+              <!-- Badge référentiel + stats -->
+              <div class="flex items-center gap-3 flex-wrap">
+                <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs font-semibold rounded-full">
+                  {{ importResult()!.referentiel }}
+                </span>
+                <span class="text-xs text-gray-500">
+                  {{ importResult()!.nbLignes }} compte{{ importResult()!.nbLignes !== 1 ? 's' : '' }} importé{{ importResult()!.nbLignes !== 1 ? 's' : '' }}
+                </span>
+                <button (click)="exportImportCsv()"
+                        class="ml-auto text-xs px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600">
+                  Exporter CSV
+                </button>
+              </div>
+
+              <!-- Bilan importé -->
+              <details open class="border border-gray-200 rounded-xl overflow-hidden">
+                <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold text-gray-700 text-sm select-none">
+                  Bilan — Exercice {{ importResult()!.bilan.exercice }}
+                </summary>
+                <div class="p-4">
+                  <div class="grid grid-cols-2 gap-6">
+                    <!-- Actif -->
+                    <div>
+                      <h3 class="text-xs font-bold uppercase text-gray-500 mb-2 border-b pb-1">ACTIF</h3>
+                      @for (cat of importActifCats(); track cat) {
+                        <div class="mb-3">
+                          <div class="text-xs font-semibold text-blue-700 mb-1">{{ cat }}</div>
+                          @for (p of importBilanByCat(cat, 'actif'); track p.numero) {
+                            <div class="flex justify-between text-sm py-0.5">
+                              <span class="text-gray-700">{{ p.numero }} – {{ p.intitule }}</span>
+                              <span class="font-mono">{{ p.montant | number:'1.2-2' }}</span>
+                            </div>
+                          }
+                        </div>
+                      }
+                      <div class="flex justify-between font-bold border-t-2 border-gray-800 pt-2 text-sm">
+                        <span>TOTAL ACTIF</span>
+                        <span class="font-mono">{{ importResult()!.bilan.totalActif | number:'1.2-2' }}</span>
+                      </div>
+                    </div>
+                    <!-- Passif -->
+                    <div>
+                      <h3 class="text-xs font-bold uppercase text-gray-500 mb-2 border-b pb-1">PASSIF</h3>
+                      @for (cat of importPassifCats(); track cat) {
+                        <div class="mb-3">
+                          <div class="text-xs font-semibold text-green-700 mb-1">{{ cat }}</div>
+                          @for (p of importBilanByCat(cat, 'passif'); track p.numero) {
+                            <div class="flex justify-between text-sm py-0.5">
+                              <span class="text-gray-700">{{ p.numero }} – {{ p.intitule }}</span>
+                              <span class="font-mono">{{ p.montant | number:'1.2-2' }}</span>
+                            </div>
+                          }
+                        </div>
+                      }
+                      <div class="flex justify-between font-bold border-t-2 border-gray-800 pt-2 text-sm">
+                        <span>TOTAL PASSIF</span>
+                        <span class="font-mono">{{ importResult()!.bilan.totalPassif | number:'1.2-2' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              <!-- Compte de résultat importé -->
+              <details open class="border border-gray-200 rounded-xl overflow-hidden">
+                <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold text-gray-700 text-sm select-none">
+                  Compte de résultat — Exercice {{ importResult()!.compteResultat.exercice }}
+                </summary>
+                <div class="p-4">
+                  <div class="grid grid-cols-2 gap-6">
+                    <div>
+                      <h3 class="text-xs font-bold uppercase text-red-600 mb-2 border-b pb-1">CHARGES (Cl.6)</h3>
+                      @for (p of importResult()!.compteResultat.charges; track p.numero) {
+                        <div class="flex justify-between text-sm py-0.5">
+                          <span class="text-gray-700">{{ p.numero }} – {{ p.intitule }}</span>
+                          <span class="font-mono">{{ p.montant | number:'1.2-2' }}</span>
+                        </div>
+                      }
+                      <div class="flex justify-between font-bold border-t-2 border-red-400 pt-2 text-sm mt-2">
+                        <span>Total charges</span>
+                        <span class="font-mono text-red-700">{{ importResult()!.compteResultat.totalCharges | number:'1.2-2' }}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 class="text-xs font-bold uppercase text-green-600 mb-2 border-b pb-1">PRODUITS (Cl.7)</h3>
+                      @for (p of importResult()!.compteResultat.produits; track p.numero) {
+                        <div class="flex justify-between text-sm py-0.5">
+                          <span class="text-gray-700">{{ p.numero }} – {{ p.intitule }}</span>
+                          <span class="font-mono">{{ p.montant | number:'1.2-2' }}</span>
+                        </div>
+                      }
+                      <div class="flex justify-between font-bold border-t-2 border-green-400 pt-2 text-sm mt-2">
+                        <span>Total produits</span>
+                        <span class="font-mono text-green-700">{{ importResult()!.compteResultat.totalProduits | number:'1.2-2' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-4 p-3 rounded-lg text-sm font-bold flex justify-between"
+                       [class]="importResult()!.compteResultat.resultat >= 0 ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'">
+                    <span>RÉSULTAT NET {{ importResult()!.compteResultat.resultat >= 0 ? '(Bénéfice)' : '(Perte)' }}</span>
+                    <span class="font-mono">{{ importResult()!.compteResultat.resultat | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+              </details>
+
+              <!-- Balance importée -->
+              <details class="border border-gray-200 rounded-xl overflow-hidden">
+                <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold text-gray-700 text-sm select-none">
+                  Balance importée ({{ importResult()!.nbLignes }} lignes)
+                </summary>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-xs">
+                    <thead class="bg-gray-50 text-gray-500 uppercase">
+                      <tr>
+                        <th class="px-4 py-2 text-left">Compte</th>
+                        <th class="px-4 py-2 text-left">Intitulé</th>
+                        <th class="px-4 py-2 text-right">Débit</th>
+                        <th class="px-4 py-2 text-right">Crédit</th>
+                        <th class="px-4 py-2 text-right">Solde D</th>
+                        <th class="px-4 py-2 text-right">Solde C</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (l of importResult()!.balance.lignes; track l.numero) {
+                        <tr class="border-t border-gray-50 hover:bg-gray-50">
+                          <td class="px-4 py-1.5 font-mono">{{ l.numero }}</td>
+                          <td class="px-4 py-1.5 text-gray-600">{{ l.intitule }}</td>
+                          <td class="px-4 py-1.5 text-right font-mono">{{ l.totalDebit | number:'1.2-2' }}</td>
+                          <td class="px-4 py-1.5 text-right font-mono">{{ l.totalCredit | number:'1.2-2' }}</td>
+                          <td class="px-4 py-1.5 text-right font-mono text-blue-700">{{ l.soldeDebiteur | number:'1.2-2' }}</td>
+                          <td class="px-4 py-1.5 text-right font-mono text-green-700">{{ l.soldeCrediteur | number:'1.2-2' }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                    <tfoot class="bg-gray-50 font-semibold border-t-2 border-gray-300">
+                      <tr>
+                        <td colspan="2" class="px-4 py-2">TOTAUX</td>
+                        <td class="px-4 py-2 text-right font-mono">{{ importResult()!.balance.totalDebit | number:'1.2-2' }}</td>
+                        <td class="px-4 py-2 text-right font-mono">{{ importResult()!.balance.totalCredit | number:'1.2-2' }}</td>
+                        <td colspan="2"></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </details>
+
+            </div>
+          }
+        </div>
+      }
+
       <!-- Notes Annexes AUDCIF (36 notes structurées) -->
       @if (activeTab() === 'notes') {
         <div class="flex h-[calc(100vh-220px)] min-h-[500px]">
@@ -752,6 +977,8 @@ export class EtatsComponent implements OnInit {
       return base + 'bg-white border-gray-200 text-blue-700';
     if (tab.group === 'smt')
       return base + 'border-transparent text-orange-600 hover:bg-orange-50';
+    if (tab.group === 'import')
+      return base + 'border-transparent text-emerald-700 hover:bg-emerald-50';
     return base + 'border-transparent text-gray-500 hover:bg-gray-100';
   }
 
@@ -817,6 +1044,9 @@ export class EtatsComponent implements OnInit {
           this.fetch(this.svc.getCatalogue(), v => this.catalogue.set(v));
         }
         this.fetch(this.svc.getNotes(y), v => this.notes.set(v));
+        break;
+      case 'import-externe':
+        // Aucun chargement auto — l'utilisateur upload un fichier manuellement
         break;
     }
   }
@@ -898,6 +1128,81 @@ export class EtatsComponent implements OnInit {
     this.svc.deleteNote(existing.id).subscribe({
       next: () => this.notes.update(list => list.filter(n => n.id !== existing.id))
     });
+  }
+
+  // ─── Import balance externe ───────────────────────────────────────────────
+
+  importFile    = signal<File | null>(null);
+  importLoading = signal(false);
+  importError   = signal<string | null>(null);
+  importResult  = signal<EtatsDepuisBalance | null>(null);
+  importExercice = new Date().getFullYear();
+
+  importActifCats = computed(() =>
+    [...new Set((this.importResult()?.bilan.actif ?? []).map(p => p.categorie))]
+  );
+  importPassifCats = computed(() =>
+    [...new Set((this.importResult()?.bilan.passif ?? []).map(p => p.categorie))]
+  );
+
+  importBilanByCat(cat: string, side: 'actif' | 'passif') {
+    const b = this.importResult()?.bilan;
+    if (!b) return [];
+    return (side === 'actif' ? b.actif : b.passif).filter(p => p.categorie === cat);
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      this.importFile.set(input.files[0]);
+      this.importResult.set(null);
+      this.importError.set(null);
+    }
+  }
+
+  lancerImport() {
+    const f = this.importFile();
+    if (!f) return;
+    this.importLoading.set(true);
+    this.importError.set(null);
+    this.svc.importBalance(f, this.importExercice).subscribe({
+      next: r => {
+        this.importResult.set(r);
+        this.importLoading.set(false);
+      },
+      error: (e: any) => {
+        this.importError.set(e?.error?.message ?? e?.message ?? 'Erreur lors de l\'analyse du fichier.');
+        this.importLoading.set(false);
+      }
+    });
+  }
+
+  exportImportCsv() {
+    const r = this.importResult();
+    if (!r) return;
+    const bilan = r.bilan;
+    const cr = r.compteResultat;
+    const csv = [
+      '=== BILAN ===',
+      'Catégorie;Compte;Intitulé;Montant',
+      ...bilan.actif.map(p => `ACTIF - ${p.categorie};${p.numero};${p.intitule};${p.montant}`),
+      ...bilan.passif.map(p => `PASSIF - ${p.categorie};${p.numero};${p.intitule};${p.montant}`),
+      `;;TOTAL ACTIF;${bilan.totalActif}`,
+      `;;TOTAL PASSIF;${bilan.totalPassif}`,
+      '',
+      '=== COMPTE DE RÉSULTAT ===',
+      'Type;Compte;Intitulé;Montant',
+      ...cr.charges.map(p => `CHARGE;${p.numero};${p.intitule};${p.montant}`),
+      ...cr.produits.map(p => `PRODUIT;${p.numero};${p.intitule};${p.montant}`),
+      `;;RÉSULTAT NET;${cr.resultat}`,
+    ].join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `etats-import-${this.importExercice}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   print() { window.print(); }
