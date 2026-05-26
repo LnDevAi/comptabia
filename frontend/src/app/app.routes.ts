@@ -251,6 +251,11 @@ export const routes: Routes = [
         path: 'formation',
         loadComponent: () =>
           import('./features/formation/formation.component').then(m => m.FormationComponent)
+      },
+      {
+        path: 'discipline',
+        loadComponent: () =>
+          import('./features/discipline/discipline.component').then(m => m.DisciplineComponent)
       }
     ]
   },
