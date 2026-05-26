@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
-import { ProfileResponse } from '../../core/models/auth.model';
+import { ProfileResponse, TotpSetupResponse } from '../../core/models/auth.model';
 
 const PLAN_LABELS: Record<string, string> = {
   FREE: 'Gratuit', PRO: 'Pro', ENTERPRISE: 'Entreprise'
@@ -72,7 +72,7 @@ const PLAN_COLORS: Record<string, string> = {
             </div>
 
             @if (infoSuccess()) {
-              <p class="text-sm text-green-600">✓ Informations mises à jour</p>
+              <p class="text-sm text-green-600">Informations mises à jour</p>
             }
             @if (infoError()) {
               <p class="text-sm text-red-500">{{ infoError() }}</p>
@@ -131,7 +131,7 @@ const PLAN_COLORS: Record<string, string> = {
             </div>
 
             @if (pwdSuccess()) {
-              <p class="text-sm text-green-600">✓ Mot de passe modifié</p>
+              <p class="text-sm text-green-600">Mot de passe modifié</p>
             }
             @if (pwdError()) {
               <p class="text-sm text-red-500">{{ pwdError() }}</p>
@@ -147,6 +147,114 @@ const PLAN_COLORS: Record<string, string> = {
             </div>
           </form>
         </div>
+
+        <!-- 2FA section -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-semibold text-gray-700">Double authentification (2FA)</h3>
+              <p class="text-xs text-gray-500 mt-0.5">
+                Sécurisez votre compte avec une application TOTP (Google Authenticator, Authy…)
+              </p>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-xs font-semibold"
+                  [class]="profile()!.totpEnabled
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-gray-100 text-gray-500'">
+              {{ profile()!.totpEnabled ? 'Activée' : 'Désactivée' }}
+            </span>
+          </div>
+
+          @if (!profile()!.totpEnabled) {
+            @if (!totpSetup()) {
+              <button (click)="startSetup()" [disabled]="twoFaLoading()"
+                      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50
+                             text-white text-sm font-medium rounded-lg transition">
+                {{ twoFaLoading() ? 'Chargement...' : 'Configurer la 2FA' }}
+              </button>
+            } @else {
+              <div class="space-y-4">
+                <p class="text-sm text-gray-600">
+                  Scannez ce QR code avec votre application d'authentification, puis entrez le code généré.
+                </p>
+                <div class="flex flex-col items-center gap-3">
+                  <img [src]="totpSetup()!.qrCodeImage" alt="QR Code 2FA"
+                       class="w-44 h-44 border border-gray-200 rounded-lg">
+                  <p class="text-xs text-gray-400 font-mono break-all text-center px-2">
+                    {{ totpSetup()!.secret }}
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Code de confirmation
+                  </label>
+                  <input type="text" [value]="twoFaCode()" (input)="onTwoFaInput($event)"
+                         maxlength="6" inputmode="numeric" placeholder="000000"
+                         class="w-40 px-3 py-2 border border-gray-300 rounded-lg text-sm
+                                text-center tracking-[0.4em] font-mono
+                                focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                @if (twoFaError()) {
+                  <p class="text-sm text-red-500">{{ twoFaError() }}</p>
+                }
+                @if (twoFaSuccess()) {
+                  <p class="text-sm text-green-600">2FA activée avec succès !</p>
+                }
+                <div class="flex gap-3">
+                  <button (click)="confirmEnable()" [disabled]="twoFaCode().length !== 6 || twoFaLoading()"
+                          class="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50
+                                 text-white text-sm font-medium rounded-lg transition">
+                    {{ twoFaLoading() ? 'Activation...' : 'Activer' }}
+                  </button>
+                  <button (click)="cancelSetup()" type="button"
+                          class="px-4 py-2 border border-gray-300 hover:bg-gray-50
+                                 text-gray-700 text-sm font-medium rounded-lg transition">
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            }
+          } @else {
+            @if (!showDisableForm()) {
+              <button (click)="showDisableForm.set(true)" type="button"
+                      class="px-4 py-2 border border-red-300 hover:bg-red-50
+                             text-red-600 text-sm font-medium rounded-lg transition">
+                Désactiver la 2FA
+              </button>
+            } @else {
+              <div class="space-y-3">
+                <p class="text-sm text-gray-600">
+                  Entrez un code TOTP valide pour désactiver la double authentification.
+                </p>
+                <div>
+                  <input type="text" [value]="twoFaCode()" (input)="onTwoFaInput($event)"
+                         maxlength="6" inputmode="numeric" placeholder="000000"
+                         class="w-40 px-3 py-2 border border-gray-300 rounded-lg text-sm
+                                text-center tracking-[0.4em] font-mono
+                                focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                @if (twoFaError()) {
+                  <p class="text-sm text-red-500">{{ twoFaError() }}</p>
+                }
+                @if (twoFaSuccess()) {
+                  <p class="text-sm text-green-600">2FA désactivée.</p>
+                }
+                <div class="flex gap-3">
+                  <button (click)="confirmDisable()" [disabled]="twoFaCode().length !== 6 || twoFaLoading()"
+                          class="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50
+                                 text-white text-sm font-medium rounded-lg transition">
+                    {{ twoFaLoading() ? 'Désactivation...' : 'Confirmer la désactivation' }}
+                  </button>
+                  <button (click)="cancelDisable()" type="button"
+                          class="px-4 py-2 border border-gray-300 hover:bg-gray-50
+                                 text-gray-700 text-sm font-medium rounded-lg transition">
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            }
+          }
+        </div>
       } @else {
         <div class="flex items-center justify-center h-40 text-gray-400 text-sm">
           Chargement...
@@ -160,13 +268,21 @@ export class ProfileComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly fb   = inject(FormBuilder);
 
-  profile    = signal<ProfileResponse | null>(null);
-  savingInfo = signal(false);
+  profile     = signal<ProfileResponse | null>(null);
+  savingInfo  = signal(false);
   infoSuccess = signal(false);
-  infoError  = signal('');
-  savingPwd  = signal(false);
-  pwdSuccess = signal(false);
-  pwdError   = signal('');
+  infoError   = signal('');
+  savingPwd   = signal(false);
+  pwdSuccess  = signal(false);
+  pwdError    = signal('');
+
+  // 2FA state
+  totpSetup      = signal<TotpSetupResponse | null>(null);
+  twoFaCode      = signal('');
+  twoFaLoading   = signal(false);
+  twoFaError     = signal('');
+  twoFaSuccess   = signal(false);
+  showDisableForm = signal(false);
 
   infoForm = this.fb.nonNullable.group({
     nom:   ['', Validators.required],
@@ -224,6 +340,68 @@ export class ProfileComponent implements OnInit {
       }
     });
   }
+
+  // ─── 2FA actions ─────────────────────────────────────────────────────────
+
+  startSetup() {
+    this.twoFaLoading.set(true);
+    this.twoFaError.set('');
+    this.auth.setup2fa().subscribe({
+      next: (res) => { this.totpSetup.set(res); this.twoFaLoading.set(false); },
+      error: (e) => { this.twoFaError.set(e?.error?.detail ?? 'Erreur'); this.twoFaLoading.set(false); }
+    });
+  }
+
+  confirmEnable() {
+    this.twoFaLoading.set(true);
+    this.twoFaError.set('');
+    this.auth.enable2fa(this.twoFaCode()).subscribe({
+      next: () => {
+        this.twoFaSuccess.set(true);
+        this.twoFaLoading.set(false);
+        this.totpSetup.set(null);
+        this.twoFaCode.set('');
+        const p = this.profile();
+        if (p) this.profile.set({ ...p, totpEnabled: true });
+      },
+      error: (e) => { this.twoFaError.set(e?.error?.detail ?? 'Code invalide'); this.twoFaLoading.set(false); }
+    });
+  }
+
+  cancelSetup() {
+    this.totpSetup.set(null);
+    this.twoFaCode.set('');
+    this.twoFaError.set('');
+  }
+
+  confirmDisable() {
+    this.twoFaLoading.set(true);
+    this.twoFaError.set('');
+    this.auth.disable2fa(this.twoFaCode()).subscribe({
+      next: () => {
+        this.twoFaSuccess.set(true);
+        this.twoFaLoading.set(false);
+        this.showDisableForm.set(false);
+        this.twoFaCode.set('');
+        const p = this.profile();
+        if (p) this.profile.set({ ...p, totpEnabled: false });
+      },
+      error: (e) => { this.twoFaError.set(e?.error?.detail ?? 'Code invalide'); this.twoFaLoading.set(false); }
+    });
+  }
+
+  cancelDisable() {
+    this.showDisableForm.set(false);
+    this.twoFaCode.set('');
+    this.twoFaError.set('');
+  }
+
+  onTwoFaInput(event: Event) {
+    const val = (event.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 6);
+    this.twoFaCode.set(val);
+  }
+
+  // ─── Helpers ─────────────────────────────────────────────────────────────
 
   pwdMismatch(): boolean {
     const f = this.pwdForm;

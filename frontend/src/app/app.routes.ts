@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { licenceGuard } from './core/guards/licence.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -18,6 +19,11 @@ export const routes: Routes = [
         canActivate: [guestGuard],
         loadComponent: () =>
           import('./features/auth/register/register.component').then(m => m.RegisterComponent)
+      },
+      {
+        path: 'accept-invite',
+        loadComponent: () =>
+          import('./features/auth/accept-invite/accept-invite.component').then(m => m.AcceptInviteComponent)
       }
     ]
   },
@@ -49,6 +55,7 @@ export const routes: Routes = [
       },
       {
         path: 'ia',
+        canActivate: [licenceGuard('IA')],
         loadComponent: () =>
           import('./features/ia/ia.component').then(m => m.IaComponent)
       },
@@ -76,6 +83,11 @@ export const routes: Routes = [
         path: 'budget',
         loadComponent: () =>
           import('./features/budget/budget.component').then(m => m.BudgetComponent)
+      },
+      {
+        path: 'budget-rh',
+        loadComponent: () =>
+          import('./features/budget-rh/budget-rh.component').then(m => m.BudgetRhComponent)
       },
       {
         path: 'rapprochement',
@@ -121,6 +133,11 @@ export const routes: Routes = [
         path: 'profile',
         loadComponent: () =>
           import('./features/profile/profile.component').then(m => m.ProfileComponent)
+      },
+      {
+        path: 'utilisateurs',
+        loadComponent: () =>
+          import('./features/utilisateurs-admin/utilisateurs-admin.component').then(m => m.UtilisateursAdminComponent)
       },
       {
         path: 'affectation',
@@ -184,6 +201,7 @@ export const routes: Routes = [
       },
       {
         path: 'consolidation',
+        canActivate: [licenceGuard('CONSOLIDATION')],
         loadComponent: () =>
           import('./features/consolidation/consolidation.component').then(m => m.ConsolidationComponent)
       },
@@ -291,8 +309,74 @@ export const routes: Routes = [
         path: 'reporting',
         loadComponent: () =>
           import('./features/reporting/reporting.component').then(m => m.ReportingComponent)
+      },
+      {
+        path: 'pilotage-global',
+        loadComponent: () =>
+          import('./features/pilotage-global/pilotage-global.component').then(m => m.PilotageGlobalComponent)
+      },
+      {
+        path: 'liasse-fiscale',
+        loadComponent: () =>
+          import('./features/liasse-fiscale/liasse-fiscale.component').then(m => m.LiasseFiscaleComponent)
+      },
+      {
+        path: 'documents-reglementaires',
+        loadComponent: () =>
+          import('./features/documents-reglementaires/documents-reglementaires.component').then(m => m.DocumentsReglementairesComponent)
+      },
+      {
+        path: 'provisions-techniques',
+        loadComponent: () =>
+          import('./features/provisions-techniques/provisions-techniques.component').then(m => m.ProvisionsTechniquesComponent)
+      },
+      {
+        path: 'etats-assurance',
+        loadComponent: () =>
+          import('./features/etats-assurance/etats-assurance.component').then(m => m.EtatsAssuranceComponent)
+      },
+      {
+        path: 'portefeuille-sfd',
+        loadComponent: () =>
+          import('./features/portefeuille-sfd/portefeuille-sfd.component').then(m => m.PortefeuilleSfdComponent)
+      },
+      {
+        path: 'etats-sfd',
+        loadComponent: () =>
+          import('./features/etats-sfd/etats-sfd.component').then(m => m.EtatsSfdComponent)
+      },
+      {
+        path: 'gouvernance',
+        loadComponent: () =>
+          import('./features/gouvernance/gouvernance.component').then(m => m.GouvernanceComponent)
+      },
+      {
+        path: 'finance-islamique',
+        loadComponent: () =>
+          import('./features/finance-islamique/finance-islamique.component').then(m => m.FinanceIslamiqueComponent)
+      },
+      {
+        path: 'crm',
+        canActivate: [licenceGuard('CRM')],
+        loadComponent: () =>
+          import('./features/crm/crm.component').then(m => m.CrmComponent)
+      },
+      {
+        path: 'commercial',
+        loadComponent: () =>
+          import('./features/commercial/commercial.component').then(m => m.CommercialComponent)
       }
     ]
+  },
+  {
+    path: 'portail/:entrepriseId',
+    loadComponent: () =>
+      import('./features/client-portail/client-portail.component').then(m => m.ClientPortailComponent)
+  },
+  {
+    path: 'portail-associe/:token',
+    loadComponent: () =>
+      import('./features/portail-associe/portail-associe.component').then(m => m.PortailAssocieComponent)
   },
   { path: '**', redirectTo: '/dashboard' }
 ];

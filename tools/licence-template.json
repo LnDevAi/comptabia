@@ -1,0 +1,21 @@
+{
+  "licenceId": "REPLACE-WITH-UUID",
+  "clientName": "Nom du Client",
+  "clientId": "client-001",
+  "modules": [
+    "COMPTABILITE",
+    "TIERS",
+    "IMMOBILISATIONS",
+    "FISCAL",
+    "BUDGET",
+    "TRESORERIE",
+    "FACTURATION",
+    "EXPORT",
+    "DOCUMENTS",
+    "GOUVERNANCE"
+  ],
+  "maxUsers": 5,
+  "issuedAt": "2026-01-01",
+  "expiresAt": "2027-01-01",
+  "fingerprint": null
+}

@@ -7,6 +7,16 @@ public final class SmtDto {
 
     private SmtDto() {}
 
+    public record EtatSituationPatrimoine(
+            int exercice,
+            List<PosteEsp> actif,
+            List<PosteEsp> passif,
+            java.math.BigDecimal totalActif,
+            java.math.BigDecimal totalPassif
+    ) {
+        public record PosteEsp(String categorie, String numero, String intitule, java.math.BigDecimal montant) {}
+    }
+
     public record EtatRecettesDepenses(
             int exercice,
             List<Poste> recettes,

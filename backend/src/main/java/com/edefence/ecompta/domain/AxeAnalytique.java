@@ -27,6 +27,17 @@ public class AxeAnalytique {
     @Column(nullable = false, length = 255)
     private String intitule;
 
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private String type = "AUTRE";
+
+    @Column(name = "montant_budget", precision = 15, scale = 2)
+    private java.math.BigDecimal montantBudget;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private AxeAnalytique parent;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean actif = true;

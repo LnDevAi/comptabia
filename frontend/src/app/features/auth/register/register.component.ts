@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { ReferentielPaysService } from '../../../core/services/referentiel-pays.service';
 import { PaysResume, PaysDetail } from '../../../core/models/referentiel-pays.model';
+import { TypeEntite } from '../../../core/models/auth.model';
 
 const passwordMatch: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
   const pwd  = group.get('motDePasse')?.value;
@@ -49,6 +50,21 @@ const passwordMatch: ValidatorFn = (group: AbstractControl): ValidationErrors | 
               @if (isInvalid('nomEntreprise')) {
                 <p class="text-xs text-red-500 mt-1">Champ requis</p>
               }
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Type d'entité <span class="text-red-500">*</span>
+              </label>
+              <select formControlName="typeEntite"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                <option value="ENTREPRISE">Entreprise / Société commerciale</option>
+                <option value="ASSOCIATION">Association / ONG</option>
+                <option value="ASSURANCE">Compagnie d'assurance</option>
+                <option value="MICROFINANCE">Institution de microfinance</option>
+                <option value="FINANCE_ISLAMIQUE">Établissement de finance islamique</option>
+              </select>
             </div>
 
             <div>
@@ -212,6 +228,7 @@ export class RegisterComponent implements OnInit {
 
   form = this.fb.nonNullable.group({
     nomEntreprise:    ['', Validators.required],
+    typeEntite:       ['ENTREPRISE' as TypeEntite, Validators.required],
     pays:             ['', Validators.required],
     nomUtilisateur:   ['', Validators.required],
     email:            ['', [Validators.required, Validators.email]],

@@ -4,6 +4,12 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:ecompta}
     password: ${SPRING_DATASOURCE_PASSWORD:changeme}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
   jpa:
     hibernate:
       ddl-auto: validate
@@ -20,6 +26,25 @@ spring:
       host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: ${SPRING_DATA_REDIS_PORT:6379}
       password: ${SPRING_DATA_REDIS_PASSWORD:}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 server:
   port: 8080
@@ -33,15 +58,48 @@ anthropic:
   model: ${ANTHROPIC_MODEL:claude-haiku-4-5-20251001}
   base-url: https://api.anthropic.com/v1
 
-spring:
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 20MB
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+    display-request-duration: true
+  server-url: ${API_BASE_URL:http://localhost:8080}
+  default-produces-media-type: application/json
 
 app:
+  licence:
+    file: ${LICENCE_FILE:./licence.lic}
+    dev-mode: ${LICENCE_DEV_MODE:true}
+    public-key: ${LICENCE_PUBLIC_KEY:}
+    private-key: ${LICENCE_PRIVATE_KEY:}
   upload:
     dir: ${UPLOAD_DIR:./uploads}
+  mail:
+    from: ${MAIL_FROM:noreply@ecompta.app}
+    enabled: ${MAIL_ENABLED:false}
+  sms:
+    provider: ${SMS_PROVIDER:mock}
+    api-url: ${SMS_API_URL:}
+    api-key: ${SMS_API_KEY:}
+    sender-id: ${SMS_SENDER_ID:eCompta}
+  frontend-url: ${FRONTEND_URL:http://localhost:4200}
 
 logging:
   level:

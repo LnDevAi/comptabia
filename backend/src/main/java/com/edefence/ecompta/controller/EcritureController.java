@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.UUID;
 
+@io.swagger.v3.oas.annotations.tags.Tag(name = "Écritures comptables", description = "Saisie, validation et consultation des écritures SYSCOHADA")
 @RestController
 @RequestMapping("/api/ecritures")
 @RequiredArgsConstructor

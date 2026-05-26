@@ -14,6 +14,7 @@ import com.edefence.ecompta.repository.UtilisateurRepository;
 import com.edefence.ecompta.security.JwtService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.UUID;
 
 @Service
@@ -34,6 +36,9 @@ public class AuthService {
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
     private final AuthenticationManager authManager;
+    private final StringRedisTemplate redisTemplate;
+
+    public static final String TOTP_PENDING_PREFIX = "2fa_pending:";
 
     @Transactional
     public AuthResponseDto register(RegisterDto dto) {
@@ -44,15 +49,29 @@ public class AuthService {
         // Résolution du référentiel fiscal par code pays
         ReferentielFiscalPays ref = referentielRepo.findByCode(dto.pays().toUpperCase()).orElse(null);
 
+        Entreprise.TypeEntite typeEntite = dto.typeEntite() != null
+                ? dto.typeEntite() : Entreprise.TypeEntite.ENTREPRISE;
+
         Entreprise.EntrepriseBuilder builder = Entreprise.builder()
                 .nom(dto.nomEntreprise())
                 .pays(dto.pays())
-                .codePays(dto.pays().toUpperCase());
+                .codePays(dto.pays().toUpperCase())
+                .typeEntite(typeEntite);
 
         if (ref != null) {
             builder.devise(ref.getDevise())
                    .tauxTvaDefaut(ref.getTauxTva())
                    .referentielComptable(ref.getSystemeComptable());
+        }
+        // Surcharger le référentiel selon le type d'entité
+        if (typeEntite == Entreprise.TypeEntite.ASSOCIATION) {
+            builder.referentielComptable("SYCEBNL");
+        } else if (typeEntite == Entreprise.TypeEntite.ASSURANCE) {
+            builder.referentielComptable("CIMA");
+        } else if (typeEntite == Entreprise.TypeEntite.MICROFINANCE) {
+            builder.referentielComptable("SFD");
+        } else if (typeEntite == Entreprise.TypeEntite.FINANCE_ISLAMIQUE) {
+            builder.referentielComptable("ISLAMIQUE");
         }
 
         Entreprise entreprise = entrepriseRepo.save(builder.build());
@@ -67,8 +86,18 @@ public class AuthService {
                         .build()
         );
 
-        // Auto-seed SYSCOHADA plan de comptes
-        compteService.seedSyscohadaForEntreprise(entreprise);
+        // Seed plan de comptes selon le type d'entité
+        if (typeEntite == Entreprise.TypeEntite.ASSOCIATION) {
+            compteService.seedSycebnlForEntreprise(entreprise);
+        } else if (typeEntite == Entreprise.TypeEntite.ASSURANCE) {
+            compteService.seedCimaForEntreprise(entreprise);
+        } else if (typeEntite == Entreprise.TypeEntite.MICROFINANCE) {
+            compteService.seedSfdForEntreprise(entreprise);
+        } else if (typeEntite == Entreprise.TypeEntite.FINANCE_ISLAMIQUE) {
+            compteService.seedFinanceIslamiqueForEntreprise(entreprise);
+        } else {
+            compteService.seedSyscohadaForEntreprise(entreprise);
+        }
 
         String token = jwtService.generate(user.getEmail(), entreprise.getId(), user.getRole().name());
         return toResponse(token, user, entreprise);
@@ -80,6 +109,15 @@ public class AuthService {
         Utilisateur user = utilisateurRepo.findByEmail(dto.email())
                 .orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable"));
 
+        if (user.isTotpEnabled()) {
+            String tempToken = UUID.randomUUID().toString();
+            redisTemplate.opsForValue().set(
+                    TOTP_PENDING_PREFIX + tempToken, user.getEmail(), Duration.ofMinutes(5));
+            return new AuthResponseDto(null, user.getEmail(), user.getNom(),
+                    user.getRole().name(), user.getEntreprise().getId(),
+                    user.getEntreprise().getNom(), true, tempToken);
+        }
+
         String token = jwtService.generate(user.getEmail(), user.getEntreprise().getId(), user.getRole().name());
         return toResponse(token, user, user.getEntreprise());
     }
@@ -90,7 +128,8 @@ public class AuthService {
                 .orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable"));
         Entreprise e = user.getEntreprise();
         return new ProfileDto(user.getId(), user.getNom(), user.getEmail(),
-                user.getRole().name(), e.getId(), e.getNom(), e.getPays(), e.getPlan(), user.getCreatedAt());
+                user.getRole().name(), e.getId(), e.getNom(), e.getPays(), e.getPlan(),
+                e.getTypeEntite(), user.getCreatedAt(), user.isTotpEnabled());
     }
 
     @Transactional
@@ -117,7 +156,8 @@ public class AuthService {
         utilisateurRepo.save(user);
         Entreprise e = user.getEntreprise();
         return new ProfileDto(user.getId(), user.getNom(), user.getEmail(),
-                user.getRole().name(), e.getId(), e.getNom(), e.getPays(), e.getPlan(), user.getCreatedAt());
+                user.getRole().name(), e.getId(), e.getNom(), e.getPays(), e.getPlan(),
+                e.getTypeEntite(), user.getCreatedAt(), user.isTotpEnabled());
     }
 
     private AuthResponseDto toResponse(String token, Utilisateur user, Entreprise entreprise) {
@@ -127,7 +167,9 @@ public class AuthService {
                 user.getNom(),
                 user.getRole().name(),
                 entreprise.getId(),
-                entreprise.getNom()
+                entreprise.getNom(),
+                null,
+                null
         );
     }
 }

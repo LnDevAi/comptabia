@@ -1,8 +1,11 @@
 package com.edefence.ecompta.controller;
 
 import com.edefence.ecompta.dto.etats.*;
+import com.edefence.ecompta.dto.etats.BilanCimaDto;
+import com.edefence.ecompta.dto.etats.CompteResultatCimaDto;
 import com.edefence.ecompta.service.EtatFinancierService;
 import com.edefence.ecompta.tenant.TenantContext;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "États financiers", description = "Balance, Bilan, Compte de résultat, Grand livre, Journal, TFT, EVCAP, Notes annexes, SMT, Import balance")
 @RestController
 @RequestMapping("/api/etats")
 @RequiredArgsConstructor
@@ -64,6 +68,11 @@ public class EtatFinancierController {
 
     // ─── Système Minimal de Trésorerie ───────────────────────────────────────
 
+    @GetMapping("/smt/esp")
+    public SmtDto.EtatSituationPatrimoine esp(@RequestParam(defaultValue = "0") int exercice) {
+        return service.getEsp(TenantContext.get(), exercice > 0 ? exercice : currentYear());
+    }
+
     @GetMapping("/smt/recettes-depenses")
     public SmtDto.EtatRecettesDepenses recettesDepenses(@RequestParam(defaultValue = "0") int exercice) {
         return service.getEtatRecettesDepenses(TenantContext.get(), exercice > 0 ? exercice : currentYear());
@@ -107,5 +116,33 @@ public class EtatFinancierController {
             @RequestParam(defaultValue = "0") int exercice) throws IOException {
         int annee = exercice > 0 ? exercice : currentYear();
         return service.genererDepuisBalance(TenantContext.get(), file, annee);
+    }
+
+    // ─── États financiers CIMA ───────────────────────────────────────────────
+
+    @GetMapping("/cima/bilan")
+    public BilanCimaDto bilanCima(@RequestParam(defaultValue = "0") int exercice) {
+        return service.getBilanCima(TenantContext.get(), exercice > 0 ? exercice : currentYear());
+    }
+
+    @GetMapping("/cima/resultat-technique")
+    public CompteResultatCimaDto compteResultatCima(@RequestParam(defaultValue = "0") int exercice) {
+        return service.getCompteResultatCima(TenantContext.get(), exercice > 0 ? exercice : currentYear());
+    }
+
+    // ─── États financiers SFD (BCEAO/UMOA) ──────────────────────────────────
+
+    @GetMapping("/sfd/resultat")
+    public com.edefence.ecompta.dto.etats.EtatResultatSfdDto etatResultatSfd(
+            @RequestParam(defaultValue = "0") int exercice) {
+        return service.getEtatResultatSfd(TenantContext.get(), exercice > 0 ? exercice : currentYear());
+    }
+
+    @PostMapping(value = "/import-balance-6col", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public com.edefence.ecompta.dto.etats.BalanceSixColonnesDto importBalance6Col(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(defaultValue = "0") int exercice) throws IOException {
+        int annee = exercice > 0 ? exercice : currentYear();
+        return service.genererDepuisBalance6Col(TenantContext.get(), file, annee);
     }
 }

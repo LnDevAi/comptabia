@@ -9,5 +9,6 @@ public record RegisterDto(
         @NotBlank String pays,
         @NotBlank String nomUtilisateur,
         @Email @NotBlank String email,
-        @Size(min = 8) @NotBlank String motDePasse
+        @Size(min = 8) @NotBlank String motDePasse,
+        com.edefence.ecompta.domain.Entreprise.TypeEntite typeEntite
 ) {}

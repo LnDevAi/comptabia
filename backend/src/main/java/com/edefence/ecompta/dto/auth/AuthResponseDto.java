@@ -8,5 +8,7 @@ public record AuthResponseDto(
         String nom,
         String role,
         UUID entrepriseId,
-        String nomEntreprise
+        String nomEntreprise,
+        Boolean requiresTwoFactor,
+        String tempToken
 ) {}

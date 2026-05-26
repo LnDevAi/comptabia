@@ -2,6 +2,7 @@ package com.edefence.ecompta.config;
 
 import com.edefence.ecompta.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -23,6 +24,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -34,6 +36,9 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
 
+    @Value("${cors.allowed-origins:http://localhost:4200}")
+    private String allowedOrigins;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
@@ -41,8 +46,16 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
+                                         "/api/auth/2fa/verify", "/api/auth/accept-invite").permitAll()
+                        .requestMatchers("/api/portail/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/portail-associe/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/crm/track/**").permitAll()
+                        .requestMatchers("/api/licence/status").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/referentiel/pays", "/api/referentiel/pays/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html",
+                                         "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
@@ -71,7 +84,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        config.setAllowedOriginPatterns(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

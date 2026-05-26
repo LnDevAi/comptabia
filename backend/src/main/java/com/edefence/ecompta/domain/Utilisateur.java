@@ -48,9 +48,26 @@ public class Utilisateur implements UserDetails {
     @Builder.Default
     private boolean actif = true;
 
+    @Column(name = "invite_token", length = 64)
+    private String inviteToken;
+
+    @Column(name = "invite_expires_at")
+    private OffsetDateTime inviteExpiresAt;
+
+    @Column(name = "totp_secret", length = 64)
+    private String totpSecret;
+
+    @Column(name = "totp_enabled", nullable = false)
+    @Builder.Default
+    private boolean totpEnabled = false;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;
+
+    public boolean isInvitePending() {
+        return !actif && inviteToken != null;
+    }
 
     // UserDetails
     @Override public String getUsername() { return email; }

@@ -11,6 +11,14 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, UUID> 
     Optional<Utilisateur> findByEmail(String email);
     boolean existsByEmail(String email);
     List<Utilisateur> findByEntrepriseId(UUID entrepriseId);
+    List<Utilisateur> findByEntrepriseIdOrderByCreatedAtDesc(UUID entrepriseId);
+    Optional<Utilisateur> findByInviteToken(String inviteToken);
+
+    @org.springframework.data.jpa.repository.Query("SELECT u FROM Utilisateur u WHERE u.entreprise.id = :eid AND u.role = :role AND u.actif = true")
+    List<Utilisateur> findAdminsByEntrepriseId(
+        @org.springframework.data.repository.query.Param("eid") UUID eid,
+        @org.springframework.data.repository.query.Param("role") Utilisateur.Role role
+    );
 
     @org.springframework.data.jpa.repository.Query("SELECT COUNT(u) FROM Utilisateur u WHERE u.entreprise.id = :eid AND u.actif = true")
     long countActifs(@org.springframework.data.repository.query.Param("eid") UUID eid);

@@ -1,10 +1,10 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import {
   AuthResponse, LoginPayload, RegisterPayload,
-  TokenPayload, ProfileResponse, UpdateProfilePayload
+  TokenPayload, ProfileResponse, UpdateProfilePayload, TotpSetupResponse
 } from '../models/auth.model';
 
 const TOKEN_KEY = 'ec_token';
@@ -19,8 +19,18 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  login(payload: LoginPayload) {
+  login(payload: LoginPayload): Observable<AuthResponse> {
     return this.http.post<AuthResponse>('/api/auth/login', payload).pipe(
+      tap(res => {
+        if (!res.requiresTwoFactor) {
+          this.storeSession(res);
+        }
+      })
+    );
+  }
+
+  verify2fa(tempToken: string, code: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>('/api/auth/2fa/verify', { tempToken, code }).pipe(
       tap(res => this.storeSession(res))
     );
   }
@@ -59,6 +69,26 @@ export class AuthService {
     );
   }
 
+  // ─── 2FA management ──────────────────────────────────────────────────────
+
+  get2faStatus(): Observable<{ totpEnabled: boolean }> {
+    return this.http.get<{ totpEnabled: boolean }>('/api/auth/2fa/status');
+  }
+
+  setup2fa(): Observable<TotpSetupResponse> {
+    return this.http.get<TotpSetupResponse>('/api/auth/2fa/setup');
+  }
+
+  enable2fa(code: string): Observable<void> {
+    return this.http.post<void>('/api/auth/2fa/enable', { code });
+  }
+
+  disable2fa(code: string): Observable<void> {
+    return this.http.post<void>('/api/auth/2fa/disable', { code });
+  }
+
+  // ─── Helpers ─────────────────────────────────────────────────────────────
+
   getToken(): string | null {
     return localStorage.getItem(TOKEN_KEY);
   }
@@ -80,6 +110,7 @@ export class AuthService {
   }
 
   private storeSession(res: AuthResponse) {
+    if (!res.token) return;
     localStorage.setItem(TOKEN_KEY, res.token);
     localStorage.setItem(USER_KEY, JSON.stringify(res));
     this.currentUser.set(res);

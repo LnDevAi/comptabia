@@ -1,8 +1,9 @@
 import {
-  ChangeDetectionStrategy, Component, inject, OnInit
+  ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { AlerteService } from '../../core/services/alerte.service';
 import { Alerte } from '../../core/models/alerte.model';
 
@@ -20,11 +21,26 @@ import { Alerte } from '../../core/models/alerte.model';
       <h1 class="text-xl font-bold text-gray-800">Alertes & Notifications</h1>
       <p class="text-sm text-gray-500 mt-0.5">Contrôles automatiques sur tous les modules</p>
     </div>
-    <button (click)="refresh()"
-            class="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50">
-      Actualiser
-    </button>
+    <div class="flex items-center gap-2">
+      <button (click)="sendTestEmail()"
+              [disabled]="emailLoading()"
+              class="text-xs px-3 py-1.5 border border-blue-200 rounded-lg text-blue-600 hover:bg-blue-50 disabled:opacity-50 flex items-center gap-1">
+        @if (emailLoading()) { <span>Envoi…</span> } @else { <span>Test email</span> }
+      </button>
+      <button (click)="refresh()"
+              class="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50">
+        Actualiser
+      </button>
+    </div>
   </div>
+
+  <!-- Email feedback -->
+  @if (emailMsg()) {
+    <div class="rounded-lg px-4 py-2.5 text-sm flex items-center gap-2"
+         [ngClass]="emailOk() ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'">
+      {{ emailMsg() }}
+    </div>
+  }
 
   @if (svc.alertes()) {
   <!-- KPIs -->
@@ -100,11 +116,37 @@ import { Alerte } from '../../core/models/alerte.model';
   `,
 })
 export class AlertesComponent implements OnInit {
-  svc = inject(AlerteService);
+  svc        = inject(AlerteService);
+  private http = inject(HttpClient);
+  private cdr  = inject(ChangeDetectorRef);
+
+  readonly emailLoading = signal(false);
+  readonly emailMsg     = signal<string | null>(null);
+  readonly emailOk      = signal(false);
 
   ngOnInit() { this.svc.charger(); }
 
   refresh() { this.svc.charger(); }
+
+  sendTestEmail() {
+    this.emailLoading.set(true);
+    this.emailMsg.set(null);
+    this.http.post('/api/alertes/test-email', null).subscribe({
+      next: () => {
+        this.emailLoading.set(false);
+        this.emailOk.set(true);
+        this.emailMsg.set('Email de test envoyé avec succès aux administrateurs.');
+        setTimeout(() => this.emailMsg.set(null), 5000);
+      },
+      error: (err) => {
+        this.emailLoading.set(false);
+        this.emailOk.set(false);
+        const detail = err.error?.detail ?? 'Erreur lors de l\'envoi (vérifiez la configuration SMTP).';
+        this.emailMsg.set(detail);
+        setTimeout(() => this.emailMsg.set(null), 8000);
+      }
+    });
+  }
 
   icone(a: Alerte): string {
     if (a.niveau === 'DANGER')  return '🔴';

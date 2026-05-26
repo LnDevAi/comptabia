@@ -13,6 +13,7 @@ import java.util.UUID;
 public interface TiersRepository extends JpaRepository<Tiers, UUID> {
 
     boolean existsByCodeAndEntrepriseId(String code, UUID entrepriseId);
+    java.util.Optional<Tiers> findByEmailIgnoreCaseAndEntrepriseIdAndType(String email, UUID entrepriseId, Tiers.TypeTiers type);
 
     Optional<Tiers> findByIdAndEntrepriseId(UUID id, UUID entrepriseId);
 

@@ -17,44 +17,84 @@ import { AuthService } from '../../../core/services/auth.service';
           <p class="text-sm text-gray-500 mt-1">Plateforme comptable SYSCOHADA</p>
         </div>
 
-        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input type="email" formControlName="email" autocomplete="email"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                          focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   [class.border-red-400]="showError('email')">
-            @if (showError('email')) {
-              <p class="text-xs text-red-500 mt-1">Email invalide</p>
-            }
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-            <input type="password" formControlName="motDePasse" autocomplete="current-password"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                          focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-
-          @if (error()) {
-            <div class="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">
-              {{ error() }}
+        @if (!step2fa()) {
+          <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" formControlName="email" autocomplete="email"
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                            focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     [class.border-red-400]="showError('email')">
+              @if (showError('email')) {
+                <p class="text-xs text-red-500 mt-1">Email invalide</p>
+              }
             </div>
-          }
 
-          <button type="submit" [disabled]="loading() || form.invalid"
-                  class="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50
-                         text-white font-medium py-2.5 rounded-lg text-sm transition">
-            {{ loading() ? 'Connexion...' : 'Se connecter' }}
-          </button>
-        </form>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+              <input type="password" formControlName="motDePasse" autocomplete="current-password"
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                            focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
 
-        <p class="text-center text-sm text-gray-500 mt-6">
-          Pas encore de compte ?
-          <a routerLink="/auth/register" class="text-blue-600 hover:underline font-medium">
-            Créer un espace comptable
-          </a>
-        </p>
+            @if (error()) {
+              <div class="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">
+                {{ error() }}
+              </div>
+            }
+
+            <button type="submit" [disabled]="loading() || form.invalid"
+                    class="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50
+                           text-white font-medium py-2.5 rounded-lg text-sm transition">
+              {{ loading() ? 'Connexion...' : 'Se connecter' }}
+            </button>
+          </form>
+
+          <p class="text-center text-sm text-gray-500 mt-6">
+            Pas encore de compte ?
+            <a routerLink="/auth/register" class="text-blue-600 hover:underline font-medium">
+              Créer un espace comptable
+            </a>
+          </p>
+        } @else {
+          <div class="space-y-4">
+            <div class="text-center mb-4">
+              <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-3">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+              </div>
+              <p class="text-sm text-gray-600">Saisissez le code à 6 chiffres<br>généré par votre application d'authentification.</p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Code d'authentification</label>
+              <input type="text" [value]="totpCode()" (input)="onTotpInput($event)"
+                     maxlength="6" inputmode="numeric" autocomplete="one-time-code"
+                     placeholder="000000"
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-center
+                            tracking-[0.5em] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            @if (error()) {
+              <div class="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">
+                {{ error() }}
+              </div>
+            }
+
+            <button (click)="submitTotp()" [disabled]="loading() || totpCode().length !== 6"
+                    class="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50
+                           text-white font-medium py-2.5 rounded-lg text-sm transition">
+              {{ loading() ? 'Vérification...' : 'Vérifier' }}
+            </button>
+
+            <button (click)="resetLogin()" type="button"
+                    class="w-full text-sm text-gray-500 hover:text-gray-700 py-1">
+              Retour à la connexion
+            </button>
+          </div>
+        }
       </div>
     </div>
   `
@@ -66,8 +106,12 @@ export class LoginComponent {
     motDePasse: ['', Validators.required]
   });
 
-  loading = signal(false);
-  error   = signal('');
+  loading  = signal(false);
+  error    = signal('');
+  step2fa  = signal(false);
+  totpCode = signal('');
+
+  private tempToken = '';
 
   constructor(
     private fb: FormBuilder,
@@ -80,12 +124,45 @@ export class LoginComponent {
     this.loading.set(true);
     this.error.set('');
     this.auth.login(this.form.getRawValue()).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
+      next: (res) => {
+        if (res.requiresTwoFactor && res.tempToken) {
+          this.tempToken = res.tempToken;
+          this.step2fa.set(true);
+          this.loading.set(false);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
+      },
       error: (e) => {
         this.error.set(e?.error?.detail ?? 'Identifiants invalides');
         this.loading.set(false);
       }
     });
+  }
+
+  onTotpInput(event: Event) {
+    const val = (event.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 6);
+    this.totpCode.set(val);
+  }
+
+  submitTotp() {
+    if (this.totpCode().length !== 6) return;
+    this.loading.set(true);
+    this.error.set('');
+    this.auth.verify2fa(this.tempToken, this.totpCode()).subscribe({
+      next: () => this.router.navigate(['/dashboard']),
+      error: (e) => {
+        this.error.set(e?.error?.detail ?? 'Code invalide. Réessayez.');
+        this.loading.set(false);
+      }
+    });
+  }
+
+  resetLogin() {
+    this.step2fa.set(false);
+    this.totpCode.set('');
+    this.tempToken = '';
+    this.error.set('');
   }
 
   showError(field: 'email'): boolean {

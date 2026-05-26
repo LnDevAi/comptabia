@@ -1,10 +1,14 @@
+export type TypeEntite = 'ENTREPRISE' | 'ASSOCIATION' | 'ASSURANCE' | 'MICROFINANCE' | 'FINANCE_ISLAMIQUE';
+
 export interface AuthResponse {
-  token: string;
+  token: string | null;
   email: string;
   nom: string;
   role: 'ADMIN' | 'COMPTABLE' | 'LECTEUR';
   entrepriseId: string;
   nomEntreprise: string;
+  requiresTwoFactor?: boolean;
+  tempToken?: string;
 }
 
 export interface LoginPayload {
@@ -15,6 +19,7 @@ export interface LoginPayload {
 export interface RegisterPayload {
   nomEntreprise: string;
   pays: string;
+  typeEntite: TypeEntite;
   nomUtilisateur: string;
   email: string;
   motDePasse: string;
@@ -36,7 +41,15 @@ export interface ProfileResponse {
   nomEntreprise: string;
   pays: string;
   plan: 'FREE' | 'PRO' | 'ENTERPRISE';
+  typeEntite: TypeEntite;
   createdAt: string;
+  totpEnabled: boolean;
+}
+
+export interface TotpSetupResponse {
+  qrCodeImage: string;
+  secret: string;
+  uri: string;
 }
 
 export interface UpdateProfilePayload {

@@ -23,8 +23,11 @@ public class AnalytiqueController {
     // ─── Axes ────────────────────────────────────────────────────────────────
 
     @GetMapping("/axes")
-    public List<AnalytiqueDto.AxeResponse> listerAxes() {
-        return service.listerAxes(TenantContext.get());
+    public List<AnalytiqueDto.AxeResponse> listerAxes(
+            @RequestParam(required = false) String type) {
+        return type != null
+                ? service.listerAxesParType(TenantContext.get(), type)
+                : service.listerAxes(TenantContext.get());
     }
 
     @PostMapping("/axes")
@@ -62,12 +65,21 @@ public class AnalytiqueController {
         service.ventiler(TenantContext.get(), req.ligneIds(), req.axeId());
     }
 
-    // ─── Rapport ─────────────────────────────────────────────────────────────
+    // ─── Rapport général ─────────────────────────────────────────────────────
 
     @GetMapping("/rapport")
     public AnalytiqueDto.RapportResponse rapport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate debut,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
         return service.rapport(TenantContext.get(), debut, fin);
+    }
+
+    // ─── Rapport bailleur ─────────────────────────────────────────────────────
+
+    @GetMapping("/rapport-bailleur")
+    public AnalytiqueDto.RapportBailleurResponse rapportBailleur(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate debut,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
+        return service.rapportBailleur(TenantContext.get(), debut, fin);
     }
 }

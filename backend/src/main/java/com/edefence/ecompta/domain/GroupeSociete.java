@@ -5,8 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -28,14 +28,9 @@ public class GroupeSociete {
     @JoinColumn(name = "createur_id", nullable = false)
     private Utilisateur createur;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "groupes_societes_membres",
-        joinColumns = @JoinColumn(name = "groupe_id"),
-        inverseJoinColumns = @JoinColumn(name = "entreprise_id")
-    )
+    @OneToMany(mappedBy = "groupe", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
-    private Set<Entreprise> membres = new HashSet<>();
+    private List<MembreGroupe> membres = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

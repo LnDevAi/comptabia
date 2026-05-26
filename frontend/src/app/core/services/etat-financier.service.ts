@@ -5,7 +5,8 @@ import {
   JournalLivreData, EtatRecettesDepensesData, EtatTresorerieData,
   FluxTresorerieData, EvcapData,
   NoteAnnexe, NoteAnnexeCreate, NoteAnnexeUpdate,
-  NoteCatalogue, NoteComputeeData, EtatsDepuisBalance
+  NoteCatalogue, NoteComputeeData, EtatsDepuisBalance,
+  EspData, BalanceSixColonnesData
 } from '../models/etats.model';
 
 @Injectable({ providedIn: 'root' })
@@ -25,6 +26,7 @@ export class EtatFinancierService {
     return this.http.get<GrandLivreData>(`${this.base}/grand-livre`, { params: p });
   }
   getJournal(exercice: number)          { return this.http.get<JournalLivreData>(`${this.base}/journal`, { params: this.params(exercice) }); }
+  getEsp(exercice: number)              { return this.http.get<EspData>(`${this.base}/smt/esp`, { params: this.params(exercice) }); }
   getRecettesDepenses(exercice: number) { return this.http.get<EtatRecettesDepensesData>(`${this.base}/smt/recettes-depenses`, { params: this.params(exercice) }); }
   getTresorerie(exercice: number)       { return this.http.get<EtatTresorerieData>(`${this.base}/smt/tresorerie`, { params: this.params(exercice) }); }
   getFluxTresorerie(exercice: number)   { return this.http.get<FluxTresorerieData>(`${this.base}/flux-tresorerie`, { params: this.params(exercice) }); }
@@ -43,5 +45,12 @@ export class EtatFinancierService {
     form.append('file', file);
     form.append('exercice', String(exercice));
     return this.http.post<EtatsDepuisBalance>(`${this.base}/import-balance`, form);
+  }
+
+  importBalance6Col(file: File, exercice: number) {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('exercice', String(exercice));
+    return this.http.post<BalanceSixColonnesData>(`${this.base}/import-balance-6col`, form);
   }
 }

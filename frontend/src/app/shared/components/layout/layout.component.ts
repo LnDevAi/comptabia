@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { AlerteService } from '../../../core/services/alerte.service';
 import { SseNotificationService } from '../../../core/services/sse-notification.service';
+import { LicenceService } from '../../../core/services/licence.service';
 
 @Component({
   selector: 'app-layout',
@@ -22,54 +23,116 @@ import { SseNotificationService } from '../../../core/services/sse-notification.
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             Tableau de bord
           </a>
-          <a routerLink="/dashboard/plan-comptes" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Plan de comptes
-          </a>
-          <a routerLink="/dashboard/ecritures" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Écritures
-          </a>
-          <a routerLink="/dashboard/etats" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            États financiers
-          </a>
-          <a routerLink="/dashboard/exercices" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Exercices
-          </a>
-          <a routerLink="/dashboard/tiers" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Tiers
-          </a>
-          <a routerLink="/dashboard/immobilisations" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Immobilisations
-          </a>
-          <a routerLink="/dashboard/budget" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Budget
-          </a>
-          <a routerLink="/dashboard/rapprochement" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Rapprochement
-          </a>
-          <a routerLink="/dashboard/tva" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            TVA
-          </a>
-          <a routerLink="/dashboard/lettrage" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Lettrage
-          </a>
-          <a routerLink="/dashboard/analytique" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Analytique
-          </a>
-          <a routerLink="/dashboard/relances" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Relances
-          </a>
+          @if (licenceSvc.hasModule('COMPTABILITE')) {
+            <a routerLink="/dashboard/plan-comptes" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Plan de comptes
+            </a>
+            <a routerLink="/dashboard/ecritures" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Écritures
+            </a>
+            <a routerLink="/dashboard/etats" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              États financiers
+            </a>
+            <a routerLink="/dashboard/exercices" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Exercices
+            </a>
+            <a routerLink="/dashboard/lettrage" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Lettrage
+            </a>
+            <a routerLink="/dashboard/analytique" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Analytique
+            </a>
+            <a routerLink="/dashboard/affectation" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Affectation
+            </a>
+            <a routerLink="/dashboard/balance-agee" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Balance âgée
+            </a>
+            <a routerLink="/dashboard/regularisations" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Régularisations
+            </a>
+            <a routerLink="/dashboard/devises" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Devises
+            </a>
+            <a routerLink="/dashboard/modeles" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Modèles
+            </a>
+          }
+          @if (licenceSvc.hasModule('TIERS')) {
+            <a routerLink="/dashboard/tiers" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Tiers
+            </a>
+          }
+          @if (licenceSvc.hasModule('IMMOBILISATIONS')) {
+            <a routerLink="/dashboard/immobilisations" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Immobilisations
+            </a>
+          }
+          @if (licenceSvc.hasModule('FISCAL')) {
+            <a routerLink="/dashboard/tva" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              TVA
+            </a>
+            <a routerLink="/dashboard/is" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              IS
+            </a>
+            <a routerLink="/dashboard/gestion-fiscale" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Fiscal
+            </a>
+            <a routerLink="/dashboard/notes-annexes-fiscales" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Notes annexes
+            </a>
+            <a routerLink="/dashboard/liasse-fiscale" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Liasse fiscale
+            </a>
+          }
+          @if (licenceSvc.hasModule('BUDGET')) {
+            <a routerLink="/dashboard/budget" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Budget
+            </a>
+          }
+          @if (licenceSvc.hasModule('TRESORERIE')) {
+            <a routerLink="/dashboard/rapprochement" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Rapprochement
+            </a>
+            <a routerLink="/dashboard/previsions-tresorerie" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Trésorerie
+            </a>
+          }
+          @if (licenceSvc.hasModule('FACTURATION')) {
+            <a routerLink="/dashboard/facturation" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Facturation
+            </a>
+            <a routerLink="/dashboard/devis" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Devis
+            </a>
+            <a routerLink="/dashboard/relances" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Relances
+            </a>
+          }
           <a routerLink="/dashboard/alertes" routerLinkActive="bg-red-50 text-red-700"
              class="relative px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             Alertes
@@ -80,50 +143,104 @@ import { SseNotificationService } from '../../../core/services/sse-notification.
               </span>
             }
           </a>
-          <a routerLink="/dashboard/export" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Export
-          </a>
-          <a routerLink="/dashboard/modeles" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Modèles
-          </a>
-          <a routerLink="/dashboard/import-fec" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Import FEC
-          </a>
-          <a routerLink="/dashboard/balance-agee" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Balance âgée
-          </a>
-          <a routerLink="/dashboard/paie" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Paie
-          </a>
-          <a routerLink="/dashboard/ratios" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Ratios
-          </a>
-          <a routerLink="/dashboard/pilotage" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Pilotage
-          </a>
-          <a routerLink="/dashboard/kpi-executif" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            KPI
-          </a>
-          <a routerLink="/dashboard/facturation" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Facturation
-          </a>
-          <a routerLink="/dashboard/devis" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Devis
-          </a>
-          <a routerLink="/dashboard/previsions-tresorerie" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Trésorerie
-          </a>
+          @if (licenceSvc.hasModule('EXPORT')) {
+            <a routerLink="/dashboard/export" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Export
+            </a>
+            <a routerLink="/dashboard/import-fec" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Import FEC
+            </a>
+          }
+          @if (licenceSvc.hasModule('DOCUMENTS')) {
+            <a routerLink="/dashboard/documents" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Documents
+            </a>
+          }
+          @if (licenceSvc.hasModule('PILOTAGE')) {
+            <a routerLink="/dashboard/ratios" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Ratios
+            </a>
+            <a routerLink="/dashboard/pilotage" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Pilotage
+            </a>
+            <a routerLink="/dashboard/kpi-executif" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              KPI
+            </a>
+            <a routerLink="/dashboard/reporting" routerLinkActive="bg-emerald-50 text-emerald-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Reporting
+            </a>
+          }
+          @if (licenceSvc.hasModule('PAIE_RH')) {
+            <a routerLink="/dashboard/paie" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Paie
+            </a>
+            <a routerLink="/dashboard/budget-rh" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Budget RH
+            </a>
+            <a routerLink="/dashboard/notes-frais" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Notes de frais
+            </a>
+            <a routerLink="/dashboard/conges" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Congés
+            </a>
+            <a routerLink="/dashboard/evaluations" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Évaluations
+            </a>
+            <a routerLink="/dashboard/gestion-sociale" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Social
+            </a>
+            <a routerLink="/dashboard/formation" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Formation
+            </a>
+            <a routerLink="/dashboard/discipline" routerLinkActive="bg-red-50 text-red-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Discipline
+            </a>
+            <a routerLink="/dashboard/dashboard-rh" routerLinkActive="bg-teal-50 text-teal-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Tableau RH
+            </a>
+            <a routerLink="/dashboard/temps-presences" routerLinkActive="bg-cyan-50 text-cyan-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Temps & Présences
+            </a>
+            <a routerLink="/dashboard/recrutement" routerLinkActive="bg-indigo-50 text-indigo-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Recrutement
+            </a>
+            <a routerLink="/dashboard/prets" routerLinkActive="bg-violet-50 text-violet-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Prêts & Avances
+            </a>
+            <a routerLink="/dashboard/mon-espace" routerLinkActive="bg-sky-50 text-sky-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Mon espace
+            </a>
+            <a routerLink="/dashboard/documents-rh" routerLinkActive="bg-rose-50 text-rose-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Documents RH
+            </a>
+          }
+          @if (licenceSvc.hasModule('CRM')) {
+            <a routerLink="/dashboard/crm" routerLinkActive="bg-violet-50 text-violet-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              CRM
+            </a>
+          }
           @if (user()?.role === 'ADMIN') {
             <a routerLink="/dashboard/approbations" routerLinkActive="bg-orange-50 text-orange-700"
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
@@ -133,107 +250,79 @@ import { SseNotificationService } from '../../../core/services/sse-notification.
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
               Paramètres
             </a>
-            <a routerLink="/dashboard/audit" routerLinkActive="bg-blue-50 text-blue-700"
+            @if (licenceSvc.hasModule('AUDIT')) {
+              <a routerLink="/dashboard/audit" routerLinkActive="bg-blue-50 text-blue-700"
+                 class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+                Audit
+              </a>
+            }
+            @if (licenceSvc.hasModule('CONSOLIDATION')) {
+              <a routerLink="/dashboard/consolidation" routerLinkActive="bg-blue-50 text-blue-700"
+                 class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+                Consolidation
+              </a>
+            }
+            <a routerLink="/dashboard/utilisateurs" routerLinkActive="bg-blue-50 text-blue-700"
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-              Audit
-            </a>
-            <a routerLink="/dashboard/consolidation" routerLinkActive="bg-blue-50 text-blue-700"
-               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-              Consolidation
+              Utilisateurs
             </a>
             <a routerLink="/dashboard/admin" routerLinkActive="bg-red-50 text-red-700"
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
               Administration
             </a>
+            <a routerLink="/dashboard/commercial" routerLinkActive="bg-emerald-50 text-emerald-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              <i class="bi bi-briefcase"></i> Gestion Commerciale
+            </a>
           }
-          <a routerLink="/dashboard/affectation" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Affectation
-          </a>
-          <a routerLink="/dashboard/is" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            IS
-          </a>
-          <a routerLink="/dashboard/documents" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Documents
-          </a>
+          @if (licenceSvc.hasModule('GOUVERNANCE')) {
+            <a routerLink="/dashboard/gouvernance" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Gouvernance
+            </a>
+          }
+          @if (licenceSvc.hasModule('ASSURANCE') && user()?.typeEntite === 'ASSURANCE') {
+            <a routerLink="/dashboard/provisions-techniques" routerLinkActive="bg-indigo-50 text-indigo-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Provisions CIMA
+            </a>
+            <a routerLink="/dashboard/etats-assurance" routerLinkActive="bg-indigo-50 text-indigo-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              États CIMA
+            </a>
+          }
+          @if (licenceSvc.hasModule('MICROFINANCE') && user()?.typeEntite === 'MICROFINANCE') {
+            <a routerLink="/dashboard/portefeuille-sfd" routerLinkActive="bg-teal-50 text-teal-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Portefeuille SFD
+            </a>
+            <a routerLink="/dashboard/etats-sfd" routerLinkActive="bg-teal-50 text-teal-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              États SFD
+            </a>
+          }
+          @if (licenceSvc.hasModule('FINANCE_ISLAMIQUE') && user()?.typeEntite === 'FINANCE_ISLAMIQUE') {
+            <a routerLink="/dashboard/finance-islamique" routerLinkActive="bg-emerald-50 text-emerald-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Finance Islamique
+            </a>
+          }
+          @if (licenceSvc.hasModule('ASSURANCE') && user()?.typeEntite === 'ASSOCIATION') {
+            <a routerLink="/dashboard/documents-reglementaires" routerLinkActive="bg-purple-50 text-purple-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Docs réglementaires
+            </a>
+          }
           <a routerLink="/dashboard/abonnements" routerLinkActive="bg-blue-50 text-blue-700"
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             Abonnements
           </a>
-          <a routerLink="/dashboard/devises" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Devises
-          </a>
-          <a routerLink="/dashboard/regularisations" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Régularisations
-          </a>
-          <a routerLink="/dashboard/notes-frais" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Notes de frais
-          </a>
-          <a routerLink="/dashboard/conges" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Congés
-          </a>
-          <a routerLink="/dashboard/evaluations" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Évaluations
-          </a>
-          <a routerLink="/dashboard/gestion-fiscale" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Fiscal
-          </a>
-          <a routerLink="/dashboard/gestion-sociale" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Social
-          </a>
-          <a routerLink="/dashboard/notes-annexes-fiscales" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Notes annexes
-          </a>
-          <a routerLink="/dashboard/formation" routerLinkActive="bg-blue-50 text-blue-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Formation
-          </a>
-          <a routerLink="/dashboard/discipline" routerLinkActive="bg-red-50 text-red-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Discipline
-          </a>
-          <a routerLink="/dashboard/dashboard-rh" routerLinkActive="bg-teal-50 text-teal-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Tableau RH
-          </a>
-          <a routerLink="/dashboard/temps-presences" routerLinkActive="bg-cyan-50 text-cyan-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Temps & Présences
-          </a>
-          <a routerLink="/dashboard/recrutement" routerLinkActive="bg-indigo-50 text-indigo-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Recrutement
-          </a>
-          <a routerLink="/dashboard/prets" routerLinkActive="bg-violet-50 text-violet-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Prêts & Avances
-          </a>
-          <a routerLink="/dashboard/mon-espace" routerLinkActive="bg-sky-50 text-sky-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Mon espace
-          </a>
-          <a routerLink="/dashboard/documents-rh" routerLinkActive="bg-rose-50 text-rose-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Documents RH
-          </a>
-          <a routerLink="/dashboard/reporting" routerLinkActive="bg-emerald-50 text-emerald-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
-            Reporting
-          </a>
-          <a routerLink="/dashboard/ia" routerLinkActive="bg-purple-50 text-purple-700"
-             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 flex items-center gap-1">
-            <span class="text-xs">✦</span> Assistant IA
-          </a>
+          @if (licenceSvc.hasModule('IA')) {
+            <a routerLink="/dashboard/ia" routerLinkActive="bg-purple-50 text-purple-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 flex items-center gap-1">
+              <span class="text-xs">✦</span> Assistant IA
+            </a>
+          }
         </nav>
 
         <!-- Right side: user info + notification bell -->
@@ -323,7 +412,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
   constructor(
     private auth: AuthService,
     readonly alerteSvc: AlerteService,
-    readonly sseSvc: SseNotificationService
+    readonly sseSvc: SseNotificationService,
+    readonly licenceSvc: LicenceService
   ) {}
 
   user = this.auth.user;
@@ -332,6 +422,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.alerteSvc.charger();
     this.sseSvc.connect();
+    this.licenceSvc.load().subscribe();
   }
 
   ngOnDestroy() { this.sseSvc.disconnect(); }
