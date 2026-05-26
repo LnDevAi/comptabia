@@ -378,6 +378,11 @@ export const routes: Routes = [
         canActivate: [licenceGuard('IMMOBILISATIONS')],
         loadComponent: () =>
           import('./features/stocks/stocks.component').then(m => m.StocksComponent)
+      },
+      {
+        path: 'academie',
+        loadComponent: () =>
+          import('./features/academie/academie.component').then(m => m.AcademieComponent)
       }
     ]
   },
