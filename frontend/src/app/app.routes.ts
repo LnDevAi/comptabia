@@ -226,6 +226,26 @@ export const routes: Routes = [
         path: 'conges',
         loadComponent: () =>
           import('./features/conges/conges.component').then(m => m.CongesComponent)
+      },
+      {
+        path: 'evaluations',
+        loadComponent: () =>
+          import('./features/evaluations/evaluations.component').then(m => m.EvaluationsComponent)
+      },
+      {
+        path: 'gestion-fiscale',
+        loadComponent: () =>
+          import('./features/gestion-fiscale/gestion-fiscale.component').then(m => m.GestionFiscaleComponent)
+      },
+      {
+        path: 'gestion-sociale',
+        loadComponent: () =>
+          import('./features/gestion-sociale/gestion-sociale.component').then(m => m.GestionSocialeComponent)
+      },
+      {
+        path: 'notes-annexes-fiscales',
+        loadComponent: () =>
+          import('./features/notes-annexes-fiscales/notes-annexes-fiscales.component').then(m => m.NotesAnnexesFiscalesComponent)
       }
     ]
   },
