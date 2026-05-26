@@ -351,6 +351,11 @@ export const routes: Routes = [
         path: 'finance-islamique',
         loadComponent: () =>
           import('./features/finance-islamique/finance-islamique.component').then(m => m.FinanceIslamiqueComponent)
+      },
+      {
+        path: 'crm',
+        loadComponent: () =>
+          import('./features/crm/crm.component').then(m => m.CrmComponent)
       }
     ]
   },
