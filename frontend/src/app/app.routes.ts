@@ -301,6 +301,11 @@ export const routes: Routes = [
         path: 'pilotage-global',
         loadComponent: () =>
           import('./features/pilotage-global/pilotage-global.component').then(m => m.PilotageGlobalComponent)
+      },
+      {
+        path: 'liasse-fiscale',
+        loadComponent: () =>
+          import('./features/liasse-fiscale/liasse-fiscale.component').then(m => m.LiasseFiscaleComponent)
       }
     ]
   },
