@@ -286,6 +286,11 @@ export const routes: Routes = [
         path: 'documents-rh',
         loadComponent: () =>
           import('./features/documents-rh/documents-rh.component').then(m => m.DocumentsRhComponent)
+      },
+      {
+        path: 'reporting',
+        loadComponent: () =>
+          import('./features/reporting/reporting.component').then(m => m.ReportingComponent)
       }
     ]
   },
