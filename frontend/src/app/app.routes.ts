@@ -341,6 +341,11 @@ export const routes: Routes = [
         path: 'etats-sfd',
         loadComponent: () =>
           import('./features/etats-sfd/etats-sfd.component').then(m => m.EtatsSfdComponent)
+      },
+      {
+        path: 'gouvernance',
+        loadComponent: () =>
+          import('./features/gouvernance/gouvernance.component').then(m => m.GouvernanceComponent)
       }
     ]
   },
@@ -348,6 +353,11 @@ export const routes: Routes = [
     path: 'portail/:entrepriseId',
     loadComponent: () =>
       import('./features/client-portail/client-portail.component').then(m => m.ClientPortailComponent)
+  },
+  {
+    path: 'portail-associe/:token',
+    loadComponent: () =>
+      import('./features/portail-associe/portail-associe.component').then(m => m.PortailAssocieComponent)
   },
   { path: '**', redirectTo: '/dashboard' }
 ];

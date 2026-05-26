@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
                                          "/api/auth/2fa/verify", "/api/auth/accept-invite").permitAll()
                         .requestMatchers("/api/portail/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/portail-associe/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/referentiel/pays", "/api/referentiel/pays/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html",
                                          "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
