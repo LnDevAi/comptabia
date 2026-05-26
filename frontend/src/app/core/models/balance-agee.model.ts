@@ -11,6 +11,8 @@ export interface LigneTiers {
   code:         string;
   compteNumero: string;
   buckets:      Buckets;
+  scoreRisque:  number;
+  risqueNiveau: 'FAIBLE' | 'MOYEN' | 'ELEVE' | 'CRITIQUE';
 }
 
 export interface BalanceAgeeResponse {

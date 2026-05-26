@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -44,11 +45,11 @@ public class BalanceAgeeService {
         LocalDate today = LocalDate.now();
 
         for (Object[] row : rows) {
-            String    numero   = (String)     row[0];
-            String    intitule = (String)     row[1];
-            LocalDate date     = (LocalDate)  row[2];
-            BigDecimal debit   = (BigDecimal) row[4];
-            BigDecimal credit  = (BigDecimal) row[5];
+            String     numero   = (String)     row[0];
+            String     intitule = (String)     row[1];
+            LocalDate  date     = (LocalDate)  row[2];
+            BigDecimal debit    = (BigDecimal) row[4];
+            BigDecimal credit   = (BigDecimal) row[5];
 
             BigDecimal net = isClient
                 ? debit.subtract(credit)
@@ -77,8 +78,12 @@ public class BalanceAgeeService {
             String nom  = t != null ? t.getNom() : intituleMap.get(numero);
             String code = t != null ? t.getCode() : "";
 
+            int    score  = computeScore(b, total);
+            String niveau = scoreToNiveau(score);
+
             lignes.add(new BalanceAgeeDto.LigneTiers(nom, code, numero,
-                new BalanceAgeeDto.Buckets(b[0], b[1], b[2], b[3], total)));
+                new BalanceAgeeDto.Buckets(b[0], b[1], b[2], b[3], total),
+                score, niveau));
         }
 
         lignes.sort(Comparator.comparing(BalanceAgeeDto.LigneTiers::nom));
@@ -97,5 +102,22 @@ public class BalanceAgeeService {
 
         return new BalanceAgeeDto.Response(
             isClient ? "CLIENT" : "FOURNISSEUR", today, lignes, totaux);
+    }
+
+    /** Score 0-100 : j0=0pts, j30=20pts, j60=50pts, j90=100pts, pondéré par montant */
+    private int computeScore(BigDecimal[] b, BigDecimal total) {
+        if (total.compareTo(BigDecimal.ZERO) == 0) return 0;
+        BigDecimal weighted = b[0].multiply(BigDecimal.ZERO)
+            .add(b[1].multiply(BigDecimal.valueOf(20)))
+            .add(b[2].multiply(BigDecimal.valueOf(50)))
+            .add(b[3].multiply(BigDecimal.valueOf(100)));
+        return weighted.divide(total, 0, RoundingMode.HALF_UP).intValue();
+    }
+
+    private String scoreToNiveau(int score) {
+        if (score < 15)  return "FAIBLE";
+        if (score < 40)  return "MOYEN";
+        if (score < 70)  return "ELEVE";
+        return "CRITIQUE";
     }
 }

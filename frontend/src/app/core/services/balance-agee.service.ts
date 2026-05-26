@@ -10,4 +10,8 @@ export class BalanceAgeeService {
     const params = new HttpParams().set('type', type);
     return this.http.get<BalanceAgeeResponse>('/api/balance-agee', { params });
   }
+
+  exportCsvUrl(type: 'CLIENT' | 'FOURNISSEUR'): string {
+    return `/api/balance-agee/export-csv?type=${type}`;
+  }
 }

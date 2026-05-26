@@ -18,7 +18,9 @@ public class BalanceAgeeDto {
         String nom,
         String code,
         String compteNumero,
-        Buckets buckets
+        Buckets buckets,
+        int scoreRisque,      // 0-100 pondéré par ancienneté
+        String risqueNiveau   // FAIBLE, MOYEN, ELEVE, CRITIQUE
     ) {}
 
     public record Response(
