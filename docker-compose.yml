@@ -55,6 +55,18 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       MAIL_FROM: ${MAIL_FROM:-noreply@ecompta.app}
+      # ── Licence ────────────────────────────────────────────────────────────
+      LICENCE_FILE: /config/licence.lic
+      LICENCE_DEV_MODE: ${LICENCE_DEV_MODE:-false}
+      LICENCE_PUBLIC_KEY: ${LICENCE_PUBLIC_KEY}
+      # ── SMS ────────────────────────────────────────────────────────────────
+      SMS_PROVIDER: ${SMS_PROVIDER:-mock}
+      SMS_API_URL: ${SMS_API_URL:-}
+      SMS_API_KEY: ${SMS_API_KEY:-}
+      SMS_SENDER_ID: ${SMS_SENDER_ID:-eCompta}
+    volumes:
+      - ./licence.lic:/config/licence.lic:ro
+      - uploads_data:/data/uploads
     ports:
       - "8080:8080"
     healthcheck:
@@ -83,3 +95,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  uploads_data:

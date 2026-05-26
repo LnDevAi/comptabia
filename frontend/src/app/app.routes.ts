@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { licenceGuard } from './core/guards/licence.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -54,6 +55,7 @@ export const routes: Routes = [
       },
       {
         path: 'ia',
+        canActivate: [licenceGuard('IA')],
         loadComponent: () =>
           import('./features/ia/ia.component').then(m => m.IaComponent)
       },
@@ -199,6 +201,7 @@ export const routes: Routes = [
       },
       {
         path: 'consolidation',
+        canActivate: [licenceGuard('CONSOLIDATION')],
         loadComponent: () =>
           import('./features/consolidation/consolidation.component').then(m => m.ConsolidationComponent)
       },
@@ -354,6 +357,7 @@ export const routes: Routes = [
       },
       {
         path: 'crm',
+        canActivate: [licenceGuard('CRM')],
         loadComponent: () =>
           import('./features/crm/crm.component').then(m => m.CrmComponent)
       }
