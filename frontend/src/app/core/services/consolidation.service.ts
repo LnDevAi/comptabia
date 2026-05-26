@@ -3,7 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   GroupeRequest, GroupeResponse,
-  BilanConsolide, CompteResultatConsolide
+  BilanConsolide, CompteResultatConsolide, TFTConsolide,
+  EliminationRequest, EliminationResponse
 } from '../models/consolidation.model';
 
 @Injectable({ providedIn: 'root' })
@@ -31,6 +32,19 @@ export class ConsolidationService {
     return this.http.delete<void>(`${this.base}/groupes/${id}`);
   }
 
+  listEliminations(groupeId: string, exercice: number): Observable<EliminationResponse[]> {
+    const params = new HttpParams().set('exercice', exercice);
+    return this.http.get<EliminationResponse[]>(`${this.base}/groupes/${groupeId}/eliminations`, { params });
+  }
+
+  addElimination(groupeId: string, req: EliminationRequest): Observable<EliminationResponse> {
+    return this.http.post<EliminationResponse>(`${this.base}/groupes/${groupeId}/eliminations`, req);
+  }
+
+  deleteElimination(groupeId: string, elimId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/groupes/${groupeId}/eliminations/${elimId}`);
+  }
+
   getBilan(groupeId: string, exercice: number): Observable<BilanConsolide> {
     const params = new HttpParams().set('exercice', exercice);
     return this.http.get<BilanConsolide>(`${this.base}/groupes/${groupeId}/bilan`, { params });
@@ -39,5 +53,10 @@ export class ConsolidationService {
   getCompteResultat(groupeId: string, exercice: number): Observable<CompteResultatConsolide> {
     const params = new HttpParams().set('exercice', exercice);
     return this.http.get<CompteResultatConsolide>(`${this.base}/groupes/${groupeId}/compte-resultat`, { params });
+  }
+
+  getTFT(groupeId: string, exercice: number): Observable<TFTConsolide> {
+    const params = new HttpParams().set('exercice', exercice);
+    return this.http.get<TFTConsolide>(`${this.base}/groupes/${groupeId}/tft`, { params });
   }
 }

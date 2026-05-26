@@ -14,6 +14,6 @@ public interface GroupeSocieteRepository extends JpaRepository<GroupeSociete, UU
     @Query("SELECT g FROM GroupeSociete g WHERE g.createur.id = :uid ORDER BY g.createdAt DESC")
     List<GroupeSociete> findByCreateur(@Param("uid") UUID userId);
 
-    @Query("SELECT g FROM GroupeSociete g LEFT JOIN FETCH g.membres WHERE g.id = :id")
+    @Query("SELECT g FROM GroupeSociete g LEFT JOIN FETCH g.membres m LEFT JOIN FETCH m.entreprise WHERE g.id = :id")
     Optional<GroupeSociete> findByIdWithMembres(@Param("id") UUID id);
 }

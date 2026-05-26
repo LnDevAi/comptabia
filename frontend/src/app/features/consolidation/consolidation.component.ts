@@ -1,17 +1,19 @@
 import {
   Component, OnInit, ChangeDetectionStrategy,
-  ChangeDetectorRef, inject, signal
+  ChangeDetectorRef, inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConsolidationService } from '../../core/services/consolidation.service';
 import {
-  GroupeResponse, GroupeRequest,
-  BilanConsolide, CompteResultatConsolide
+  GroupeResponse, GroupeRequest, MembreRequest,
+  BilanConsolide, CompteResultatConsolide, TFTConsolide,
+  EliminationResponse, EliminationRequest,
+  MethodeConsolidation, METHODES_CONSOLIDATION
 } from '../../core/models/consolidation.model';
 
 type View = 'groupes' | 'form-groupe' | 'etats';
-type EtatTab = 'bilan' | 'resultat';
+type EtatTab = 'bilan' | 'resultat' | 'tft' | 'eliminations';
 
 @Component({
   selector: 'app-consolidation',
@@ -25,7 +27,7 @@ type EtatTab = 'bilan' | 'resultat';
   <div class="flex items-center justify-between">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Consolidation & Multi-sociétés</h1>
-      <p class="text-sm text-gray-500 mt-0.5">Regroupez plusieurs sociétés pour générer des états consolidés</p>
+      <p class="text-sm text-gray-500 mt-0.5">Intégration globale, proportionnelle, mise en équivalence — conformité OHADA</p>
     </div>
     @if (view === 'groupes') {
       <button (click)="openFormGroupe()"
@@ -53,15 +55,18 @@ type EtatTab = 'bilan' | 'resultat';
         @for (g of groupes; track g.id) {
           <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-sm transition">
             <div class="flex items-start justify-between">
-              <div>
+              <div class="flex-1">
                 <h3 class="font-semibold text-gray-900">{{ g.nom }}</h3>
                 @if (g.description) {
                   <p class="text-sm text-gray-500 mt-0.5">{{ g.description }}</p>
                 }
-                <div class="flex flex-wrap gap-1 mt-2">
+                <div class="flex flex-wrap gap-1.5 mt-2">
                   @for (m of g.membres; track m.entrepriseId) {
-                    <span class="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
-                      {{ m.nom }} <span class="text-blue-400">{{ m.pays }}</span>
+                    <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
+                          [ngClass]="methodeClass(m.methodeConsolidation)">
+                      {{ m.nom }}
+                      <span class="opacity-70">{{ m.tauxDetention }}%</span>
+                      <span class="font-semibold">{{ methodeLabel(m.methodeConsolidation) }}</span>
                     </span>
                   }
                   @if (g.membres.length === 0) {
@@ -69,7 +74,7 @@ type EtatTab = 'bilan' | 'resultat';
                   }
                 </div>
               </div>
-              <div class="flex items-center gap-2 shrink-0">
+              <div class="flex items-center gap-2 shrink-0 ml-4">
                 <button (click)="openEtats(g)"
                         class="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
                   États consolidés
@@ -92,28 +97,83 @@ type EtatTab = 'bilan' | 'resultat';
 
   <!-- ═══ FORMULAIRE GROUPE ═══ -->
   @if (view === 'form-groupe') {
-    <div class="bg-white rounded-xl border border-gray-200 p-6 max-w-2xl">
+    <div class="bg-white rounded-xl border border-gray-200 p-6 max-w-3xl">
       <h2 class="text-lg font-semibold text-gray-800 mb-4">
-        {{ editGroupeId ? 'Modifier le groupe' : 'Nouveau groupe' }}
+        {{ editGroupeId ? 'Modifier le groupe' : 'Nouveau groupe de consolidation' }}
       </h2>
-      <form (ngSubmit)="saveGroupe()" class="space-y-4">
-        <div>
-          <label class="text-sm text-gray-600">Nom du groupe *</label>
-          <input type="text" [(ngModel)]="form.nom" name="nom" required
-                 class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+      <form (ngSubmit)="saveGroupe()" class="space-y-5">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm text-gray-600">Nom du groupe *</label>
+            <input type="text" [(ngModel)]="form.nom" name="nom" required
+                   class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Description</label>
+            <input type="text" [(ngModel)]="form.description" name="description"
+                   class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+          </div>
         </div>
+
+        <!-- Membres -->
         <div>
-          <label class="text-sm text-gray-600">Description</label>
-          <textarea [(ngModel)]="form.description" name="description" rows="2"
-                    class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-medium text-gray-700">Sociétés membres</label>
+            <button type="button" (click)="addMembre()"
+                    class="text-xs text-blue-600 hover:text-blue-800 font-medium">+ Ajouter une société</button>
+          </div>
+
+          @if (form.membres.length === 0) {
+            <p class="text-sm text-gray-400 italic py-3 text-center border border-dashed border-gray-300 rounded-lg">
+              Aucun membre — cliquez sur "+ Ajouter une société"
+            </p>
+          }
+
+          @for (m of form.membres; track $index; let i = $index) {
+            <div class="grid grid-cols-12 gap-2 items-center mb-2 p-3 bg-gray-50 rounded-lg">
+              <div class="col-span-5">
+                <label class="text-xs text-gray-500">UUID société *</label>
+                <input type="text" [(ngModel)]="m.entrepriseId" [name]="'eid_'+i" required
+                       placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                       class="mt-0.5 w-full border border-gray-300 rounded px-2 py-1 text-xs font-mono">
+              </div>
+              <div class="col-span-2">
+                <label class="text-xs text-gray-500">Taux %</label>
+                <input type="number" [(ngModel)]="m.tauxDetention" [name]="'taux_'+i"
+                       min="0" max="100" step="0.01"
+                       class="mt-0.5 w-full border border-gray-300 rounded px-2 py-1 text-xs text-right">
+              </div>
+              <div class="col-span-4">
+                <label class="text-xs text-gray-500">Méthode</label>
+                <select [(ngModel)]="m.methodeConsolidation" [name]="'methode_'+i"
+                        class="mt-0.5 w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white">
+                  @for (opt of methodes; track opt.value) {
+                    <option [value]="opt.value">{{ opt.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-span-1 flex items-end justify-center pb-0.5">
+                <button type="button" (click)="removeMembre(i)"
+                        class="text-red-400 hover:text-red-600 text-lg leading-none">×</button>
+              </div>
+            </div>
+          }
+          <p class="text-xs text-gray-400 mt-1">Trouvez les UUIDs dans Paramètres → Entreprise de chaque société.</p>
         </div>
-        <div>
-          <label class="text-sm text-gray-600">IDs des sociétés membres (un UUID par ligne)</label>
-          <textarea [(ngModel)]="membresText" name="membres" rows="4"
-                    placeholder="Collez ici les UUIDs des entreprises..."
-                    class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono"></textarea>
-          <p class="text-xs text-gray-400 mt-1">Vous trouverez les IDs dans Paramètres → Entreprise.</p>
+
+        <!-- Méthodes explications -->
+        <div class="grid grid-cols-3 gap-3">
+          @for (opt of methodes; track opt.value) {
+            <div class="border border-gray-200 rounded-lg p-3 text-xs"
+                 [ngClass]="opt.value === 'INTEGRATION_GLOBALE' ? 'border-blue-200 bg-blue-50' :
+                             opt.value === 'INTEGRATION_PROPORTIONNELLE' ? 'border-amber-200 bg-amber-50' :
+                             'border-purple-200 bg-purple-50'">
+              <p class="font-semibold text-gray-800">{{ opt.label }}</p>
+              <p class="text-gray-500 mt-0.5">{{ opt.description }}</p>
+            </div>
+          }
         </div>
+
         <div class="flex justify-end gap-3 pt-2">
           <button type="button" (click)="view = 'groupes'"
                   class="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50">
@@ -121,7 +181,7 @@ type EtatTab = 'bilan' | 'resultat';
           </button>
           <button type="submit"
                   class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
-            {{ editGroupeId ? 'Enregistrer' : 'Créer' }}
+            {{ editGroupeId ? 'Enregistrer' : 'Créer le groupe' }}
           </button>
         </div>
       </form>
@@ -133,17 +193,20 @@ type EtatTab = 'bilan' | 'resultat';
     <div class="space-y-4">
 
       <!-- Controls -->
-      <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
-        <div class="flex-1">
-          <p class="text-xs text-gray-500 uppercase tracking-wide">Groupe</p>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <p class="text-xs text-gray-500 uppercase tracking-wide">Groupe consolidé</p>
           <p class="font-semibold text-gray-900">{{ selectedGroupe.nom }}</p>
           <div class="flex flex-wrap gap-1 mt-1">
             @for (m of selectedGroupe.membres; track m.entrepriseId) {
-              <span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{{ m.nom }}</span>
+              <span class="text-xs px-2 py-0.5 rounded-full"
+                    [ngClass]="methodeClass(m.methodeConsolidation)">
+                {{ m.nom }} {{ m.tauxDetention }}% ({{ methodeLabel(m.methodeConsolidation) }})
+              </span>
             }
           </div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 shrink-0">
           <label class="text-sm text-gray-600">Exercice :</label>
           <input type="number" [(ngModel)]="exercice" min="2000" max="2100"
                  class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-24">
@@ -155,25 +218,28 @@ type EtatTab = 'bilan' | 'resultat';
       </div>
 
       <!-- Tabs -->
-      @if (bilan || compteResultat) {
-        <div class="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit">
-          <button (click)="etatTab = 'bilan'"
+      <div class="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit">
+        @for (tab of etatTabs; track tab.key) {
+          <button (click)="etatTab = tab.key"
                   class="px-4 py-1.5 text-sm rounded-md transition"
-                  [ngClass]="etatTab === 'bilan' ? 'bg-white text-blue-700 font-semibold shadow-sm' : 'text-gray-600'">
-            Bilan
+                  [ngClass]="etatTab === tab.key ? 'bg-white text-blue-700 font-semibold shadow-sm' : 'text-gray-600'">
+            {{ tab.label }}
           </button>
-          <button (click)="etatTab = 'resultat'"
-                  class="px-4 py-1.5 text-sm rounded-md transition"
-                  [ngClass]="etatTab === 'resultat' ? 'bg-white text-blue-700 font-semibold shadow-sm' : 'text-gray-600'">
-            Compte de résultat
-          </button>
-        </div>
-      }
+        }
+      </div>
 
-      <!-- Bilan consolidé -->
+      <!-- ─── Bilan consolidé ─── -->
       @if (etatTab === 'bilan' && bilan) {
+        @if (bilan.eliminationsAppliquees.length > 0) {
+          <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-xs text-amber-700">
+            <span class="font-semibold">Éliminations appliquées :</span>
+            @for (e of bilan.eliminationsAppliquees; track e.compteDebit) {
+              <span class="ml-2">{{ e.libelle || (e.compteDebit + '↔' + e.compteCredit) }} ({{ fmt(e.montant) }})</span>
+            }
+          </div>
+        }
+
         <div class="grid grid-cols-2 gap-4">
-          <!-- Actif -->
           <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div class="bg-blue-600 text-white px-4 py-2 flex justify-between items-center">
               <span class="font-semibold text-sm">ACTIF</span>
@@ -191,14 +257,15 @@ type EtatTab = 'bilan' | 'resultat';
                 @for (p of bilan.actif; track p.numero) {
                   <tr class="border-t border-gray-100 hover:bg-gray-50">
                     <td class="px-3 py-1.5 font-mono text-xs text-gray-500">{{ p.numero }}</td>
-                    <td class="px-3 py-1.5 text-gray-800">{{ p.intitule }}</td>
-                    <td class="px-3 py-1.5 text-right font-medium">{{ fmt(p.montant) }}</td>
+                    <td class="px-3 py-1.5 text-gray-800 text-xs">
+                      <span class="text-gray-400 mr-1">{{ p.categorie }}</span>{{ p.intitule }}
+                    </td>
+                    <td class="px-3 py-1.5 text-right font-medium text-sm">{{ fmt(p.montant) }}</td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
-          <!-- Passif -->
           <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div class="bg-gray-700 text-white px-4 py-2 flex justify-between items-center">
               <span class="font-semibold text-sm">PASSIF</span>
@@ -216,22 +283,21 @@ type EtatTab = 'bilan' | 'resultat';
                 @for (p of bilan.passif; track p.numero) {
                   <tr class="border-t border-gray-100 hover:bg-gray-50">
                     <td class="px-3 py-1.5 font-mono text-xs text-gray-500">{{ p.numero }}</td>
-                    <td class="px-3 py-1.5 text-gray-800">{{ p.intitule }}</td>
-                    <td class="px-3 py-1.5 text-right font-medium">{{ fmt(p.montant) }}</td>
+                    <td class="px-3 py-1.5 text-gray-800 text-xs">{{ p.intitule }}</td>
+                    <td class="px-3 py-1.5 text-right font-medium text-sm">{{ fmt(p.montant) }}</td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
         </div>
-        <p class="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          ⚠ {{ bilan.note }}
+        <p class="text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+          ℹ {{ bilan.note }}
         </p>
       }
 
-      <!-- Compte de résultat consolidé -->
+      <!-- ─── Compte de résultat ─── -->
       @if (etatTab === 'resultat' && compteResultat) {
-        <!-- KPIs -->
         <div class="grid grid-cols-3 gap-4">
           <div class="bg-white rounded-xl border border-gray-200 p-4">
             <p class="text-xs text-gray-500 uppercase">Total produits</p>
@@ -249,11 +315,9 @@ type EtatTab = 'bilan' | 'resultat';
             </p>
           </div>
         </div>
-
         <div class="grid grid-cols-2 gap-4">
-          <!-- Produits -->
           <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div class="bg-green-600 text-white px-4 py-2 flex justify-between items-center">
+            <div class="bg-green-600 text-white px-4 py-2 flex justify-between">
               <span class="font-semibold text-sm">PRODUITS (classe 7)</span>
               <span class="font-bold">{{ fmt(compteResultat.totalProduits) }}</span>
             </div>
@@ -262,16 +326,15 @@ type EtatTab = 'bilan' | 'resultat';
                 @for (p of compteResultat.produits; track p.numero) {
                   <tr class="border-t border-gray-100 hover:bg-gray-50">
                     <td class="px-3 py-1.5 font-mono text-xs text-gray-500">{{ p.numero }}</td>
-                    <td class="px-3 py-1.5 text-gray-800">{{ p.intitule }}</td>
+                    <td class="px-3 py-1.5 text-gray-800 text-xs">{{ p.intitule }}</td>
                     <td class="px-3 py-1.5 text-right font-medium text-green-600">{{ fmt(p.montant) }}</td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
-          <!-- Charges -->
           <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div class="bg-red-500 text-white px-4 py-2 flex justify-between items-center">
+            <div class="bg-red-500 text-white px-4 py-2 flex justify-between">
               <span class="font-semibold text-sm">CHARGES (classe 6)</span>
               <span class="font-bold">{{ fmt(compteResultat.totalCharges) }}</span>
             </div>
@@ -280,7 +343,7 @@ type EtatTab = 'bilan' | 'resultat';
                 @for (p of compteResultat.charges; track p.numero) {
                   <tr class="border-t border-gray-100 hover:bg-gray-50">
                     <td class="px-3 py-1.5 font-mono text-xs text-gray-500">{{ p.numero }}</td>
-                    <td class="px-3 py-1.5 text-gray-800">{{ p.intitule }}</td>
+                    <td class="px-3 py-1.5 text-gray-800 text-xs">{{ p.intitule }}</td>
                     <td class="px-3 py-1.5 text-right font-medium text-red-500">{{ fmt(p.montant) }}</td>
                   </tr>
                 }
@@ -291,6 +354,176 @@ type EtatTab = 'bilan' | 'resultat';
         <p class="text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
           ℹ {{ compteResultat.note }}
         </p>
+      }
+
+      <!-- ─── TFT consolidé ─── -->
+      @if (etatTab === 'tft' && tft) {
+        <!-- KPIs trésorerie -->
+        <div class="grid grid-cols-3 gap-4">
+          <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <p class="text-xs text-gray-500 uppercase">Trésorerie ouverture (N-1)</p>
+            <p class="text-lg font-bold text-gray-700 mt-1">{{ fmt(tft.tresorerieOuverture) }}</p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <p class="text-xs text-gray-500 uppercase">Variation trésorerie</p>
+            <p class="text-lg font-bold mt-1" [ngClass]="tft.variationTresorerie >= 0 ? 'text-green-600' : 'text-red-600'">
+              {{ tft.variationTresorerie >= 0 ? '+' : '' }}{{ fmt(tft.variationTresorerie) }}
+            </p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <p class="text-xs text-gray-500 uppercase">Trésorerie clôture (N)</p>
+            <p class="text-lg font-bold text-blue-700 mt-1">{{ fmt(tft.tresorerieCloture) }}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+          <!-- Flux exploitation -->
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="bg-blue-600 text-white px-4 py-2 flex justify-between">
+              <span class="font-semibold text-sm">I. FLUX D'EXPLOITATION</span>
+              <span class="font-bold" [ngClass]="tft.totalFluxExploitation >= 0 ? '' : 'text-red-200'">{{ fmt(tft.totalFluxExploitation) }}</span>
+            </div>
+            <table class="w-full text-xs">
+              <tbody>
+                @for (p of tft.fluxExploitation; track p.libelle) {
+                  <tr class="border-t border-gray-100 hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-700">{{ p.libelle }}</td>
+                    <td class="px-3 py-2 text-right font-medium" [ngClass]="p.montant >= 0 ? 'text-green-700' : 'text-red-600'">
+                      {{ p.montant >= 0 ? '+' : '' }}{{ fmt(p.montant) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <!-- Flux investissement -->
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="bg-amber-600 text-white px-4 py-2 flex justify-between">
+              <span class="font-semibold text-sm">II. FLUX D'INVESTISSEMENT</span>
+              <span class="font-bold">{{ fmt(tft.totalFluxInvestissement) }}</span>
+            </div>
+            <table class="w-full text-xs">
+              <tbody>
+                @for (p of tft.fluxInvestissement; track p.libelle) {
+                  <tr class="border-t border-gray-100 hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-700">{{ p.libelle }}</td>
+                    <td class="px-3 py-2 text-right font-medium" [ngClass]="p.montant >= 0 ? 'text-green-700' : 'text-red-600'">
+                      {{ p.montant >= 0 ? '+' : '' }}{{ fmt(p.montant) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <!-- Flux financement -->
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="bg-purple-600 text-white px-4 py-2 flex justify-between">
+              <span class="font-semibold text-sm">III. FLUX DE FINANCEMENT</span>
+              <span class="font-bold">{{ fmt(tft.totalFluxFinancement) }}</span>
+            </div>
+            <table class="w-full text-xs">
+              <tbody>
+                @for (p of tft.fluxFinancement; track p.libelle) {
+                  <tr class="border-t border-gray-100 hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-700">{{ p.libelle }}</td>
+                    <td class="px-3 py-2 text-right font-medium" [ngClass]="p.montant >= 0 ? 'text-green-700' : 'text-red-600'">
+                      {{ p.montant >= 0 ? '+' : '' }}{{ fmt(p.montant) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="text-xs text-purple-600 bg-purple-50 border border-purple-200 rounded-lg px-3 py-2">
+          ℹ {{ tft.note }}
+        </p>
+      }
+
+      <!-- ─── Éliminations interco ─── -->
+      @if (etatTab === 'eliminations') {
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-semibold text-gray-800">Éliminations inter-sociétés</h3>
+              <p class="text-xs text-gray-500 mt-0.5">Neutralisez les opérations réciproques (créances/dettes, produits/charges intra-groupe)</p>
+            </div>
+            <button (click)="showElimForm = !showElimForm"
+                    class="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">
+              + Ajouter élimination
+            </button>
+          </div>
+
+          @if (showElimForm) {
+            <form (ngSubmit)="addElimination()" class="bg-gray-50 rounded-lg p-4 mb-4 grid grid-cols-6 gap-3 items-end">
+              <div class="col-span-1">
+                <label class="text-xs text-gray-500">Compte débit *</label>
+                <input type="text" [(ngModel)]="elimForm.compteDebit" name="cd" required
+                       placeholder="ex: 411" class="mt-1 w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-mono">
+              </div>
+              <div class="col-span-1">
+                <label class="text-xs text-gray-500">Compte crédit *</label>
+                <input type="text" [(ngModel)]="elimForm.compteCredit" name="cc" required
+                       placeholder="ex: 401" class="mt-1 w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-mono">
+              </div>
+              <div class="col-span-2">
+                <label class="text-xs text-gray-500">Libellé</label>
+                <input type="text" [(ngModel)]="elimForm.libelle" name="lib"
+                       placeholder="ex: Créance/dette filiale A ↔ B"
+                       class="mt-1 w-full border border-gray-300 rounded px-2 py-1.5 text-sm">
+              </div>
+              <div class="col-span-1">
+                <label class="text-xs text-gray-500">Montant *</label>
+                <input type="number" [(ngModel)]="elimForm.montant" name="mt" required min="0"
+                       class="mt-1 w-full border border-gray-300 rounded px-2 py-1.5 text-sm text-right">
+              </div>
+              <div class="col-span-1 flex gap-2">
+                <button type="submit" class="flex-1 px-3 py-1.5 bg-green-600 text-white text-xs rounded hover:bg-green-700">OK</button>
+                <button type="button" (click)="showElimForm = false" class="px-2 py-1.5 border border-gray-300 text-gray-500 text-xs rounded hover:bg-gray-100">✕</button>
+              </div>
+            </form>
+          }
+
+          @if (eliminations.length === 0) {
+            <p class="text-center text-sm text-gray-400 py-8">Aucune élimination configurée pour l'exercice {{ exercice }}</p>
+          } @else {
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50">
+                <tr class="text-xs text-gray-500 uppercase tracking-wide">
+                  <th class="px-3 py-2 text-left">Compte débit</th>
+                  <th class="px-3 py-2 text-left">Compte crédit</th>
+                  <th class="px-3 py-2 text-left">Libellé</th>
+                  <th class="px-3 py-2 text-right">Montant</th>
+                  <th class="px-3 py-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (e of eliminations; track e.id) {
+                  <tr class="border-t border-gray-100 hover:bg-gray-50">
+                    <td class="px-3 py-2 font-mono text-blue-600">{{ e.compteDebit }}</td>
+                    <td class="px-3 py-2 font-mono text-red-600">{{ e.compteCredit }}</td>
+                    <td class="px-3 py-2 text-gray-700">{{ e.libelle || '—' }}</td>
+                    <td class="px-3 py-2 text-right font-medium">{{ fmt(e.montant) }}</td>
+                    <td class="px-3 py-2 text-right">
+                      <button (click)="deleteElimination(e.id)"
+                              class="text-red-400 hover:text-red-600 text-xs">Suppr.</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+
+          <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-700">
+            <p class="font-semibold mb-1">Exemples d'éliminations courantes :</p>
+            <ul class="space-y-0.5 list-disc list-inside">
+              <li><span class="font-mono">411 ↔ 401</span> — Créances clients / Dettes fournisseurs intra-groupe</li>
+              <li><span class="font-mono">706 ↔ 606</span> — Produits / Achats intra-groupe (ventes internes)</li>
+              <li><span class="font-mono">26x ↔ 10x</span> — Titres de participation / Capital (élimination des titres)</li>
+              <li><span class="font-mono">141 ↔ 786</span> — Provisions sur créances internes</li>
+            </ul>
+          </div>
+        </div>
       }
 
     </div>
@@ -304,6 +537,14 @@ export class ConsolidationComponent implements OnInit {
   private svc = inject(ConsolidationService);
   private cdr = inject(ChangeDetectorRef);
 
+  readonly methodes = METHODES_CONSOLIDATION;
+  readonly etatTabs: { key: EtatTab; label: string }[] = [
+    { key: 'bilan',        label: 'Bilan' },
+    { key: 'resultat',     label: 'Compte de résultat' },
+    { key: 'tft',          label: 'TFT' },
+    { key: 'eliminations', label: 'Éliminations' },
+  ];
+
   view: View = 'groupes';
   etatTab: EtatTab = 'bilan';
 
@@ -314,9 +555,12 @@ export class ConsolidationComponent implements OnInit {
   exercice = new Date().getFullYear();
   bilan: BilanConsolide | null = null;
   compteResultat: CompteResultatConsolide | null = null;
+  tft: TFTConsolide | null = null;
+  eliminations: EliminationResponse[] = [];
 
   form: GroupeRequest = this.emptyForm();
-  membresText = '';
+  showElimForm = false;
+  elimForm: EliminationRequest = this.emptyElimForm();
 
   ngOnInit() { this.chargerGroupes(); }
 
@@ -330,30 +574,36 @@ export class ConsolidationComponent implements OnInit {
   openFormGroupe(g?: GroupeResponse) {
     if (g) {
       this.editGroupeId = g.id;
-      this.form = { nom: g.nom, description: g.description || '', membreIds: g.membres.map(m => m.entrepriseId) };
-      this.membresText = g.membres.map(m => m.entrepriseId).join('\n');
+      this.form = {
+        nom: g.nom,
+        description: g.description || '',
+        membres: g.membres.map(m => ({
+          entrepriseId: m.entrepriseId,
+          tauxDetention: m.tauxDetention,
+          methodeConsolidation: m.methodeConsolidation
+        }))
+      };
     } else {
       this.editGroupeId = null;
       this.form = this.emptyForm();
-      this.membresText = '';
     }
     this.view = 'form-groupe';
   }
 
-  saveGroupe() {
-    this.form.membreIds = this.membresText
-      .split('\n')
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
+  addMembre() {
+    this.form.membres.push({ entrepriseId: '', tauxDetention: 100, methodeConsolidation: 'INTEGRATION_GLOBALE' });
+  }
 
+  removeMembre(i: number) {
+    this.form.membres.splice(i, 1);
+  }
+
+  saveGroupe() {
+    if (!this.form.nom.trim()) return;
     const obs = this.editGroupeId
       ? this.svc.updateGroupe(this.editGroupeId, this.form)
       : this.svc.createGroupe(this.form);
-
-    obs.subscribe(() => {
-      this.chargerGroupes();
-      this.view = 'groupes';
-    });
+    obs.subscribe(() => { this.chargerGroupes(); this.view = 'groupes'; });
   }
 
   supprimerGroupe(id: string) {
@@ -365,6 +615,8 @@ export class ConsolidationComponent implements OnInit {
     this.selectedGroupe = g;
     this.bilan = null;
     this.compteResultat = null;
+    this.tft = null;
+    this.eliminations = [];
     this.view = 'etats';
     this.chargerEtats();
   }
@@ -373,14 +625,40 @@ export class ConsolidationComponent implements OnInit {
     if (!this.selectedGroupe) return;
     const id = this.selectedGroupe.id;
 
-    this.svc.getBilan(id, this.exercice).subscribe(b => {
-      this.bilan = b;
+    this.svc.getBilan(id, this.exercice).subscribe(b => { this.bilan = b; this.cdr.markForCheck(); });
+    this.svc.getCompteResultat(id, this.exercice).subscribe(r => { this.compteResultat = r; this.cdr.markForCheck(); });
+    this.svc.getTFT(id, this.exercice).subscribe(t => { this.tft = t; this.cdr.markForCheck(); });
+    this.svc.listEliminations(id, this.exercice).subscribe(e => { this.eliminations = e; this.cdr.markForCheck(); });
+  }
+
+  addElimination() {
+    if (!this.selectedGroupe) return;
+    this.elimForm.exercice = this.exercice;
+    this.svc.addElimination(this.selectedGroupe.id, this.elimForm).subscribe(e => {
+      this.eliminations = [...this.eliminations, e];
+      this.elimForm = this.emptyElimForm();
+      this.showElimForm = false;
       this.cdr.markForCheck();
     });
-    this.svc.getCompteResultat(id, this.exercice).subscribe(r => {
-      this.compteResultat = r;
+  }
+
+  deleteElimination(id: string) {
+    if (!this.selectedGroupe) return;
+    this.svc.deleteElimination(this.selectedGroupe.id, id).subscribe(() => {
+      this.eliminations = this.eliminations.filter(e => e.id !== id);
       this.cdr.markForCheck();
     });
+  }
+
+  methodeLabel(m: MethodeConsolidation): string {
+    return m === 'INTEGRATION_GLOBALE' ? 'IG' :
+           m === 'INTEGRATION_PROPORTIONNELLE' ? 'IP' : 'MEQ';
+  }
+
+  methodeClass(m: MethodeConsolidation): string {
+    return m === 'INTEGRATION_GLOBALE'         ? 'bg-blue-50 text-blue-700' :
+           m === 'INTEGRATION_PROPORTIONNELLE' ? 'bg-amber-50 text-amber-700' :
+                                                 'bg-purple-50 text-purple-700';
   }
 
   fmt(n: number): string {
@@ -390,6 +668,10 @@ export class ConsolidationComponent implements OnInit {
   }
 
   private emptyForm(): GroupeRequest {
-    return { nom: '', description: '', membreIds: [] };
+    return { nom: '', description: '', membres: [] };
+  }
+
+  private emptyElimForm(): EliminationRequest {
+    return { compteDebit: '', compteCredit: '', libelle: '', exercice: this.exercice, montant: 0 };
   }
 }

@@ -28,34 +28,53 @@ public class ConsolidationController {
     }
 
     @GetMapping("/groupes/{id}")
-    public ConsolidationDto.GroupeResponse getGroupe(
-            @PathVariable UUID id,
-            @AuthenticationPrincipal Utilisateur user) {
+    public ConsolidationDto.GroupeResponse getGroupe(@PathVariable UUID id, @AuthenticationPrincipal Utilisateur user) {
         return service.getGroupe(id, user);
     }
 
     @PostMapping("/groupes")
     @ResponseStatus(HttpStatus.CREATED)
-    public ConsolidationDto.GroupeResponse createGroupe(
-            @RequestBody ConsolidationDto.GroupeRequest req,
-            @AuthenticationPrincipal Utilisateur user) {
+    public ConsolidationDto.GroupeResponse createGroupe(@RequestBody ConsolidationDto.GroupeRequest req, @AuthenticationPrincipal Utilisateur user) {
         return service.createGroupe(req, user);
     }
 
     @PutMapping("/groupes/{id}")
-    public ConsolidationDto.GroupeResponse updateGroupe(
-            @PathVariable UUID id,
-            @RequestBody ConsolidationDto.GroupeRequest req,
-            @AuthenticationPrincipal Utilisateur user) {
+    public ConsolidationDto.GroupeResponse updateGroupe(@PathVariable UUID id, @RequestBody ConsolidationDto.GroupeRequest req, @AuthenticationPrincipal Utilisateur user) {
         return service.updateGroupe(id, req, user);
     }
 
     @DeleteMapping("/groupes/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteGroupe(
-            @PathVariable UUID id,
-            @AuthenticationPrincipal Utilisateur user) {
+    public void deleteGroupe(@PathVariable UUID id, @AuthenticationPrincipal Utilisateur user) {
         service.deleteGroupe(id, user);
+    }
+
+    // ─── Éliminations interco ─────────────────────────────────────────────────
+
+    @GetMapping("/groupes/{id}/eliminations")
+    public List<ConsolidationDto.EliminationResponse> listEliminations(
+            @PathVariable UUID id,
+            @RequestParam int exercice,
+            @AuthenticationPrincipal Utilisateur user) {
+        return service.listEliminations(id, exercice, user);
+    }
+
+    @PostMapping("/groupes/{id}/eliminations")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ConsolidationDto.EliminationResponse addElimination(
+            @PathVariable UUID id,
+            @RequestBody ConsolidationDto.EliminationRequest req,
+            @AuthenticationPrincipal Utilisateur user) {
+        return service.addElimination(id, req, user);
+    }
+
+    @DeleteMapping("/groupes/{groupeId}/eliminations/{elimId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteElimination(
+            @PathVariable UUID groupeId,
+            @PathVariable UUID elimId,
+            @AuthenticationPrincipal Utilisateur user) {
+        service.deleteElimination(groupeId, elimId, user);
     }
 
     // ─── États consolidés ─────────────────────────────────────────────────────
@@ -74,5 +93,13 @@ public class ConsolidationController {
             @RequestParam int exercice,
             @AuthenticationPrincipal Utilisateur user) {
         return service.getCompteResultatConsolide(id, exercice, user);
+    }
+
+    @GetMapping("/groupes/{id}/tft")
+    public ConsolidationDto.TFTConsolide getTFT(
+            @PathVariable UUID id,
+            @RequestParam int exercice,
+            @AuthenticationPrincipal Utilisateur user) {
+        return service.getTFTConsolide(id, exercice, user);
     }
 }
