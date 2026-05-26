@@ -328,6 +328,10 @@ import { ToastComponent } from '../toast/toast.component';
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             Abonnements
           </a>
+          <a routerLink="/dashboard/academie" routerLinkActive="bg-indigo-50 text-indigo-700"
+             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 flex items-center gap-1">
+            <span class="text-xs">✦</span> Académie
+          </a>
           @if (licenceSvc.hasModule('IA')) {
             <a routerLink="/dashboard/ia" routerLinkActive="bg-purple-50 text-purple-700"
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 flex items-center gap-1">
