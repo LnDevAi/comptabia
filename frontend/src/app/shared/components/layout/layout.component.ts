@@ -80,6 +80,10 @@ import { LicenceService } from '../../../core/services/licence.service';
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
               Immobilisations
             </a>
+            <a routerLink="/dashboard/stocks" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Stocks
+            </a>
           }
           @if (licenceSvc.hasModule('FISCAL')) {
             <a routerLink="/dashboard/tva" routerLinkActive="bg-blue-50 text-blue-700"

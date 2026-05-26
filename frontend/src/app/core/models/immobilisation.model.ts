@@ -33,6 +33,7 @@ export interface PlanAmortissement {
   designation: string;
   valeurBrute: number;
   dureeAmortissement: number;
+  methode: string;
   lignes: LignePlan[];
 }
 
@@ -59,4 +60,5 @@ export interface ImmoRequest {
   dateAcquisition: string;
   valeurBrute: number;
   dureeAmortissement: number;
+  methode?: string;
 }

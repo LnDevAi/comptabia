@@ -77,6 +77,6 @@ public class Immobilisation {
     private OffsetDateTime createdAt;
 
     public enum Categorie   { CORPORELLE, INCORPORELLE, FINANCIERE }
-    public enum Methode     { LINEAIRE }
+    public enum Methode     { LINEAIRE, DEGRESSIF }
     public enum Statut      { ACTIF, CEDE, RETIRE }
 }
