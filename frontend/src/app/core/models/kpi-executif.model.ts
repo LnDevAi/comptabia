@@ -15,6 +15,8 @@ export interface MoisData {
   ca:        number;
   charges:   number;
   resultat:  number;
+  caN1:      number;
+  chargesN1: number;
 }
 
 export interface BudgetSynthese {
@@ -22,6 +24,25 @@ export interface BudgetSynthese {
   totalReel:        number;
   tauxConsommation: number;
   nbDepassements:   number;
+}
+
+export interface CompteCharge {
+  numero:   string;
+  libelle:  string;
+  montant:  number;
+  partPct:  number;
+}
+
+export interface Ratios {
+  margeNettePct:    number;
+  tauxChargesPct:   number;
+  dso:              number;
+  tauxVariationCa:  number;
+}
+
+export interface Alerte {
+  niveau:  'DANGER' | 'WARNING' | 'INFO';
+  message: string;
 }
 
 export interface KpiExecutifResponse {
@@ -33,4 +54,7 @@ export interface KpiExecutifResponse {
   encoursClients:    KpiCard;
   budget:            BudgetSynthese;
   tendanceMensuelle: MoisData[];
+  topCharges:        CompteCharge[];
+  ratios:            Ratios;
+  alertes:           Alerte[];
 }
