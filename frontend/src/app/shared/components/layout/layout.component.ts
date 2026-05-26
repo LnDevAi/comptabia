@@ -5,14 +5,17 @@ import { AuthService } from '../../../core/services/auth.service';
 import { AlerteService } from '../../../core/services/alerte.service';
 import { SseNotificationService } from '../../../core/services/sse-notification.service';
 import { LicenceService } from '../../../core/services/licence.service';
+import { LoadingBarComponent } from '../loading-bar/loading-bar.component';
+import { ToastComponent } from '../toast/toast.component';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, LoadingBarComponent, ToastComponent],
   template: `
     <div class="min-h-screen flex flex-col bg-gray-50">
+      <app-loading-bar />
       <!-- Top bar -->
       <header class="h-14 bg-white border-b border-gray-200 flex items-center px-6 gap-4 shrink-0">
         <span class="font-bold text-blue-700 text-lg mr-6">e-Compta</span>
@@ -412,6 +415,8 @@ import { LicenceService } from '../../../core/services/licence.service';
       <main class="flex-1 overflow-auto">
         <router-outlet />
       </main>
+
+      <app-toast />
     </div>
   `
 })
