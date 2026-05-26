@@ -3,6 +3,7 @@ package com.edefence.ecompta.controller;
 import com.edefence.ecompta.dto.etats.*;
 import com.edefence.ecompta.service.EtatFinancierService;
 import com.edefence.ecompta.tenant.TenantContext;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "États financiers", description = "Balance, Bilan, Compte de résultat, Grand livre, Journal, TFT, EVCAP, Notes annexes, SMT, Import balance")
 @RestController
 @RequestMapping("/api/etats")
 @RequiredArgsConstructor

@@ -70,6 +70,19 @@ management:
     health:
       show-details: never
 
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+    display-request-duration: true
+  server-url: ${API_BASE_URL:http://localhost:8080}
+  default-produces-media-type: application/json
+
 app:
   upload:
     dir: ${UPLOAD_DIR:./uploads}

@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+@io.swagger.v3.oas.annotations.tags.Tag(name = "Budget", description = "Budgets prévisionnels par compte et exercice, suivi des écarts")
 @RestController
 @RequestMapping("/api/budgets")
 @RequiredArgsConstructor

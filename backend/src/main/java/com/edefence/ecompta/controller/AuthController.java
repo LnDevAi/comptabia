@@ -6,6 +6,8 @@ import com.edefence.ecompta.dto.auth.ProfileDto;
 import com.edefence.ecompta.dto.auth.RegisterDto;
 import com.edefence.ecompta.dto.auth.UpdateProfileDto;
 import com.edefence.ecompta.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 
+@Tag(name = "Authentification", description = "Inscription, connexion, profil utilisateur")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -24,12 +27,14 @@ public class AuthController {
     private final AuthService authService;
     private final StringRedisTemplate redisTemplate;
 
+    @Operation(summary = "Créer un compte entreprise", description = "Crée une nouvelle entreprise et un utilisateur ADMIN. Retourne un JWT valide immédiatement.")
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponseDto register(@Valid @RequestBody RegisterDto dto) {
         return authService.register(dto);
     }
 
+    @Operation(summary = "Se connecter", description = "Authentifie un utilisateur et retourne un JWT Bearer à utiliser dans toutes les requêtes suivantes.")
     @PostMapping("/login")
     public AuthResponseDto login(@Valid @RequestBody LoginDto dto) {
         return authService.login(dto);
