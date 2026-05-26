@@ -44,4 +44,11 @@ public interface CongeRepository extends JpaRepository<Conge, UUID> {
 
     @Query("SELECT COUNT(c) FROM Conge c WHERE c.entreprise.id = :eid AND c.statut = 'SOUMISE'")
     long countSoumises(@Param("eid") UUID eid);
+
+    @Query("""
+        SELECT COUNT(c) FROM Conge c
+        WHERE c.entreprise.id = :eid AND c.statut = 'APPROUVEE'
+          AND c.dateDebut <= :today AND c.dateFin >= :today
+        """)
+    long countEnCours(@Param("eid") UUID eid, @Param("today") java.time.LocalDate today);
 }

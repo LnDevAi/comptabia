@@ -11,4 +11,7 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, UUID> 
     Optional<Utilisateur> findByEmail(String email);
     boolean existsByEmail(String email);
     List<Utilisateur> findByEntrepriseId(UUID entrepriseId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(u) FROM Utilisateur u WHERE u.entreprise.id = :eid AND u.actif = true")
+    long countActifs(@org.springframework.data.repository.query.Param("eid") UUID eid);
 }

@@ -23,4 +23,7 @@ public interface InscriptionFormationRepository extends JpaRepository<Inscriptio
     Optional<InscriptionFormation> findByIdAndEntreprise(UUID id, UUID eid);
 
     boolean existsBySessionIdAndCollaborateurId(UUID sessionId, UUID collaborateurId);
+
+    @Query("SELECT COUNT(i) FROM InscriptionFormation i WHERE i.session.entreprise.id = :eid AND i.statut = 'INSCRIT'")
+    long countInscritsActifs(@org.springframework.data.repository.query.Param("eid") UUID eid);
 }

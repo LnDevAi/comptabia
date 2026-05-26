@@ -21,4 +21,7 @@ public interface SessionFormationRepository extends JpaRepository<SessionFormati
 
     @Query("SELECT COUNT(i) FROM InscriptionFormation i WHERE i.session.id = :sessionId")
     long countInscrits(UUID sessionId);
+
+    @Query("SELECT COUNT(s) FROM SessionFormation s WHERE s.entreprise.id = :eid AND s.statut = 'EN_COURS'")
+    long countEnCours(@org.springframework.data.repository.query.Param("eid") UUID eid);
 }

@@ -22,4 +22,7 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, UUID> {
 
     @Query("SELECT e FROM Evaluation e WHERE e.id = :id AND e.entreprise.id = :eid")
     Optional<Evaluation> findByIdAndEntreprise(@Param("id") UUID id, @Param("eid") UUID eid);
+
+    @Query("SELECT COUNT(e) FROM Evaluation e WHERE e.entreprise.id = :eid AND e.statut = 'SOUMISE'")
+    long countSoumises(@Param("eid") UUID eid);
 }

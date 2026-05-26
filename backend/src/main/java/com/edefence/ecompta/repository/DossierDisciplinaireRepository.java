@@ -21,4 +21,7 @@ public interface DossierDisciplinaireRepository extends JpaRepository<DossierDis
 
     @Query("SELECT d FROM DossierDisciplinaire d WHERE d.id = :id AND d.entreprise.id = :eid")
     Optional<DossierDisciplinaire> findByIdAndEntreprise(UUID id, UUID eid);
+
+    @Query("SELECT COUNT(d) FROM DossierDisciplinaire d WHERE d.entreprise.id = :eid AND d.statut = 'EN_COURS'")
+    long countEnCours(@org.springframework.data.repository.query.Param("eid") UUID eid);
 }

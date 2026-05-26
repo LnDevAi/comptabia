@@ -256,6 +256,11 @@ export const routes: Routes = [
         path: 'discipline',
         loadComponent: () =>
           import('./features/discipline/discipline.component').then(m => m.DisciplineComponent)
+      },
+      {
+        path: 'dashboard-rh',
+        loadComponent: () =>
+          import('./features/dashboard-rh/dashboard-rh.component').then(m => m.DashboardRhComponent)
       }
     ]
   },
