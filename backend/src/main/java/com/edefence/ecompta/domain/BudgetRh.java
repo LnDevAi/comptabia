@@ -5,13 +5,15 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "axes_analytiques")
+@Table(name = "budgets_rh",
+       uniqueConstraints = @UniqueConstraint(columnNames = {"entreprise_id","exercice","mois","categorie"}))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class AxeAnalytique {
+public class BudgetRh {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -21,22 +23,20 @@ public class AxeAnalytique {
     @JoinColumn(name = "entreprise_id", nullable = false)
     private Entreprise entreprise;
 
-    @Column(nullable = false, length = 20)
-    private String code;
-
-    @Column(nullable = false, length = 255)
-    private String intitule;
-
-    @Column(nullable = false, length = 20)
-    @Builder.Default
-    private String type = "AUTRE";
-
-    @Column(name = "montant_budget", precision = 15, scale = 2)
-    private java.math.BigDecimal montantBudget;
+    @Column(nullable = false)
+    private int exercice;
 
     @Column(nullable = false)
     @Builder.Default
-    private boolean actif = true;
+    private int mois = 0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private Categorie categorie;
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    @Builder.Default
+    private BigDecimal montant = BigDecimal.ZERO;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -45,4 +45,8 @@ public class AxeAnalytique {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+
+    public enum Categorie {
+        MASSE_BRUTE, COTISATIONS_PATRONALES, COTISATIONS_SALARIALES, IMPOT_RETENU, NET_A_PAYER
+    }
 }

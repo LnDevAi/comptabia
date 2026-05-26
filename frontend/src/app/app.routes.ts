@@ -78,6 +78,11 @@ export const routes: Routes = [
           import('./features/budget/budget.component').then(m => m.BudgetComponent)
       },
       {
+        path: 'budget-rh',
+        loadComponent: () =>
+          import('./features/budget-rh/budget-rh.component').then(m => m.BudgetRhComponent)
+      },
+      {
         path: 'rapprochement',
         loadComponent: () =>
           import('./features/rapprochement/rapprochement.component').then(m => m.RapprochementComponent)

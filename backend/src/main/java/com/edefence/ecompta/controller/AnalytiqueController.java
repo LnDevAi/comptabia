@@ -23,8 +23,11 @@ public class AnalytiqueController {
     // ─── Axes ────────────────────────────────────────────────────────────────
 
     @GetMapping("/axes")
-    public List<AnalytiqueDto.AxeResponse> listerAxes() {
-        return service.listerAxes(TenantContext.get());
+    public List<AnalytiqueDto.AxeResponse> listerAxes(
+            @RequestParam(required = false) String type) {
+        return type != null
+                ? service.listerAxesParType(TenantContext.get(), type)
+                : service.listerAxes(TenantContext.get());
     }
 
     @PostMapping("/axes")

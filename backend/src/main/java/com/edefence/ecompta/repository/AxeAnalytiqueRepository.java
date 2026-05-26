@@ -21,6 +21,7 @@ public interface AxeAnalytiqueRepository extends JpaRepository<AxeAnalytique, UU
 
     @Query("""
             SELECT l.axeAnalytique.id, l.axeAnalytique.code, l.axeAnalytique.intitule,
+                   l.axeAnalytique.type, l.axeAnalytique.montantBudget,
                    c.numero, c.intitule,
                    COALESCE(SUM(l.debit), 0), COALESCE(SUM(l.credit), 0)
             FROM LigneEcriture l
@@ -31,6 +32,7 @@ public interface AxeAnalytiqueRepository extends JpaRepository<AxeAnalytique, UU
             AND e.dateEcriture BETWEEN :from AND :to
             AND l.axeAnalytique IS NOT NULL
             GROUP BY l.axeAnalytique.id, l.axeAnalytique.code, l.axeAnalytique.intitule,
+                     l.axeAnalytique.type, l.axeAnalytique.montantBudget,
                      c.numero, c.intitule
             ORDER BY l.axeAnalytique.code ASC, c.numero ASC
             """)
