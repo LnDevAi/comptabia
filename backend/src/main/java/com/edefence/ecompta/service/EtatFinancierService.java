@@ -192,6 +192,60 @@ public class EtatFinancierService {
         return new JournalLivreDto(exercice, resumes);
     }
 
+    // ─── SMT – État de Situation du Patrimoine (ESP) ─────────────────────────
+
+    @Transactional(readOnly = true)
+    public SmtDto.EtatSituationPatrimoine getEsp(UUID entrepriseId, int exercice) {
+        BalanceDto balance = getBalance(entrepriseId, exercice);
+        List<SmtDto.EtatSituationPatrimoine.PosteEsp> actif  = new ArrayList<>();
+        List<SmtDto.EtatSituationPatrimoine.PosteEsp> passif = new ArrayList<>();
+        BigDecimal ZERO = BigDecimal.ZERO;
+
+        for (BalanceDto.Ligne l : balance.lignes()) {
+            String num = l.numero();
+            int cl = l.classe();
+
+            BigDecimal solD = l.soldeDebiteur();
+            BigDecimal solC = l.soldeCrediteur();
+
+            if (cl == 2) {
+                if (solD.compareTo(ZERO) > 0)
+                    actif.add(new SmtDto.EtatSituationPatrimoine.PosteEsp("ACTIF IMMOBILISÉ", num, l.intitule(), solD));
+            } else if (cl == 3) {
+                if (solD.compareTo(ZERO) > 0)
+                    actif.add(new SmtDto.EtatSituationPatrimoine.PosteEsp("STOCKS", num, l.intitule(), solD));
+            } else if (cl == 4) {
+                if (solD.compareTo(ZERO) > 0)
+                    actif.add(new SmtDto.EtatSituationPatrimoine.PosteEsp("CRÉANCES", num, l.intitule(), solD));
+                if (solC.compareTo(ZERO) > 0)
+                    passif.add(new SmtDto.EtatSituationPatrimoine.PosteEsp("DETTES CIRCULANTES", num, l.intitule(), solC));
+            } else if (cl == 5) {
+                if (solD.compareTo(ZERO) > 0)
+                    actif.add(new SmtDto.EtatSituationPatrimoine.PosteEsp("TRÉSORERIE ACTIVE", num, l.intitule(), solD));
+                if (solC.compareTo(ZERO) > 0)
+                    passif.add(new SmtDto.EtatSituationPatrimoine.PosteEsp("TRÉSORERIE PASSIVE", num, l.intitule(), solC));
+            } else if (cl == 1) {
+                try {
+                    int sub2 = Integer.parseInt(num.length() >= 2 ? num.substring(0, 2) : num);
+                    if (sub2 >= 10 && sub2 <= 15) {
+                        // Capitaux propres : solde créditeur = ressource
+                        if (solC.compareTo(ZERO) > 0)
+                            passif.add(new SmtDto.EtatSituationPatrimoine.PosteEsp("CAPITAUX PROPRES", num, l.intitule(), solC));
+                        else if (solD.compareTo(ZERO) > 0)
+                            actif.add(new SmtDto.EtatSituationPatrimoine.PosteEsp("CAPITAUX PROPRES (déficit)", num, l.intitule(), solD.negate()));
+                    } else {
+                        if (solC.compareTo(ZERO) > 0)
+                            passif.add(new SmtDto.EtatSituationPatrimoine.PosteEsp("EMPRUNTS ET DETTES FINANCIÈRES", num, l.intitule(), solC));
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+
+        BigDecimal totActif  = actif.stream().map(p -> p.montant().abs()).reduce(ZERO, BigDecimal::add);
+        BigDecimal totPassif = passif.stream().map(SmtDto.EtatSituationPatrimoine.PosteEsp::montant).reduce(ZERO, BigDecimal::add);
+        return new SmtDto.EtatSituationPatrimoine(exercice, actif, passif, totActif, totPassif);
+    }
+
     // ─── SMT – État des recettes et dépenses ─────────────────────────────────
 
     @Transactional(readOnly = true)
@@ -463,6 +517,107 @@ public class EtatFinancierService {
         CompteResultatDto cr     = computeCompteResultat(balance);
 
         return new EtatsDepuisBalanceDto(referentiel, balance.lignes().size(), balance, bilan, cr);
+    }
+
+    // ─── Import balance externe à 6 colonnes ─────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public BalanceSixColonnesDto genererDepuisBalance6Col(UUID entrepriseId, MultipartFile file,
+                                                          int exercice) throws IOException {
+        Entreprise entreprise = entrepriseRepo.findById(entrepriseId)
+                .orElseThrow(() -> new EntityNotFoundException("Entreprise not found"));
+        String referentiel = entreprise.getReferentielComptable();
+
+        BalanceSixColonnesDto.Ligne[] parsed = parseCsv6Col(file, exercice);
+        List<BalanceSixColonnesDto.Ligne> lignes = java.util.Arrays.asList(parsed);
+
+        BigDecimal ZERO = BigDecimal.ZERO;
+        BigDecimal totSolAntD = ZERO, totSolAntC = ZERO;
+        BigDecimal totMvtD = ZERO,    totMvtC = ZERO;
+        BigDecimal totSolFinD = ZERO, totSolFinC = ZERO;
+        for (BalanceSixColonnesDto.Ligne l : lignes) {
+            totSolAntD = totSolAntD.add(l.solAntD());
+            totSolAntC = totSolAntC.add(l.solAntC());
+            totMvtD    = totMvtD.add(l.mvtD());
+            totMvtC    = totMvtC.add(l.mvtC());
+            totSolFinD = totSolFinD.add(l.solFinD());
+            totSolFinC = totSolFinC.add(l.solFinC());
+        }
+
+        // Derive bilan and CR from soldes finaux
+        List<BalanceDto.Ligne> balanceLignes = lignes.stream().map(l -> {
+            int cl = l.numero().isEmpty() ? 0 : Character.getNumericValue(l.numero().charAt(0));
+            BigDecimal d = l.solFinD(), c = l.solFinC();
+            return new BalanceDto.Ligne(l.numero(), l.intitule(), cl, d, c,
+                    d.compareTo(c) > 0 ? d.subtract(c) : ZERO,
+                    c.compareTo(d) > 0 ? c.subtract(d) : ZERO);
+        }).toList();
+        BalanceDto syntheticBalance = new BalanceDto(exercice, balanceLignes, totSolFinD, totSolFinC);
+        BilanDto bilan           = computeBilan(syntheticBalance, referentiel);
+        CompteResultatDto cr     = computeCompteResultat(syntheticBalance);
+
+        return new BalanceSixColonnesDto(exercice, referentiel, lignes.size(), lignes,
+                totSolAntD, totSolAntC, totMvtD, totMvtC, totSolFinD, totSolFinC, bilan, cr);
+    }
+
+    private BalanceSixColonnesDto.Ligne[] parseCsv6Col(MultipartFile file, int exercice) throws IOException {
+        byte[] bytes = file.getBytes();
+        String raw   = new String(bytes, StandardCharsets.UTF_8);
+        if (raw.startsWith("﻿")) raw = raw.substring(1);
+
+        String[] lines = raw.split("\\r?\\n");
+        if (lines.length < 2)
+            throw new IllegalArgumentException("Fichier vide ou invalide.");
+
+        String sep   = detectSep(lines[0]);
+        String[] hdr = lines[0].split(sep, -1);
+
+        int iNum    = findCol(hdr, "NUMERO","COMPTE","N_COMPTE","CODE","N°","COMPTES");
+        int iLib    = findCol(hdr, "INTITULE","LIBELLE","DESIGNATION","NOM","LIBELLÉ");
+        int iSolAntD= findCol(hdr, "SOL_ANT_D","SOLANT_D","SOLDE_ANT_D","SOLD_ANT_D","ANT_D","ANTERIEUR_D","DEBIT_ANT","S_ANT_D","SOLDANT_D","SOLD_ANT_DEBIT");
+        int iSolAntC= findCol(hdr, "SOL_ANT_C","SOLANT_C","SOLDE_ANT_C","SOLD_ANT_C","ANT_C","ANTERIEUR_C","CREDIT_ANT","S_ANT_C","SOLDANT_C","SOLD_ANT_CREDIT");
+        int iMvtD   = findCol(hdr, "MVT_D","MVTS_D","MVT_DEBIT","MOUVEMENTS_D","DEBIT_MVT","MOUVEMENT_D","DEBIT","TOTAL_DEBIT");
+        int iMvtC   = findCol(hdr, "MVT_C","MVTS_C","MVT_CREDIT","MOUVEMENTS_C","CREDIT_MVT","MOUVEMENT_C","CREDIT","TOTAL_CREDIT");
+        int iSolFinD= findCol(hdr, "SOL_FIN_D","SOLFIN_D","SOLDE_FIN_D","SOLDE_D","FIN_D","FINAL_D","SFIN_D","SOLDEFINITIF_D","SOLDE_FINAL_D");
+        int iSolFinC= findCol(hdr, "SOL_FIN_C","SOLFIN_C","SOLDE_FIN_C","SOLDE_C","FIN_C","FINAL_C","SFIN_C","SOLDEFINITIF_C","SOLDE_FINAL_C");
+
+        if (iNum < 0 || iMvtD < 0 || iMvtC < 0)
+            throw new IllegalArgumentException(
+                "Colonnes requises manquantes. Format attendu : NUMERO;INTITULE;SOL_ANT_D;SOL_ANT_C;MVT_D;MVT_C;SOL_FIN_D;SOL_FIN_C");
+
+        List<BalanceSixColonnesDto.Ligne> result = new ArrayList<>();
+        BigDecimal ZERO = BigDecimal.ZERO;
+
+        for (int i = 1; i < lines.length; i++) {
+            String line = lines[i].trim();
+            if (line.isEmpty()) continue;
+            String[] cols = line.split(sep, -1);
+
+            String numero   = safeGet(cols, iNum).replaceAll("^\"|\"$","").trim();
+            if (numero.isEmpty()) continue;
+            String intitule = iLib >= 0 ? safeGet(cols, iLib).replaceAll("^\"|\"$","").trim() : "";
+
+            BigDecimal solAntD = iSolAntD >= 0 ? parseMontant(safeGet(cols, iSolAntD)) : ZERO;
+            BigDecimal solAntC = iSolAntC >= 0 ? parseMontant(safeGet(cols, iSolAntC)) : ZERO;
+            BigDecimal mvtD    = parseMontant(safeGet(cols, iMvtD));
+            BigDecimal mvtC    = parseMontant(safeGet(cols, iMvtC));
+            BigDecimal solFinD, solFinC;
+            if (iSolFinD >= 0 && iSolFinC >= 0) {
+                solFinD = parseMontant(safeGet(cols, iSolFinD));
+                solFinC = parseMontant(safeGet(cols, iSolFinC));
+            } else {
+                // Compute from ant + mvt
+                BigDecimal net = solAntD.subtract(solAntC).add(mvtD).subtract(mvtC);
+                solFinD = net.compareTo(ZERO) > 0 ? net : ZERO;
+                solFinC = net.compareTo(ZERO) < 0 ? net.negate() : ZERO;
+            }
+            result.add(new BalanceSixColonnesDto.Ligne(numero, intitule, solAntD, solAntC, mvtD, mvtC, solFinD, solFinC));
+        }
+
+        if (result.isEmpty())
+            throw new IllegalArgumentException("Aucune ligne valide trouvée dans le fichier.");
+
+        return result.toArray(new BalanceSixColonnesDto.Ligne[0]);
     }
 
     private BalanceDto parseCsvBalance(MultipartFile file, int exercice) throws IOException {

@@ -64,6 +64,11 @@ public class EtatFinancierController {
 
     // ─── Système Minimal de Trésorerie ───────────────────────────────────────
 
+    @GetMapping("/smt/esp")
+    public SmtDto.EtatSituationPatrimoine esp(@RequestParam(defaultValue = "0") int exercice) {
+        return service.getEsp(TenantContext.get(), exercice > 0 ? exercice : currentYear());
+    }
+
     @GetMapping("/smt/recettes-depenses")
     public SmtDto.EtatRecettesDepenses recettesDepenses(@RequestParam(defaultValue = "0") int exercice) {
         return service.getEtatRecettesDepenses(TenantContext.get(), exercice > 0 ? exercice : currentYear());
@@ -107,5 +112,13 @@ public class EtatFinancierController {
             @RequestParam(defaultValue = "0") int exercice) throws IOException {
         int annee = exercice > 0 ? exercice : currentYear();
         return service.genererDepuisBalance(TenantContext.get(), file, annee);
+    }
+
+    @PostMapping(value = "/import-balance-6col", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public com.edefence.ecompta.dto.etats.BalanceSixColonnesDto importBalance6Col(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(defaultValue = "0") int exercice) throws IOException {
+        int annee = exercice > 0 ? exercice : currentYear();
+        return service.genererDepuisBalance6Col(TenantContext.get(), file, annee);
     }
 }

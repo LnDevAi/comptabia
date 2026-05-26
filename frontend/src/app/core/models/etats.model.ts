@@ -217,12 +217,53 @@ export interface EvcapData {
 }
 
 export type EtatTab = 'balance' | 'bilan' | 'compte-resultat' | 'grand-livre' | 'journal' |
-  'recettes-depenses' | 'tresorerie' | 'flux-tresorerie' | 'notes' | 'evcap' | 'import-externe';
+  'esp' | 'recettes-depenses' | 'tresorerie' | 'flux-tresorerie' | 'notes' | 'evcap' | 'import-externe';
 
 export interface EtatsDepuisBalance {
   referentiel:   string;
   nbLignes:      number;
   balance:       BalanceData;
+  bilan:         BilanData;
+  compteResultat: CompteResultatData;
+}
+
+export interface PosteEsp {
+  categorie: string;
+  numero:    string;
+  intitule:  string;
+  montant:   number;
+}
+
+export interface EspData {
+  exercice:    number;
+  actif:       PosteEsp[];
+  passif:      PosteEsp[];
+  totalActif:  number;
+  totalPassif: number;
+}
+
+export interface LigneSixColonnes {
+  numero:    string;
+  intitule:  string;
+  solAntD:   number;
+  solAntC:   number;
+  mvtD:      number;
+  mvtC:      number;
+  solFinD:   number;
+  solFinC:   number;
+}
+
+export interface BalanceSixColonnesData {
+  exercice:      number;
+  referentiel:   string;
+  nbLignes:      number;
+  lignes:        LigneSixColonnes[];
+  totalSolAntD:  number;
+  totalSolAntC:  number;
+  totalMvtD:     number;
+  totalMvtC:     number;
+  totalSolFinD:  number;
+  totalSolFinC:  number;
   bilan:         BilanData;
   compteResultat: CompteResultatData;
 }

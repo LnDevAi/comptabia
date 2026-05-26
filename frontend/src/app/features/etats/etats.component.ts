@@ -11,7 +11,7 @@ import {
   FluxTresorerieData, EvcapData,
   NoteAnnexe, NoteAnnexeCreate,
   NoteCatalogue, NoteComputeeData, NotesGroupe, EtatTab,
-  EtatsDepuisBalance
+  EtatsDepuisBalance, EspData, BalanceSixColonnesData
 } from '../../core/models/etats.model';
 
 interface TabDef { id: EtatTab; label: string; group: 'sn' | 'smt' | 'commun' | 'import'; }
@@ -22,6 +22,7 @@ const TABS: TabDef[] = [
   { id: 'compte-resultat',  label: 'Compte de résultat',   group: 'sn'     },
   { id: 'grand-livre',      label: 'Grand livre',          group: 'sn'     },
   { id: 'journal',          label: 'Journal',              group: 'sn'     },
+  { id: 'esp',              label: 'Situation patrimoine', group: 'smt'    },
   { id: 'recettes-depenses',label: 'Recettes / Dépenses',  group: 'smt'    },
   { id: 'tresorerie',       label: 'Trésorerie (SMT)',     group: 'smt'    },
   { id: 'flux-tresorerie',  label: 'Flux de trésorerie',   group: 'sn'     },
@@ -307,6 +308,59 @@ const TABS: TabDef[] = [
               </table>
             </div>
           }
+        </div>
+      }
+
+      <!-- SMT – État de Situation du Patrimoine -->
+      @if (activeTab() === 'esp' && esp()) {
+        <div class="p-4 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-gray-700">État de Situation du Patrimoine (ESP) – Exercice {{ esp()!.exercice }}</h2>
+            <span class="text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">[SMT]</span>
+          </div>
+          <div class="grid grid-cols-2 gap-6">
+            <!-- Actif -->
+            <div>
+              <h3 class="text-xs font-bold uppercase text-blue-700 border-b border-blue-200 pb-1 mb-2">ACTIF</h3>
+              @for (cat of espActifCats(); track cat) {
+                <div class="mb-3">
+                  <div class="text-xs font-semibold text-gray-500 bg-gray-50 px-2 py-0.5 rounded mb-1">{{ cat }}</div>
+                  @for (p of espActifByCat(cat); track p.numero) {
+                    <div class="flex justify-between text-sm py-0.5 px-1">
+                      <span class="text-gray-700">{{ p.numero }} – {{ p.intitule }}</span>
+                      <span class="font-mono">{{ p.montant | number:'1.2-2' }}</span>
+                    </div>
+                  }
+                </div>
+              }
+              <div class="flex justify-between font-bold border-t-2 border-blue-600 pt-2 text-sm bg-blue-50 px-2 py-1 rounded">
+                <span>TOTAL ACTIF</span>
+                <span class="font-mono">{{ esp()!.totalActif | number:'1.2-2' }}</span>
+              </div>
+            </div>
+            <!-- Passif -->
+            <div>
+              <h3 class="text-xs font-bold uppercase text-green-700 border-b border-green-200 pb-1 mb-2">PASSIF</h3>
+              @for (cat of espPassifCats(); track cat) {
+                <div class="mb-3">
+                  <div class="text-xs font-semibold text-gray-500 bg-gray-50 px-2 py-0.5 rounded mb-1">{{ cat }}</div>
+                  @for (p of espPassifByCat(cat); track p.numero) {
+                    <div class="flex justify-between text-sm py-0.5 px-1">
+                      <span class="text-gray-700">{{ p.numero }} – {{ p.intitule }}</span>
+                      <span class="font-mono">{{ p.montant | number:'1.2-2' }}</span>
+                    </div>
+                  }
+                </div>
+              }
+              <div class="flex justify-between font-bold border-t-2 border-green-600 pt-2 text-sm bg-green-50 px-2 py-1 rounded">
+                <span>TOTAL PASSIF</span>
+                <span class="font-mono">{{ esp()!.totalPassif | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="p-3 rounded-lg text-xs text-gray-500 bg-gray-50 border border-gray-100">
+            Soldes calculés depuis la balance de l'exercice. ACTIF IMMOBILISÉ = Cl.2 · STOCKS = Cl.3 · CRÉANCES = Cl.4 débiteur · TRÉSORERIE ACTIVE = Cl.5 débiteur · CAPITAUX PROPRES = Cl.10-15 créditeur · DETTES CIRCULANTES = Cl.4 créditeur.
+          </div>
         </div>
       }
 
@@ -739,6 +793,133 @@ const TABS: TabDef[] = [
         </div>
       }
 
+      <!-- Balance à 6 colonnes (Soldes antérieurs | Mouvements | Soldes finaux) -->
+      @if (activeTab() === 'import-externe') {
+        <div class="p-5 space-y-5 border-t border-gray-200 mt-0">
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 space-y-1">
+            <p class="font-semibold">Import balance à 6 colonnes (Soldes antérieurs · Mouvements · Soldes finaux)</p>
+            <p class="text-xs text-amber-700">
+              Format CSV avec les colonnes :
+              <code class="bg-amber-100 px-1 rounded">NUMERO;INTITULE;SOL_ANT_D;SOL_ANT_C;MVT_D;MVT_C;SOL_FIN_D;SOL_FIN_C</code>
+            </p>
+            <p class="text-xs text-amber-600">
+              Les colonnes SOL_FIN_D/C sont optionnelles — elles seront calculées depuis les antérieurs + mouvements.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-4 flex-wrap">
+            <label class="flex flex-col items-center justify-center w-full max-w-sm h-28 border-2 border-dashed border-amber-300 rounded-xl cursor-pointer hover:border-amber-500 hover:bg-amber-50 transition-colors"
+                   [class.border-amber-500]="import6colFile()"
+                   [class.bg-amber-50]="import6colFile()">
+              <input type="file" accept=".csv,.txt" class="hidden" (change)="onFile6ColSelected($event)" />
+              @if (import6colFile()) {
+                <div class="text-center">
+                  <p class="text-sm font-medium text-amber-700">{{ import6colFile()!.name }}</p>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ (import6colFile()!.size / 1024).toFixed(1) }} Ko</p>
+                </div>
+              } @else {
+                <div class="text-center text-amber-400">
+                  <p class="text-xl mb-1">📋</p>
+                  <p class="text-sm">Balance 6 colonnes (CSV)</p>
+                </div>
+              }
+            </label>
+
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <label class="text-sm text-gray-600">Exercice N :</label>
+                <select [(ngModel)]="import6colExercice"
+                        class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm">
+                  @for (y of years(); track y) {
+                    <option [value]="y">{{ y }}</option>
+                  }
+                </select>
+              </div>
+              <button (click)="lancerImport6Col()"
+                      [disabled]="!import6colFile() || import6colLoading()"
+                      class="px-5 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                @if (import6colLoading()) {
+                  <span class="animate-spin text-sm">⟳</span> Analyse…
+                } @else {
+                  Analyser la balance
+                }
+              </button>
+            </div>
+          </div>
+
+          @if (import6colError()) {
+            <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
+              {{ import6colError() }}
+            </div>
+          }
+
+          @if (import6colResult()) {
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 flex-wrap">
+                <span class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-semibold rounded-full">
+                  {{ import6colResult()!.referentiel }}
+                </span>
+                <span class="text-xs text-gray-500">
+                  {{ import6colResult()!.nbLignes }} ligne{{ import6colResult()!.nbLignes !== 1 ? 's' : '' }}
+                </span>
+                <button (click)="exportImport6ColCsv()"
+                        class="ml-auto text-xs px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600">
+                  Exporter CSV
+                </button>
+              </div>
+
+              <!-- Tableau 6 colonnes -->
+              <div class="overflow-x-auto border border-gray-200 rounded-xl">
+                <table class="w-full text-xs">
+                  <thead class="bg-gray-50 text-gray-500 uppercase">
+                    <tr>
+                      <th class="px-3 py-2 text-left" rowspan="2">Compte</th>
+                      <th class="px-3 py-2 text-left" rowspan="2">Intitulé</th>
+                      <th class="px-3 py-2 text-center border-l border-gray-200" colspan="2">Soldes antérieurs</th>
+                      <th class="px-3 py-2 text-center border-l border-gray-200" colspan="2">Mouvements</th>
+                      <th class="px-3 py-2 text-center border-l border-gray-200" colspan="2">Soldes finaux</th>
+                    </tr>
+                    <tr>
+                      <th class="px-3 py-1.5 text-right border-l border-gray-200 text-blue-600">Débit</th>
+                      <th class="px-3 py-1.5 text-right text-green-600">Crédit</th>
+                      <th class="px-3 py-1.5 text-right border-l border-gray-200 text-blue-600">Débit</th>
+                      <th class="px-3 py-1.5 text-right text-green-600">Crédit</th>
+                      <th class="px-3 py-1.5 text-right border-l border-gray-200 text-blue-700 font-bold">Débit</th>
+                      <th class="px-3 py-1.5 text-right text-green-700 font-bold">Crédit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (l of import6colResult()!.lignes; track l.numero) {
+                      <tr class="border-t border-gray-50 hover:bg-gray-50">
+                        <td class="px-3 py-1 font-mono">{{ l.numero }}</td>
+                        <td class="px-3 py-1 text-gray-600">{{ l.intitule }}</td>
+                        <td class="px-3 py-1 text-right font-mono border-l border-gray-100">{{ l.solAntD > 0 ? (l.solAntD | number:'1.2-2') : '' }}</td>
+                        <td class="px-3 py-1 text-right font-mono">{{ l.solAntC > 0 ? (l.solAntC | number:'1.2-2') : '' }}</td>
+                        <td class="px-3 py-1 text-right font-mono border-l border-gray-100">{{ l.mvtD > 0 ? (l.mvtD | number:'1.2-2') : '' }}</td>
+                        <td class="px-3 py-1 text-right font-mono">{{ l.mvtC > 0 ? (l.mvtC | number:'1.2-2') : '' }}</td>
+                        <td class="px-3 py-1 text-right font-mono font-semibold text-blue-700 border-l border-gray-100">{{ l.solFinD > 0 ? (l.solFinD | number:'1.2-2') : '' }}</td>
+                        <td class="px-3 py-1 text-right font-mono font-semibold text-green-700">{{ l.solFinC > 0 ? (l.solFinC | number:'1.2-2') : '' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                  <tfoot class="bg-gray-50 font-semibold border-t-2 border-gray-300 text-xs">
+                    <tr>
+                      <td colspan="2" class="px-3 py-2">TOTAUX</td>
+                      <td class="px-3 py-2 text-right font-mono border-l border-gray-200">{{ import6colResult()!.totalSolAntD | number:'1.2-2' }}</td>
+                      <td class="px-3 py-2 text-right font-mono">{{ import6colResult()!.totalSolAntC | number:'1.2-2' }}</td>
+                      <td class="px-3 py-2 text-right font-mono border-l border-gray-200">{{ import6colResult()!.totalMvtD | number:'1.2-2' }}</td>
+                      <td class="px-3 py-2 text-right font-mono">{{ import6colResult()!.totalMvtC | number:'1.2-2' }}</td>
+                      <td class="px-3 py-2 text-right font-mono font-bold text-blue-700 border-l border-gray-200">{{ import6colResult()!.totalSolFinD | number:'1.2-2' }}</td>
+                      <td class="px-3 py-2 text-right font-mono font-bold text-green-700">{{ import6colResult()!.totalSolFinC | number:'1.2-2' }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
       <!-- Notes Annexes AUDCIF (36 notes structurées) -->
       @if (activeTab() === 'notes') {
         <div class="flex h-[calc(100vh-220px)] min-h-[500px]">
@@ -924,6 +1105,7 @@ export class EtatsComponent implements OnInit {
   compteResultat = signal<CompteResultatData | null>(null);
   grandLivre     = signal<GrandLivreData | null>(null);
   journalLivre   = signal<JournalLivreData | null>(null);
+  esp             = signal<EspData | null>(null);
   recettesDepenses = signal<EtatRecettesDepensesData | null>(null);
   tresorerie      = signal<EtatTresorerieData | null>(null);
   fluxTresorerie  = signal<FluxTresorerieData | null>(null);
@@ -971,6 +1153,11 @@ export class EtatsComponent implements OnInit {
   bilanActifByCat(cat: string) { return (this.bilan()?.actif ?? []).filter(p => p.categorie === cat); }
   bilanPassifByCat(cat: string) { return (this.bilan()?.passif ?? []).filter(p => p.categorie === cat); }
 
+  espActifCats  = computed(() => [...new Set((this.esp()?.actif  ?? []).map(p => p.categorie))]);
+  espPassifCats = computed(() => [...new Set((this.esp()?.passif ?? []).map(p => p.categorie))]);
+  espActifByCat(cat: string)  { return (this.esp()?.actif  ?? []).filter(p => p.categorie === cat); }
+  espPassifByCat(cat: string) { return (this.esp()?.passif ?? []).filter(p => p.categorie === cat); }
+
   tabClass(tab: TabDef): string {
     const base = 'border border-b-0 ';
     if (this.activeTab() === tab.id)
@@ -996,6 +1183,7 @@ export class EtatsComponent implements OnInit {
   private clearData() {
     this.balance.set(null); this.bilan.set(null); this.compteResultat.set(null);
     this.grandLivre.set(null); this.journalLivre.set(null);
+    this.esp.set(null);
     this.recettesDepenses.set(null); this.tresorerie.set(null);
     this.fluxTresorerie.set(null); this.evcap.set(null); this.notes.set([]);
     this.selectedNote.set(null); this.currentNoteData.set(null); this.noteEditMode.set(false);
@@ -1022,6 +1210,10 @@ export class EtatsComponent implements OnInit {
       case 'journal':
         if (this.journalLivre()) return;
         this.fetch(this.svc.getJournal(y), v => this.journalLivre.set(v));
+        break;
+      case 'esp':
+        if (this.esp()) return;
+        this.fetch(this.svc.getEsp(y), v => this.esp.set(v));
         break;
       case 'recettes-depenses':
         if (this.recettesDepenses()) return;
@@ -1130,6 +1322,49 @@ export class EtatsComponent implements OnInit {
     });
   }
 
+  // ─── Import balance 6 colonnes ───────────────────────────────────────────
+
+  onFile6ColSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      this.import6colFile.set(input.files[0]);
+      this.import6colResult.set(null);
+      this.import6colError.set(null);
+    }
+  }
+
+  lancerImport6Col() {
+    const f = this.import6colFile();
+    if (!f) return;
+    this.import6colLoading.set(true);
+    this.import6colError.set(null);
+    this.svc.importBalance6Col(f, this.import6colExercice).subscribe({
+      next: r => { this.import6colResult.set(r); this.import6colLoading.set(false); },
+      error: (e: any) => {
+        this.import6colError.set(e?.error?.message ?? e?.message ?? 'Erreur lors de l\'analyse du fichier.');
+        this.import6colLoading.set(false);
+      }
+    });
+  }
+
+  exportImport6ColCsv() {
+    const r = this.import6colResult();
+    if (!r) return;
+    const header = 'NUMERO;INTITULE;SOL_ANT_D;SOL_ANT_C;MVT_D;MVT_C;SOL_FIN_D;SOL_FIN_C';
+    const rows = [
+      header,
+      ...r.lignes.map(l => `${l.numero};${l.intitule};${l.solAntD};${l.solAntC};${l.mvtD};${l.mvtC};${l.solFinD};${l.solFinC}`),
+      `TOTAUX;;${r.totalSolAntD};${r.totalSolAntC};${r.totalMvtD};${r.totalMvtC};${r.totalSolFinD};${r.totalSolFinC}`,
+    ];
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `balance-6col-${r.exercice}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   // ─── Import balance externe ───────────────────────────────────────────────
 
   importFile    = signal<File | null>(null);
@@ -1137,6 +1372,12 @@ export class EtatsComponent implements OnInit {
   importError   = signal<string | null>(null);
   importResult  = signal<EtatsDepuisBalance | null>(null);
   importExercice = new Date().getFullYear();
+
+  import6colFile    = signal<File | null>(null);
+  import6colLoading = signal(false);
+  import6colError   = signal<string | null>(null);
+  import6colResult  = signal<BalanceSixColonnesData | null>(null);
+  import6colExercice = new Date().getFullYear();
 
   importActifCats = computed(() =>
     [...new Set((this.importResult()?.bilan.actif ?? []).map(p => p.categorie))]
