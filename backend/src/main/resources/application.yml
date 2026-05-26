@@ -88,6 +88,7 @@ app:
     file: ${LICENCE_FILE:./licence.lic}
     dev-mode: ${LICENCE_DEV_MODE:true}
     public-key: ${LICENCE_PUBLIC_KEY:}
+    private-key: ${LICENCE_PRIVATE_KEY:}
   upload:
     dir: ${UPLOAD_DIR:./uploads}
   mail:

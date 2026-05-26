@@ -59,6 +59,7 @@ services:
       LICENCE_FILE: /config/licence.lic
       LICENCE_DEV_MODE: ${LICENCE_DEV_MODE:-false}
       LICENCE_PUBLIC_KEY: ${LICENCE_PUBLIC_KEY}
+      LICENCE_PRIVATE_KEY: ${LICENCE_PRIVATE_KEY:-}
       # ── SMS ────────────────────────────────────────────────────────────────
       SMS_PROVIDER: ${SMS_PROVIDER:-mock}
       SMS_API_URL: ${SMS_API_URL:-}

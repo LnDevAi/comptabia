@@ -270,6 +270,10 @@ import { LicenceService } from '../../../core/services/licence.service';
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
               Administration
             </a>
+            <a routerLink="/dashboard/commercial" routerLinkActive="bg-emerald-50 text-emerald-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              <i class="bi bi-briefcase"></i> Gestion Commerciale
+            </a>
           }
           @if (licenceSvc.hasModule('GOUVERNANCE')) {
             <a routerLink="/dashboard/gouvernance" routerLinkActive="bg-blue-50 text-blue-700"

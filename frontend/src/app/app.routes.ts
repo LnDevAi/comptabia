@@ -360,6 +360,11 @@ export const routes: Routes = [
         canActivate: [licenceGuard('CRM')],
         loadComponent: () =>
           import('./features/crm/crm.component').then(m => m.CrmComponent)
+      },
+      {
+        path: 'commercial',
+        loadComponent: () =>
+          import('./features/commercial/commercial.component').then(m => m.CommercialComponent)
       }
     ]
   },
