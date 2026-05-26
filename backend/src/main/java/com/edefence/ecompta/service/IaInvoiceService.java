@@ -1,8 +1,12 @@
 package com.edefence.ecompta.service;
 
 import com.edefence.ecompta.domain.CompteComptable;
+import com.edefence.ecompta.domain.Entreprise;
 import com.edefence.ecompta.dto.ia.InvoiceAnalysisDto;
 import com.edefence.ecompta.repository.CompteComptableRepository;
+import com.edefence.ecompta.repository.EntrepriseRepository;
+import com.edefence.ecompta.util.ReferentielMapping;
+import jakarta.persistence.EntityNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -26,51 +30,21 @@ import java.util.*;
 public class IaInvoiceService {
 
     private final CompteComptableRepository compteRepo;
+    private final EntrepriseRepository entrepriseRepo;
     private final ObjectMapper mapper;
     private final RestClient restClient;
     private final String model;
     private final boolean enabled;
 
-    private static final String SYSCOHADA_PROMPT = """
-            Tu es un expert-comptable certifié SYSCOHADA.
-            Analyse ce document et retourne UNIQUEMENT un objet JSON valide (sans balises markdown, sans commentaires) avec la structure suivante :
-
-            {
-              "type_document": "FACTURE_ACHAT" | "FACTURE_VENTE" | "RECU" | "AUTRE",
-              "fournisseur": "nom du fournisseur ou vide",
-              "client": "nom du client ou vide",
-              "numero_document": "numéro de facture/reçu ou vide",
-              "date_document": "YYYY-MM-DD ou vide si non trouvée",
-              "description": "courte description des biens/services",
-              "montant_ht": 0.00,
-              "taux_tva": 18.0,
-              "montant_tva": 0.00,
-              "montant_ttc": 0.00,
-              "devise": "XOF",
-              "imputation_suggeree": {
-                "libelle_ecriture": "libellé comptable court",
-                "journal_suggere": "AC" | "BQ" | "OD" | "VT",
-                "lignes": [
-                  {"numero_compte": "601", "libelle": "...", "sens": "DEBIT", "montant": 0.00}
-                ]
-              }
-            }
-
-            Règles d'imputation SYSCOHADA :
-            - Facture d'achat : DR 6xx (charges HT), DR 4454 (TVA déductible si > 0), CR 401x (fournisseur TTC)
-            - Facture de vente : DR 411x (client TTC), CR 7xx (produits HT), CR 4431 (TVA collectée si > 0)
-            - Reçu de paiement : DR 401x ou 411x (règlement), CR 52x (banque) ou 57x (caisse)
-            - Si montants non trouvés, indiquer 0.
-            - Journal AC pour achats, VT pour ventes, BQ pour banque, OD pour opérations diverses.
-            """;
-
     public IaInvoiceService(
             CompteComptableRepository compteRepo,
+            EntrepriseRepository entrepriseRepo,
             ObjectMapper mapper,
             @Value("${anthropic.api-key:}") String apiKey,
             @Value("${anthropic.model:claude-haiku-4-5-20251001}") String model,
             @Value("${anthropic.base-url:https://api.anthropic.com/v1}") String baseUrl) {
         this.compteRepo = compteRepo;
+        this.entrepriseRepo = entrepriseRepo;
         this.mapper = mapper;
         this.model = model;
         this.enabled = apiKey != null && !apiKey.isBlank();
@@ -92,22 +66,29 @@ public class IaInvoiceService {
         }
 
         String contentType = Optional.ofNullable(file.getContentType()).orElse("application/octet-stream");
-        boolean isPdf = contentType.contains("pdf");
+        boolean isPdf  = contentType.contains("pdf");
         boolean isImage = contentType.startsWith("image/");
 
         if (!isPdf && !isImage) {
             throw new IllegalArgumentException("Format non supporté. Envoyez un PDF ou une image (JPEG, PNG, WebP).");
         }
 
+        Entreprise entreprise = entrepriseRepo.findById(entrepriseId)
+                .orElseThrow(() -> new EntityNotFoundException("Entreprise not found"));
+        String prompt = ReferentielMapping.buildIaPrompt(
+                entreprise.getReferentielComptable(),
+                entreprise.getDevise(),
+                entreprise.getTauxTvaDefaut() != null ? entreprise.getTauxTvaDefaut().doubleValue() : 0);
+
         String rawText;
         String claudeResponse;
 
         if (isPdf) {
             rawText = extractPdfText(file.getBytes());
-            claudeResponse = callClaudeWithText(rawText);
+            claudeResponse = callClaudeWithText(rawText, prompt);
         } else {
             rawText = "[image]";
-            claudeResponse = callClaudeWithImage(file.getBytes(), contentType);
+            claudeResponse = callClaudeWithImage(file.getBytes(), contentType, prompt);
         }
 
         return buildDto(claudeResponse, rawText, entrepriseId);
@@ -125,7 +106,7 @@ public class IaInvoiceService {
 
     // ─── Claude API calls ─────────────────────────────────────────────────────
 
-    private String callClaudeWithText(String text) {
+    private String callClaudeWithText(String text, String prompt) {
         Map<String, Object> body = Map.of(
                 "model", model,
                 "max_tokens", 1500,
@@ -133,14 +114,14 @@ public class IaInvoiceService {
                         "role", "user",
                         "content", List.of(Map.of(
                                 "type", "text",
-                                "text", SYSCOHADA_PROMPT + "\n\nDocument :\n" + text
+                                "text", prompt + "\n\nDocument :\n" + text
                         ))
                 ))
         );
         return executeClaudeCall(body);
     }
 
-    private String callClaudeWithImage(byte[] imageBytes, String mediaType) {
+    private String callClaudeWithImage(byte[] imageBytes, String mediaType, String prompt) {
         String base64 = Base64.getEncoder().encodeToString(imageBytes);
         Map<String, Object> body = Map.of(
                 "model", model,
@@ -156,7 +137,7 @@ public class IaInvoiceService {
                                                 "data", base64
                                         )
                                 ),
-                                Map.of("type", "text", "text", SYSCOHADA_PROMPT)
+                                Map.of("type", "text", "text", prompt)
                         )
                 ))
         );

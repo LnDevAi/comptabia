@@ -9,6 +9,7 @@ import com.edefence.ecompta.repository.EcritureComptableRepository;
 import com.edefence.ecompta.repository.EntrepriseRepository;
 import com.edefence.ecompta.repository.LigneEcritureRepository;
 import com.edefence.ecompta.repository.NoteAnnexeRepository;
+import com.edefence.ecompta.util.ReferentielMapping;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -60,32 +61,37 @@ public class EtatFinancierService {
     @Transactional(readOnly = true)
     public BilanDto getBilan(UUID entrepriseId, int exercice) {
         BalanceDto balance = getBalance(entrepriseId, exercice);
+        Entreprise entreprise = entrepriseRepo.findById(entrepriseId)
+                .orElseThrow(() -> new EntityNotFoundException("Entreprise not found"));
+        ReferentielMapping.BilanRubrique r =
+                ReferentielMapping.getRubriques(entreprise.getReferentielComptable());
+
         List<BilanDto.Poste> actif  = new ArrayList<>();
         List<BilanDto.Poste> passif = new ArrayList<>();
 
         for (BalanceDto.Ligne l : balance.lignes()) {
-            if (l.classe() == 2 || l.classe() == 3) {
-                // Immobilisations & stocks → actif
+            if (l.classe() == 2) {
                 BigDecimal montant = l.soldeDebiteur().subtract(l.soldeCrediteur());
                 if (montant.compareTo(BigDecimal.ZERO) != 0)
-                    actif.add(new BilanDto.Poste(classeCategorie(l.classe()), l.numero(), l.intitule(), montant));
+                    actif.add(new BilanDto.Poste(r.actifImmobilise(), l.numero(), l.intitule(), montant));
+            } else if (l.classe() == 3) {
+                BigDecimal montant = l.soldeDebiteur().subtract(l.soldeCrediteur());
+                if (montant.compareTo(BigDecimal.ZERO) != 0)
+                    actif.add(new BilanDto.Poste(r.stocks(), l.numero(), l.intitule(), montant));
             } else if (l.classe() == 1) {
-                // Ressources durables → passif
                 BigDecimal montant = l.soldeCrediteur().subtract(l.soldeDebiteur());
                 if (montant.compareTo(BigDecimal.ZERO) != 0)
-                    passif.add(new BilanDto.Poste("Ressources propres et dettes financières", l.numero(), l.intitule(), montant));
+                    passif.add(new BilanDto.Poste(r.ressourcesDurables(), l.numero(), l.intitule(), montant));
             } else if (l.classe() == 4) {
-                // Tiers → actif si débiteur, passif si créditeur
                 if (l.soldeDebiteur().compareTo(BigDecimal.ZERO) > 0)
-                    actif.add(new BilanDto.Poste("Créances", l.numero(), l.intitule(), l.soldeDebiteur()));
+                    actif.add(new BilanDto.Poste(r.creances(), l.numero(), l.intitule(), l.soldeDebiteur()));
                 if (l.soldeCrediteur().compareTo(BigDecimal.ZERO) > 0)
-                    passif.add(new BilanDto.Poste("Dettes circulantes", l.numero(), l.intitule(), l.soldeCrediteur()));
+                    passif.add(new BilanDto.Poste(r.dettesCirculantes(), l.numero(), l.intitule(), l.soldeCrediteur()));
             } else if (l.classe() == 5) {
-                // Trésorerie → actif si débiteur, passif si créditeur
                 if (l.soldeDebiteur().compareTo(BigDecimal.ZERO) > 0)
-                    actif.add(new BilanDto.Poste("Trésorerie-Actif", l.numero(), l.intitule(), l.soldeDebiteur()));
+                    actif.add(new BilanDto.Poste(r.tresorerieActif(), l.numero(), l.intitule(), l.soldeDebiteur()));
                 if (l.soldeCrediteur().compareTo(BigDecimal.ZERO) > 0)
-                    passif.add(new BilanDto.Poste("Trésorerie-Passif", l.numero(), l.intitule(), l.soldeCrediteur()));
+                    passif.add(new BilanDto.Poste(r.tresoreriePassif(), l.numero(), l.intitule(), l.soldeCrediteur()));
             }
         }
 
@@ -432,14 +438,6 @@ public class EtatFinancierService {
 
     private static LocalDate debut(int exercice) { return LocalDate.of(exercice, 1, 1); }
     private static LocalDate fin(int exercice)   { return LocalDate.of(exercice, 12, 31); }
-
-    private static String classeCategorie(int classe) {
-        return switch (classe) {
-            case 2 -> "Actif immobilisé";
-            case 3 -> "Stocks";
-            default -> "Classe " + classe;
-        };
-    }
 
     private NoteAnnexeDto.Response toNoteResponse(NoteAnnexe n) {
         return new NoteAnnexeDto.Response(n.getId(), n.getExercice(), n.getNumeroNote(),
