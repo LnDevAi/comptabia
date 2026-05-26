@@ -346,6 +346,11 @@ export const routes: Routes = [
         path: 'gouvernance',
         loadComponent: () =>
           import('./features/gouvernance/gouvernance.component').then(m => m.GouvernanceComponent)
+      },
+      {
+        path: 'finance-islamique',
+        loadComponent: () =>
+          import('./features/finance-islamique/finance-islamique.component').then(m => m.FinanceIslamiqueComponent)
       }
     ]
   },
