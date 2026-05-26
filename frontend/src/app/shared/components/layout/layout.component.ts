@@ -206,6 +206,10 @@ import { SseNotificationService } from '../../../core/services/sse-notification.
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
             Tableau RH
           </a>
+          <a routerLink="/dashboard/temps-presences" routerLinkActive="bg-cyan-50 text-cyan-700"
+             class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+            Temps & Présences
+          </a>
           <a routerLink="/dashboard/ia" routerLinkActive="bg-purple-50 text-purple-700"
              class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 flex items-center gap-1">
             <span class="text-xs">✦</span> Assistant IA

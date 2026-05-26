@@ -261,6 +261,11 @@ export const routes: Routes = [
         path: 'dashboard-rh',
         loadComponent: () =>
           import('./features/dashboard-rh/dashboard-rh.component').then(m => m.DashboardRhComponent)
+      },
+      {
+        path: 'temps-presences',
+        loadComponent: () =>
+          import('./features/temps-presences/temps-presences.component').then(m => m.TempsPresencesComponent)
       }
     ]
   },
