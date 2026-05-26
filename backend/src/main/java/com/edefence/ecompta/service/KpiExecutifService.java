@@ -13,12 +13,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -53,11 +48,10 @@ public class KpiExecutifService {
         BigDecimal resultatN  = caN.subtract(chargesN);
         BigDecimal resultatN1 = caN1.subtract(chargesN1);
 
-        // ── Trésorerie courante (class 5, cumulé) ─────────────────────────────
+        // ── Trésorerie (class 5, cumulé) ──────────────────────────────────────
         BigDecimal tresorerie = BigDecimal.ZERO;
         for (Object[] r : balAll) {
-            String num = (String) r[0];
-            if (num.startsWith("5")) {
+            if (((String) r[0]).startsWith("5")) {
                 tresorerie = tresorerie.add((BigDecimal) r[3]).subtract((BigDecimal) r[4]);
             }
         }
@@ -65,8 +59,7 @@ public class KpiExecutifService {
         // ── Encours clients (411 débiteur, cumulé) ────────────────────────────
         BigDecimal encours = BigDecimal.ZERO;
         for (Object[] r : balAll) {
-            String num = (String) r[0];
-            if (num.startsWith("411")) {
+            if (((String) r[0]).startsWith("411")) {
                 BigDecimal solde = ((BigDecimal) r[3]).subtract((BigDecimal) r[4]);
                 if (solde.compareTo(BigDecimal.ZERO) > 0) encours = encours.add(solde);
             }
@@ -75,8 +68,18 @@ public class KpiExecutifService {
         // ── Budget ────────────────────────────────────────────────────────────
         KpiExecutifDto.BudgetSynthese budget = computeBudget(eid, exercice, balN);
 
-        // ── Tendance mensuelle ─────────────────────────────────────────────────
-        List<KpiExecutifDto.MoisData> tendance = computeTendance(eid, debutN, finN);
+        // ── Tendance mensuelle N + N-1 ────────────────────────────────────────
+        List<KpiExecutifDto.MoisData> tendance = computeTendance(eid, debutN, finN, debutN1, finN1);
+
+        // ── Top charges ───────────────────────────────────────────────────────
+        List<KpiExecutifDto.CompteCharge> topCharges = computeTopCharges(balN, chargesN);
+
+        // ── Ratios ────────────────────────────────────────────────────────────
+        KpiExecutifDto.Ratios ratios = computeRatios(caN, caN1, chargesN, resultatN, encours);
+
+        // ── Alertes ───────────────────────────────────────────────────────────
+        List<KpiExecutifDto.Alerte> alertes = buildAlertes(
+                resultatN, caN, budget, tresorerie, encours, ratios);
 
         return new KpiExecutifDto.Response(
                 exercice,
@@ -86,7 +89,10 @@ public class KpiExecutifService {
                 card("Trésorerie",           tresorerie, null,       "XOF"),
                 card("Encours clients",      encours,    null,       "XOF"),
                 budget,
-                tendance);
+                tendance,
+                topCharges,
+                ratios,
+                alertes);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -125,7 +131,6 @@ public class KpiExecutifService {
         if (lignes.isEmpty()) return new KpiExecutifDto.BudgetSynthese(
                 BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
 
-        // Index balance by account number
         Map<String, BigDecimal[]> balIdx = new HashMap<>();
         for (Object[] r : balN) {
             balIdx.put((String) r[0], new BigDecimal[]{(BigDecimal) r[3], (BigDecimal) r[4]});
@@ -156,29 +161,115 @@ public class KpiExecutifService {
         return new KpiExecutifDto.BudgetSynthese(totalBudget, totalReel, taux, depassements);
     }
 
-    private List<KpiExecutifDto.MoisData> computeTendance(UUID eid, LocalDate from, LocalDate to) {
-        List<Object[]> rows = ligneRepo.tendanceMensuelle(eid, from, to);
-        Map<Integer, KpiExecutifDto.MoisData> map = new HashMap<>();
+    private List<KpiExecutifDto.MoisData> computeTendance(
+            UUID eid, LocalDate fromN, LocalDate toN, LocalDate fromN1, LocalDate toN1) {
 
-        for (Object[] r : rows) {
-            int mois          = ((Number) r[0]).intValue();
-            BigDecimal caC    = (BigDecimal) r[1];
-            BigDecimal caD    = (BigDecimal) r[2];
-            BigDecimal chD    = (BigDecimal) r[3];
-            BigDecimal chC    = (BigDecimal) r[4];
-            BigDecimal ca     = caC.subtract(caD);
-            BigDecimal ch     = chD.subtract(chC);
-            String label = Month.of(mois).getDisplayName(TextStyle.SHORT, Locale.FRENCH);
-            map.put(mois, new KpiExecutifDto.MoisData(mois, label, ca, ch, ca.subtract(ch)));
-        }
+        List<Object[]> rowsN  = ligneRepo.tendanceMensuelle(eid, fromN,  toN);
+        List<Object[]> rowsN1 = ligneRepo.tendanceMensuelle(eid, fromN1, toN1);
 
-        // Fill missing months with zeros
+        Map<Integer, BigDecimal[]> mapN  = buildMonthMap(rowsN);
+        Map<Integer, BigDecimal[]> mapN1 = buildMonthMap(rowsN1);
+
         List<KpiExecutifDto.MoisData> result = new ArrayList<>();
         for (int m = 1; m <= 12; m++) {
-            result.add(map.getOrDefault(m, new KpiExecutifDto.MoisData(
-                    m, Month.of(m).getDisplayName(TextStyle.SHORT, Locale.FRENCH),
-                    BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)));
+            BigDecimal[] n  = mapN.getOrDefault(m,  new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
+            BigDecimal[] n1 = mapN1.getOrDefault(m, new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
+            String label = Month.of(m).getDisplayName(TextStyle.SHORT, Locale.FRENCH);
+            result.add(new KpiExecutifDto.MoisData(
+                    m, label, n[0], n[1], n[0].subtract(n[1]), n1[0], n1[1]));
         }
         return result;
+    }
+
+    private Map<Integer, BigDecimal[]> buildMonthMap(List<Object[]> rows) {
+        Map<Integer, BigDecimal[]> map = new HashMap<>();
+        for (Object[] r : rows) {
+            int mois       = ((Number) r[0]).intValue();
+            BigDecimal ca  = ((BigDecimal) r[1]).subtract((BigDecimal) r[2]);
+            BigDecimal ch  = ((BigDecimal) r[3]).subtract((BigDecimal) r[4]);
+            map.put(mois, new BigDecimal[]{ca, ch});
+        }
+        return map;
+    }
+
+    private List<KpiExecutifDto.CompteCharge> computeTopCharges(
+            List<Object[]> balN, BigDecimal totalCharges) {
+
+        List<KpiExecutifDto.CompteCharge> list = new ArrayList<>();
+        for (Object[] r : balN) {
+            String num = (String) r[0];
+            if (num.startsWith("6")) {
+                BigDecimal montant = ((BigDecimal) r[3]).subtract((BigDecimal) r[4]);
+                if (montant.compareTo(BigDecimal.ZERO) > 0) {
+                    String libelle = r[1] != null ? (String) r[1] : num;
+                    double part = totalCharges.compareTo(BigDecimal.ZERO) == 0 ? 0
+                            : montant.divide(totalCharges, 4, RoundingMode.HALF_UP)
+                                     .multiply(BigDecimal.valueOf(100)).doubleValue();
+                    list.add(new KpiExecutifDto.CompteCharge(num, libelle, montant, part));
+                }
+            }
+        }
+        list.sort(Comparator.comparing(KpiExecutifDto.CompteCharge::montant).reversed());
+        return list.stream().limit(5).toList();
+    }
+
+    private KpiExecutifDto.Ratios computeRatios(
+            BigDecimal ca, BigDecimal caN1, BigDecimal charges,
+            BigDecimal resultat, BigDecimal encours) {
+
+        double margeNette = ca.compareTo(BigDecimal.ZERO) == 0 ? 0
+                : resultat.divide(ca, 4, RoundingMode.HALF_UP)
+                          .multiply(BigDecimal.valueOf(100)).doubleValue();
+
+        double tauxCharges = ca.compareTo(BigDecimal.ZERO) == 0 ? 0
+                : charges.divide(ca, 4, RoundingMode.HALF_UP)
+                         .multiply(BigDecimal.valueOf(100)).doubleValue();
+
+        double dso = ca.compareTo(BigDecimal.ZERO) == 0 ? 0
+                : encours.divide(ca, 4, RoundingMode.HALF_UP)
+                         .multiply(BigDecimal.valueOf(365)).doubleValue();
+
+        double varCa = (caN1 != null && caN1.compareTo(BigDecimal.ZERO) != 0)
+                ? ca.subtract(caN1).divide(caN1.abs(), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100)).doubleValue()
+                : 0;
+
+        return new KpiExecutifDto.Ratios(margeNette, tauxCharges, dso, varCa);
+    }
+
+    private List<KpiExecutifDto.Alerte> buildAlertes(
+            BigDecimal resultat, BigDecimal ca,
+            KpiExecutifDto.BudgetSynthese budget, BigDecimal tresorerie,
+            BigDecimal encours, KpiExecutifDto.Ratios ratios) {
+
+        List<KpiExecutifDto.Alerte> alertes = new ArrayList<>();
+
+        if (resultat.compareTo(BigDecimal.ZERO) < 0)
+            alertes.add(new KpiExecutifDto.Alerte("DANGER",
+                "Résultat net déficitaire — l'entreprise enregistre une perte sur l'exercice."));
+
+        if (tresorerie.compareTo(BigDecimal.ZERO) < 0)
+            alertes.add(new KpiExecutifDto.Alerte("DANGER",
+                "Trésorerie négative — position de trésorerie critique."));
+
+        if (budget.nbDepassements() > 0)
+            alertes.add(new KpiExecutifDto.Alerte("WARNING",
+                budget.nbDepassements() + " ligne(s) budgétaire(s) dépassée(s)."));
+
+        if (budget.tauxConsommation() > 90 && budget.totalBudget().compareTo(BigDecimal.ZERO) > 0)
+            alertes.add(new KpiExecutifDto.Alerte("WARNING",
+                "Budget consommé à " + String.format("%.0f", budget.tauxConsommation())
+                + "% — risque de dépassement."));
+
+        if (ratios.dso() > 60)
+            alertes.add(new KpiExecutifDto.Alerte("WARNING",
+                "DSO élevé : " + String.format("%.0f", ratios.dso())
+                + " jours — délai moyen de recouvrement à surveiller."));
+
+        if (ratios.margeNettePct() > 0 && ratios.margeNettePct() < 5)
+            alertes.add(new KpiExecutifDto.Alerte("INFO",
+                "Marge nette faible : " + String.format("%.1f", ratios.margeNettePct()) + "%."));
+
+        return alertes;
     }
 }

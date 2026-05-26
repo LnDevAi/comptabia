@@ -19,7 +19,9 @@ public class KpiExecutifDto {
             String     label,
             BigDecimal ca,
             BigDecimal charges,
-            BigDecimal resultat
+            BigDecimal resultat,
+            BigDecimal caN1,
+            BigDecimal chargesN1
     ) {}
 
     public record BudgetSynthese(
@@ -27,6 +29,25 @@ public class KpiExecutifDto {
             BigDecimal totalReel,
             double     tauxConsommation,
             int        nbDepassements
+    ) {}
+
+    public record CompteCharge(
+            String     numero,
+            String     libelle,
+            BigDecimal montant,
+            double     partPct
+    ) {}
+
+    public record Ratios(
+            double margeNettePct,
+            double tauxChargesPct,
+            double dso,            // Days Sales Outstanding (jours)
+            double tauxVariationCa // variation CA vs N-1
+    ) {}
+
+    public record Alerte(
+            String niveau,  // DANGER | WARNING | INFO
+            String message
     ) {}
 
     public record Response(
@@ -37,6 +58,9 @@ public class KpiExecutifDto {
             KpiCard          tresorerie,
             KpiCard          encoursClients,
             BudgetSynthese   budget,
-            List<MoisData>   tendanceMensuelle
+            List<MoisData>   tendanceMensuelle,
+            List<CompteCharge> topCharges,
+            Ratios           ratios,
+            List<Alerte>     alertes
     ) {}
 }
