@@ -33,4 +33,12 @@ public interface AmortissementRepository extends JpaRepository<Amortissement, UU
             WHERE i.entreprise.id = :eid AND i.statut = 'ACTIF'
             """)
     BigDecimal totalCumulEntreprise(@Param("eid") UUID entrepriseId);
+
+    @Query("""
+            SELECT i.categorie, COALESCE(SUM(a.dotation), 0)
+            FROM Amortissement a JOIN a.immobilisation i
+            WHERE i.entreprise.id = :eid AND i.statut = 'ACTIF'
+            GROUP BY i.categorie
+            """)
+    List<Object[]> cumulParCategorie(@Param("eid") UUID eid);
 }
