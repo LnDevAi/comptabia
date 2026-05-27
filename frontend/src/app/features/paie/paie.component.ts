@@ -1,8 +1,14 @@
-import { ChangeDetectionStrategy, Component, OnInit, signal, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit,
+  signal, computed, ViewChild
+} from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Chart, registerables } from 'chart.js';
 import { PayeService } from '../../core/services/paie.service';
 import { PayeResponse, SauvegarderPayeRequest, MOIS_LABELS } from '../../core/models/paie.model';
+
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-paie',
@@ -49,6 +55,22 @@ import { PayeResponse, SauvegarderPayeRequest, MOIS_LABELS } from '../../core/mo
       <div class="bg-green-50 rounded-xl p-3 text-center">
         <div class="text-xs text-green-500 mb-1">Net à payer total</div>
         <div class="font-bold text-green-700 font-mono text-sm">{{ totalNet() | number:'1.2-2' }}</div>
+      </div>
+    </div>
+  }
+
+  <!-- Charts -->
+  @if (feuilles().length > 0) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Évolution mensuelle — {{ exercice }}</h3>
+        <div class="relative h-56">
+          <canvas #barCanvas></canvas>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Décomposition annuelle</h3>
+        <canvas #donutCanvas height="160"></canvas>
       </div>
     </div>
   }
@@ -212,9 +234,15 @@ import { PayeResponse, SauvegarderPayeRequest, MOIS_LABELS } from '../../core/mo
 </div>
   `
 })
-export class PayeComponent implements OnInit {
+export class PayeComponent implements OnInit, OnDestroy {
 
   constructor(private payeSvc: PayeService) {}
+
+  @ViewChild('barCanvas')   barCanvasRef!:   ElementRef<HTMLCanvasElement>;
+  @ViewChild('donutCanvas') donutCanvasRef!: ElementRef<HTMLCanvasElement>;
+
+  private barChart?:   Chart;
+  private donutChart?: Chart;
 
   exercice  = new Date().getFullYear();
   years     = [this.exercice, this.exercice - 1, this.exercice - 2];
@@ -240,13 +268,99 @@ export class PayeComponent implements OnInit {
 
   ngOnInit() { this.charger(); }
 
+  ngOnDestroy() {
+    this.barChart?.destroy();
+    this.donutChart?.destroy();
+  }
+
   charger() {
+    this.barChart?.destroy();   this.barChart   = undefined;
+    this.donutChart?.destroy(); this.donutChart = undefined;
     this.loading.set(true);
     this.feuilles.set([]);
     this.payeSvc.lister(this.exercice).subscribe({
-      next: data => { this.feuilles.set(data); this.loading.set(false); },
+      next: data => {
+        this.feuilles.set(data);
+        this.loading.set(false);
+        Promise.resolve().then(() => this.buildCharts());
+      },
       error: () => this.loading.set(false)
     });
+  }
+
+  private buildCharts() {
+    this.buildBarChart();
+    this.buildDonutChart();
+  }
+
+  private buildBarChart() {
+    const data = this.feuilles();
+    if (!data.length || !this.barCanvasRef) return;
+    this.barChart?.destroy();
+    const moisLabels = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+    const bruts  = Array(12).fill(0);
+    const nets   = Array(12).fill(0);
+    const patron = Array(12).fill(0);
+    for (const f of data) {
+      const i = f.mois - 1;
+      bruts[i]  = f.masseSalarialeBrute;
+      nets[i]   = f.netAPayer;
+      patron[i] = f.cotisationsPatronales;
+    }
+    this.barChart = new Chart(this.barCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: moisLabels,
+        datasets: [
+          { label: 'Masse brute',       data: bruts,  backgroundColor: 'rgba(59,130,246,0.7)',  borderWidth: 0 },
+          { label: 'Net à payer',        data: nets,   backgroundColor: 'rgba(34,197,94,0.75)', borderWidth: 0 },
+          { label: 'Ch. patronales',     data: patron, backgroundColor: 'rgba(251,146,60,0.7)', borderWidth: 0 },
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { font: { size: 10 } }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { font: { size: 10 }, callback: v => this.fmtK(Number(v)) } },
+        },
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${this.fmtK(ctx.parsed.y ?? 0)}` } },
+        }
+      }
+    });
+  }
+
+  private buildDonutChart() {
+    if (!this.feuilles().length || !this.donutCanvasRef) return;
+    this.donutChart?.destroy();
+    const net     = this.totalNet();
+    const salarie = this.feuilles().reduce((s, f) => s + f.cotisationsSalariales, 0);
+    const patron  = this.totalPatronal();
+    const impot   = this.feuilles().reduce((s, f) => s + f.impotRetenu, 0);
+    this.donutChart = new Chart(this.donutCanvasRef.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels: ['Net à payer', 'Cotis. salariales', 'Ch. patronales', 'IPTS retenu'],
+        datasets: [{
+          data: [net, salarie, patron, impot],
+          backgroundColor: ['#22c55e', '#ef4444', '#f97316', '#8b5cf6'],
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } } },
+        cutout: '62%',
+      }
+    });
+  }
+
+  private fmtK(v: number): string {
+    if (Math.abs(v) >= 1_000_000) return (v / 1_000_000).toFixed(1) + ' M';
+    if (Math.abs(v) >= 1_000)     return (v / 1_000).toFixed(0) + ' K';
+    return v.toFixed(0);
   }
 
   ouvrirFormulaire() {
