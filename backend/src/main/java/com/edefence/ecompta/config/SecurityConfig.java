@@ -54,6 +54,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/crm/track/**").permitAll()
                         .requestMatchers("/api/licence/status").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/referentiel/pays", "/api/referentiel/pays/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/public/plans").permitAll()
+                        .requestMatchers("/api/public/paiement/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html",
                                          "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                         .anyRequest().authenticated()

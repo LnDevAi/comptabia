@@ -6,6 +6,17 @@ import { licenceGuard } from './core/guards/licence.guard';
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   {
+    path: 'tarifs',
+    loadComponent: () =>
+      import('./features/tarifs/tarifs.component').then(m => m.TarifsComponent)
+  },
+  {
+    path: 'paiement',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/paiement/paiement.component').then(m => m.PaiementComponent)
+  },
+  {
     path: 'auth',
     children: [
       {
