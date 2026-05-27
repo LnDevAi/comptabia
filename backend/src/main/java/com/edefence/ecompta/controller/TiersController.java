@@ -36,6 +36,11 @@ public class TiersController {
         return service.stats(TenantContext.get());
     }
 
+    @GetMapping("/stats-evolution")
+    public TiersDto.StatsEvolution statsEvolution(@RequestParam(defaultValue = "0") int exercice) {
+        return service.getStatsEvolution(TenantContext.get(), exercice);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN') or hasRole('COMPTABLE')")

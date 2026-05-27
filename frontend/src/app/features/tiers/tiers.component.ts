@@ -1,11 +1,15 @@
 import {
-  ChangeDetectionStrategy, Component, inject, OnInit, signal
+  ChangeDetectionStrategy, Component, ElementRef, inject,
+  OnDestroy, OnInit, signal, ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Chart, registerables } from 'chart.js';
 import { TiersService } from '../../core/services/tiers.service';
-import { Tiers, TiersRequest, TiersStats, TypeTiers } from '../../core/models/tiers.model';
+import { Tiers, TiersRequest, TiersStats, TiersStatsEvolution, TypeTiers } from '../../core/models/tiers.model';
 import { PageResponse } from '../../core/models/ecriture.model';
+
+Chart.register(...registerables);
 
 type FilterType = TypeTiers | '';
 
@@ -64,6 +68,31 @@ const TYPE_META: Record<TypeTiers, { label: string; css: string }> = {
       <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats()!.actifs }}</p>
     </div>
   </div>
+  }
+
+  <!-- Charts -->
+  @if (stats()) {
+    <div class="flex items-center gap-2 justify-end">
+      <label class="text-xs text-gray-500">Exercice :</label>
+      <select [(ngModel)]="selectedExercice" (ngModelChange)="onExerciceChange()"
+              class="border border-gray-200 rounded-lg px-2 py-1 text-sm">
+        @for (y of exercices; track y) {
+          <option [value]="y">{{ y }}</option>
+        }
+      </select>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Répartition par type</h3>
+        <canvas #typeCanvas height="160"></canvas>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">
+          Créations mensuelles — {{ selectedExercice }}
+        </h3>
+        <canvas #evCanvas height="160"></canvas>
+      </div>
+    </div>
   }
 
   <!-- Filters -->
@@ -303,9 +332,12 @@ const TYPE_META: Record<TypeTiers, { label: string; css: string }> = {
 </div>
   `,
 })
-export class TiersComponent implements OnInit {
+export class TiersComponent implements OnInit, OnDestroy {
 
   private svc = inject(TiersService);
+
+  @ViewChild('typeCanvas') typeCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('evCanvas')   evCanvasRef!: ElementRef<HTMLCanvasElement>;
 
   page        = signal<PageResponse<Tiers> | null>(null);
   stats       = signal<TiersStats | null>(null);
@@ -320,6 +352,13 @@ export class TiersComponent implements OnInit {
 
   deleteTarget = signal<Tiers | null>(null);
 
+  statsEvolution = signal<TiersStatsEvolution | null>(null);
+  selectedExercice = new Date().getFullYear();
+  exercices = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+
+  private typeChart?: Chart;
+  private evChart?: Chart;
+
   filterType: FilterType   = '';
   filterSearch             = '';
   filterActifOnly          = false;
@@ -330,6 +369,11 @@ export class TiersComponent implements OnInit {
   ngOnInit() {
     this.loadStats();
     this.loadPage();
+  }
+
+  ngOnDestroy() {
+    this.typeChart?.destroy();
+    this.evChart?.destroy();
   }
 
   // ─── Data loading ─────────────────────────────────────────────────────────
@@ -349,7 +393,77 @@ export class TiersComponent implements OnInit {
   }
 
   loadStats() {
-    this.svc.stats().subscribe({ next: s => this.stats.set(s) });
+    this.svc.stats().subscribe({
+      next: s => {
+        this.stats.set(s);
+        Promise.resolve().then(() => this.buildTypeChart());
+        this.loadStatsEvolution();
+      }
+    });
+  }
+
+  loadStatsEvolution() {
+    this.svc.getStatsEvolution(this.selectedExercice).subscribe({
+      next: ev => {
+        this.statsEvolution.set(ev);
+        Promise.resolve().then(() => this.buildEvChart());
+      }
+    });
+  }
+
+  onExerciceChange() {
+    this.loadStatsEvolution();
+  }
+
+  private buildTypeChart() {
+    const s = this.stats();
+    if (!s || !this.typeCanvasRef) return;
+    this.typeChart?.destroy();
+    const autres = s.total - s.clients - s.fournisseurs;
+    this.typeChart = new Chart(this.typeCanvasRef.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels: ['Clients', 'Fournisseurs', 'Autres'],
+        datasets: [{
+          data: [s.clients, s.fournisseurs, autres],
+          backgroundColor: ['#22c55e', '#f97316', '#9ca3af'],
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } }
+        },
+        cutout: '65%',
+      }
+    });
+  }
+
+  private buildEvChart() {
+    const ev = this.statsEvolution();
+    if (!ev || !this.evCanvasRef) return;
+    this.evChart?.destroy();
+    const labels = ev.mensuel.map(m => m.label);
+    this.evChart = new Chart(this.evCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Clients',      data: ev.mensuel.map(m => m.clients),      backgroundColor: '#22c55e' },
+          { label: 'Fournisseurs', data: ev.mensuel.map(m => m.fournisseurs), backgroundColor: '#f97316' },
+          { label: 'Autres',       data: ev.mensuel.map(m => m.autres),       backgroundColor: '#9ca3af' },
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } },
+          y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } },
+        },
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } } },
+      }
+    });
   }
 
   // ─── Filters ──────────────────────────────────────────────────────────────

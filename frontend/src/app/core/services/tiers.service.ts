@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Tiers, TiersRequest, TiersStats, TypeTiers } from '../models/tiers.model';
+import { Tiers, TiersRequest, TiersStats, TiersStatsEvolution, TypeTiers } from '../models/tiers.model';
 import { PageResponse } from '../models/ecriture.model';
 
 @Injectable({ providedIn: 'root' })
@@ -41,5 +41,10 @@ export class TiersService {
 
   delete(id: string) {
     return this.http.delete<void>(`/api/tiers/${id}`);
+  }
+
+  getStatsEvolution(exercice: number) {
+    const params = new HttpParams().set('exercice', exercice);
+    return this.http.get<TiersStatsEvolution>('/api/tiers/stats-evolution', { params });
   }
 }

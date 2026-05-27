@@ -20,6 +20,20 @@ export interface TiersStats {
   actifs: number;
 }
 
+export interface TiersMoisEvolution {
+  mois: number;
+  label: string;
+  clients: number;
+  fournisseurs: number;
+  autres: number;
+}
+
+export interface TiersStatsEvolution {
+  exercice: number;
+  totalCreations: number;
+  mensuel: TiersMoisEvolution[];
+}
+
 export interface TiersRequest {
   code: string;
   nom: string;
