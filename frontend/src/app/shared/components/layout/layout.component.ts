@@ -433,6 +433,17 @@ import { ToastComponent } from '../toast/toast.component';
         <router-outlet />
       </main>
 
+      <!-- Footer -->
+      <footer class="border-t border-gray-200 bg-white py-3 px-6">
+        <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-400">
+          <span>© {{ currentYear }} L'N EXPERTISE</span>
+          <a routerLink="/legal/mentions-legales" class="hover:text-emerald-600 transition-colors">Mentions légales</a>
+          <a routerLink="/legal/cgu" class="hover:text-emerald-600 transition-colors">CGU</a>
+          <a routerLink="/legal/cgv" class="hover:text-emerald-600 transition-colors">CGV</a>
+          <a routerLink="/legal/confidentialite" class="hover:text-emerald-600 transition-colors">Confidentialité</a>
+        </div>
+      </footer>
+
       <app-toast />
     </div>
   `
@@ -448,6 +459,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   user = this.auth.user;
   notifPanelOpen = false;
+  readonly currentYear = new Date().getFullYear();
 
   ngOnInit() {
     this.alerteSvc.charger();

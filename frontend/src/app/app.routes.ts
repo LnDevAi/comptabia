@@ -11,6 +11,36 @@ export const routes: Routes = [
       import('./features/tarifs/tarifs.component').then(m => m.TarifsComponent)
   },
   {
+    path: 'legal',
+    children: [
+      { path: '', redirectTo: 'mentions-legales', pathMatch: 'full' },
+      {
+        path: 'mentions-legales',
+        loadComponent: () =>
+          import('./features/legal/legal.component').then(m => m.LegalComponent),
+        data: { doc: 'mentions-legales' }
+      },
+      {
+        path: 'cgu',
+        loadComponent: () =>
+          import('./features/legal/legal.component').then(m => m.LegalComponent),
+        data: { doc: 'cgu' }
+      },
+      {
+        path: 'cgv',
+        loadComponent: () =>
+          import('./features/legal/legal.component').then(m => m.LegalComponent),
+        data: { doc: 'cgv' }
+      },
+      {
+        path: 'confidentialite',
+        loadComponent: () =>
+          import('./features/legal/legal.component').then(m => m.LegalComponent),
+        data: { doc: 'confidentialite' }
+      }
+    ]
+  },
+  {
     path: 'paiement',
     canActivate: [authGuard],
     loadComponent: () =>
