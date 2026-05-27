@@ -15,7 +15,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "declarations_tva",
        uniqueConstraints = @UniqueConstraint(columnNames = {"entreprise_id", "periode_debut", "periode_fin"}))
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "entrepriseId", type = UUID.class))
 @Filter(name = "tenantFilter", condition = "entreprise_id = :entrepriseId")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class DeclarationTva {
