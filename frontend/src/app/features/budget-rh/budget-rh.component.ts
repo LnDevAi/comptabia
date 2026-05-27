@@ -1,9 +1,13 @@
 import {
-  ChangeDetectionStrategy, Component, inject, OnInit, signal, computed
+  ChangeDetectionStrategy, Component, ElementRef, inject,
+  OnDestroy, OnInit, signal, computed, ViewChild
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Chart, registerables } from 'chart.js';
 import { BudgetRhService } from '../../core/services/budget-rh.service';
+
+Chart.register(...registerables);
 import {
   ComparatifRh, LigneBudgetRh, CategorieRh,
   CATEGORIES_RH, MOIS_LABELS, BudgetRhUpsertRequest
@@ -62,6 +66,20 @@ interface AddForm {
       </p>
     </div>
   </div>
+
+  <!-- Charts -->
+  @if (data()!.lignes.length > 0) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Répartition du budget par catégorie</h3>
+        <canvas #catCanvas height="180"></canvas>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Budget vs Réalisé par catégorie</h3>
+        <canvas #barCanvas height="180"></canvas>
+      </div>
+    </div>
+  }
 
   <!-- Barre globale -->
   @if (data()!.totalBudget > 0) {
@@ -201,9 +219,15 @@ interface AddForm {
 </div>
   `,
 })
-export class BudgetRhComponent implements OnInit {
+export class BudgetRhComponent implements OnInit, OnDestroy {
 
   private svc = inject(BudgetRhService);
+
+  @ViewChild('catCanvas') catCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('barCanvas') barCanvasRef!: ElementRef<HTMLCanvasElement>;
+
+  private catChart?: Chart;
+  private barChart?: Chart;
 
   exercices        = signal<number[]>([]);
   selectedExercice = new Date().getFullYear();
@@ -231,16 +255,91 @@ export class BudgetRhComponent implements OnInit {
     }, error: () => this.loadData() });
   }
 
+  ngOnDestroy() {
+    this.catChart?.destroy();
+    this.barChart?.destroy();
+  }
+
   onExerciceChange(y: number) {
     this.selectedExercice = +y;
     this.loadData();
   }
 
   loadData() {
+    this.catChart?.destroy(); this.catChart = undefined;
+    this.barChart?.destroy(); this.barChart = undefined;
     this.loading.set(true); this.error.set(null);
     this.svc.getComparatif(this.selectedExercice).subscribe({
-      next:  d  => { this.data.set(d); this.loading.set(false); },
+      next: d => {
+        this.data.set(d);
+        this.loading.set(false);
+        Promise.resolve().then(() => this.buildCharts());
+      },
       error: () => { this.error.set('Erreur de chargement.'); this.loading.set(false); },
+    });
+  }
+
+  private buildCharts() {
+    this.buildCatChart();
+    this.buildBarChart();
+  }
+
+  private buildCatChart() {
+    const d = this.data();
+    if (!d || d.lignes.length === 0 || !this.catCanvasRef) return;
+    const annuels = d.lignes.filter(l => l.mois === 0);
+    const lignes  = annuels.length > 0 ? annuels : d.lignes;
+    const unique = new Map<string, number>();
+    for (const l of lignes) {
+      unique.set(l.libelleCategorie, (unique.get(l.libelleCategorie) ?? 0) + l.budget);
+    }
+    const labels = [...unique.keys()];
+    const values = [...unique.values()];
+    const palette = ['#6366f1','#22c55e','#f97316','#06b6d4','#ec4899'];
+    this.catChart = new Chart(this.catCanvasRef.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{ data: values, backgroundColor: palette, borderWidth: 0 }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } } },
+        cutout: '62%',
+      }
+    });
+  }
+
+  private buildBarChart() {
+    const d = this.data();
+    if (!d || d.lignes.length === 0 || !this.barCanvasRef) return;
+    const annuels = d.lignes.filter(l => l.mois === 0);
+    const lignes  = annuels.length > 0 ? annuels : d.lignes;
+    const labels   = lignes.map(l => l.libelleCategorie);
+    const budgets  = lignes.map(l => l.budget);
+    const realises = lignes.map(l => l.realise);
+    const barColors = lignes.map(l =>
+      l.pctConsomme > 100 ? 'rgba(239,68,68,0.75)'
+      : l.pctConsomme > 80 ? 'rgba(245,158,11,0.75)'
+      : 'rgba(99,102,241,0.75)'
+    );
+    this.barChart = new Chart(this.barCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Budget',   data: budgets,  backgroundColor: 'rgba(209,213,219,0.6)', borderWidth: 1 },
+          { label: 'Réalisé',  data: realises, backgroundColor: barColors, borderWidth: 1 },
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { ticks: { font: { size: 9 } }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { font: { size: 10 } } },
+        },
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } } },
+      }
     });
   }
 
