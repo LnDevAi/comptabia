@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "ged_tags")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "entrepriseId", type = UUID.class))
 @Filter(name = "tenantFilter", condition = "entreprise_id = :entrepriseId")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class GedTag {

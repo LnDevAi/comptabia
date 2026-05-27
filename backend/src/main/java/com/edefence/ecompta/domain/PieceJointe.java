@@ -12,7 +12,6 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "pieces_jointes")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "entrepriseId", type = UUID.class))
 @Filter(name = "tenantFilter", condition = "entreprise_id = :entrepriseId")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class PieceJointe {
