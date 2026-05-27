@@ -1,14 +1,17 @@
 import {
   Component, ChangeDetectionStrategy, ChangeDetectorRef,
-  inject, signal, OnInit
+  ElementRef, inject, signal, OnInit, OnDestroy, ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TresorerieAvanceeService } from '../../core/services/tresorerie-avancee.service';
 import {
   CompteBancaireResponse, CompteBancaireRequest, MouvementResponse,
-  AlerteResponse, TresorerieDashboard, PageResponse, TypeCompte
+  AlerteResponse, TresorerieDashboard, PageResponse, TypeCompte, StatFlux
 } from '../../core/models/tresorerie-avancee.model';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 type Tab = 'dashboard' | 'comptes' | 'mouvements' | 'alertes';
 
@@ -21,10 +24,18 @@ type Tab = 'dashboard' | 'comptes' | 'mouvements' | 'alertes';
 <div class="p-6 space-y-5">
 
   <!-- Header -->
-  <div class="flex items-center justify-between">
+  <div class="flex items-center justify-between flex-wrap gap-3">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Trésorerie</h1>
       <p class="text-sm text-gray-500 mt-0.5">Position de trésorerie, comptes bancaires, mouvements et alertes</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <select [(ngModel)]="selectedExercice" (ngModelChange)="onExerciceChange($event)"
+              class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        @for (y of exercices; track y) {
+          <option [value]="y">{{ y }}</option>
+        }
+      </select>
     </div>
   </div>
 
@@ -32,7 +43,7 @@ type Tab = 'dashboard' | 'comptes' | 'mouvements' | 'alertes';
   <div class="border-b border-gray-200">
     <nav class="flex gap-1 -mb-px">
       @for (t of tabs; track t.id) {
-        <button (click)="activeTab.set(t.id)"
+        <button (click)="switchTab(t.id)"
                 [class]="activeTab() === t.id
                   ? 'border-b-2 border-blue-600 text-blue-700 px-4 py-2.5 text-sm font-medium'
                   : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700 px-4 py-2.5 text-sm font-medium'">
@@ -71,30 +82,78 @@ type Tab = 'dashboard' | 'comptes' | 'mouvements' | 'alertes';
         </div>
       </div>
 
-      <!-- Comptes soldes -->
+      <!-- Flux annuels KPI -->
+      @if (statFlux()) {
+      <div class="grid grid-cols-3 gap-4">
+        <div class="rounded-xl border border-green-200 bg-green-50 p-4">
+          <p class="text-xs text-green-600 uppercase tracking-wide">Encaissements {{ selectedExercice }}</p>
+          <p class="text-xl font-bold text-green-800 mt-1">{{ fmtK(statFlux()!.totalEncaissements) }}</p>
+          <p class="text-xs text-green-500 mt-0.5">Entrées, dépôts, remises</p>
+        </div>
+        <div class="rounded-xl border border-red-200 bg-red-50 p-4">
+          <p class="text-xs text-red-600 uppercase tracking-wide">Décaissements {{ selectedExercice }}</p>
+          <p class="text-xl font-bold text-red-800 mt-1">{{ fmtK(statFlux()!.totalDecaissements) }}</p>
+          <p class="text-xs text-red-500 mt-0.5">Sorties, retraits, frais</p>
+        </div>
+        <div class="rounded-xl border p-4"
+             [ngClass]="statFlux()!.fluxNetAnnuel >= 0
+               ? 'border-blue-200 bg-blue-50'
+               : 'border-orange-200 bg-orange-50'">
+          <p class="text-xs uppercase tracking-wide"
+             [ngClass]="statFlux()!.fluxNetAnnuel >= 0 ? 'text-blue-600' : 'text-orange-600'">
+            Flux net {{ selectedExercice }}
+          </p>
+          <p class="text-xl font-bold mt-1"
+             [ngClass]="statFlux()!.fluxNetAnnuel >= 0 ? 'text-blue-800' : 'text-orange-800'">
+            {{ fmtK(statFlux()!.fluxNetAnnuel) }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Graphique flux mensuels -->
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h2 class="text-sm font-semibold text-gray-700 mb-4">Flux mensuels {{ selectedExercice }}</h2>
+        <div class="relative h-64">
+          <canvas #fluxCanvas></canvas>
+        </div>
+      </div>
+      }
+
+      <!-- Comptes soldes avec jauge seuil -->
       <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div class="px-5 py-3 border-b border-gray-100 bg-gray-50 text-sm font-semibold text-gray-700">
           Soldes par compte
         </div>
         <div class="divide-y divide-gray-100">
           @for (c of dash()!.comptes; track c.id) {
-            <div class="flex items-center justify-between px-5 py-3 hover:bg-gray-50">
-              <div class="flex items-center gap-3">
-                <span class="text-lg">{{ typeIcon(c.typeCompte) }}</span>
-                <div>
-                  <p class="text-sm font-medium text-gray-800">{{ c.libelle }}</p>
-                  @if (c.banque) { <p class="text-xs text-gray-400">{{ c.banque }}</p> }
+            <div class="px-5 py-3 hover:bg-gray-50">
+              <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center gap-3">
+                  <span class="text-lg">{{ typeIcon(c.typeCompte) }}</span>
+                  <div>
+                    <p class="text-sm font-medium text-gray-800">{{ c.libelle }}</p>
+                    @if (c.banque) { <p class="text-xs text-gray-400">{{ c.banque }}</p> }
+                  </div>
+                  @if (c.enAlerte) {
+                    <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full">⚠ Alerte</span>
+                  }
                 </div>
-                @if (c.enAlerte) {
-                  <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full">⚠ Alerte</span>
-                }
+                <div class="text-right">
+                  <p class="text-sm font-semibold" [class]="c.soldeReel >= 0 ? 'text-gray-900' : 'text-red-600'">
+                    {{ fmt(c.soldeReel) }}
+                  </p>
+                  @if (c.soldeDate) { <p class="text-xs text-gray-400">au {{ c.soldeDate }}</p> }
+                </div>
               </div>
-              <div class="text-right">
-                <p class="text-sm font-semibold" [class]="c.soldeReel >= 0 ? 'text-gray-900' : 'text-red-600'">
-                  {{ fmt(c.soldeReel) }}
-                </p>
-                @if (c.soldeDate) { <p class="text-xs text-gray-400">au {{ c.soldeDate }}</p> }
-              </div>
+              @if (c.seuilAlerte > 0) {
+                <div class="w-full bg-gray-100 rounded-full h-1.5">
+                  <div class="h-1.5 rounded-full transition-all"
+                       [style.width.%]="jaugePct(c)"
+                       [ngClass]="c.enAlerte ? 'bg-red-500' : 'bg-green-500'">
+                  </div>
+                </div>
+                <p class="text-xs text-gray-400 mt-0.5">Seuil : {{ fmt(c.seuilAlerte) }}</p>
+              }
             </div>
           }
           @if (dash()!.comptes.length === 0) {
@@ -116,7 +175,14 @@ type Tab = 'dashboard' | 'comptes' | 'mouvements' | 'alertes';
                   <td class="px-5 py-2.5 text-gray-400 text-xs whitespace-nowrap">{{ m.dateOperation }}</td>
                   <td class="px-3 py-2.5 text-gray-800">{{ m.libelle }}</td>
                   <td class="px-3 py-2.5 text-gray-500 text-xs">{{ m.compteLibelle }}</td>
-                  <td class="px-3 py-2.5 text-right font-medium">{{ fmt(m.montant) }}</td>
+                  <td class="px-3 py-2.5 text-right">
+                    <span class="text-xs px-2 py-0.5 rounded"
+                          [ngClass]="isEntree(m.typeMouvement)
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-red-100 text-red-700'">
+                      {{ isEntree(m.typeMouvement) ? '+' : '−' }} {{ fmt(m.montant) }}
+                    </span>
+                  </td>
                 </tr>
               }
             </tbody>
@@ -411,9 +477,17 @@ type Tab = 'dashboard' | 'comptes' | 'mouvements' | 'alertes';
                     @if (m.compteDestLibelle) { <span class="text-gray-400"> → {{ m.compteDestLibelle }}</span> }
                   </td>
                   <td class="px-3 py-2.5">
-                    <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded">{{ mvtLabel(m.typeMouvement) }}</span>
+                    <span class="text-xs px-2 py-0.5 rounded"
+                          [ngClass]="isEntree(m.typeMouvement)
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-red-100 text-red-700'">
+                      {{ mvtLabel(m.typeMouvement) }}
+                    </span>
                   </td>
-                  <td class="px-3 py-2.5 text-right font-medium text-gray-900">{{ fmt(m.montant) }}</td>
+                  <td class="px-3 py-2.5 text-right font-medium"
+                      [ngClass]="isEntree(m.typeMouvement) ? 'text-green-700' : 'text-red-700'">
+                    {{ isEntree(m.typeMouvement) ? '+' : '−' }}{{ fmt(m.montant) }}
+                  </td>
                   <td class="px-3 py-2.5 text-center">
                     <button (click)="deleteMouvement(m)"
                             class="text-red-400 hover:text-red-600 text-xs px-2 py-1 rounded hover:bg-red-50">✕</button>
@@ -511,7 +585,9 @@ type Tab = 'dashboard' | 'comptes' | 'mouvements' | 'alertes';
 }
   `
 })
-export class TresorerieAvanceeComponent implements OnInit {
+export class TresorerieAvanceeComponent implements OnInit, OnDestroy {
+
+  @ViewChild('fluxCanvas') fluxCanvasRef!: ElementRef<HTMLCanvasElement>;
 
   readonly svc = inject(TresorerieAvanceeService);
   private cdr = inject(ChangeDetectorRef);
@@ -524,8 +600,12 @@ export class TresorerieAvanceeComponent implements OnInit {
     { id: 'alertes' as Tab, label: 'Alertes' },
   ];
 
+  selectedExercice = new Date().getFullYear();
+  exercices = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+
   // State
   dash             = signal<TresorerieDashboard | null>(null);
+  statFlux         = signal<StatFlux | null>(null);
   comptes          = signal<CompteBancaireResponse[]>([]);
   mouvements       = signal<MouvementResponse[]>([]);
   mvtLoading       = signal(false);
@@ -557,10 +637,28 @@ export class TresorerieAvanceeComponent implements OnInit {
   ofxCompteNumero = '';
   ofxResult      = signal<{ message: string } | null>(null);
 
+  private fluxChart?: Chart;
+
   ngOnInit() {
     this.loadDashboard();
     this.loadComptes();
     this.loadAlertesBadge();
+    this.loadFlux();
+  }
+
+  ngOnDestroy() {
+    this.fluxChart?.destroy();
+  }
+
+  onExerciceChange(year: number) {
+    this.selectedExercice = year;
+    this.loadFlux();
+  }
+
+  switchTab(tab: Tab) {
+    this.activeTab.set(tab);
+    if (tab === 'mouvements') this.loadMouvements();
+    if (tab === 'alertes') this.filterAlertes(this.showAcquittees());
   }
 
   loadDashboard() {
@@ -569,6 +667,16 @@ export class TresorerieAvanceeComponent implements OnInit {
 
   loadComptes() {
     this.svc.listComptes().subscribe(c => { this.comptes.set(c); this.cdr.markForCheck(); });
+  }
+
+  loadFlux() {
+    this.svc.getFluxMensuel(this.selectedExercice).subscribe({
+      next: stat => {
+        this.statFlux.set(stat);
+        this.cdr.markForCheck();
+        Promise.resolve().then(() => this.buildFluxChart());
+      },
+    });
   }
 
   loadMouvements() {
@@ -596,13 +704,6 @@ export class TresorerieAvanceeComponent implements OnInit {
   filterAlertes(acquittees: boolean) {
     this.showAcquittees.set(acquittees);
     this.svc.listAlertes(acquittees).subscribe(a => { this.alertes.set(a); this.cdr.markForCheck(); });
-  }
-
-  // Tab change
-  onTabChange(tab: Tab) {
-    this.activeTab.set(tab);
-    if (tab === 'mouvements') this.loadMouvements();
-    if (tab === 'alertes') this.filterAlertes(this.showAcquittees());
   }
 
   changeMvtPage(p: number) {
@@ -671,6 +772,7 @@ export class TresorerieAvanceeComponent implements OnInit {
       this.loadComptes();
       this.loadDashboard();
       this.loadAlertesBadge();
+      this.loadFlux();
       this.cdr.markForCheck();
     });
   }
@@ -692,13 +794,19 @@ export class TresorerieAvanceeComponent implements OnInit {
       this.loadMouvements();
       this.loadDashboard();
       this.loadAlertesBadge();
+      this.loadFlux();
       this.cdr.markForCheck();
     });
   }
 
   deleteMouvement(m: MouvementResponse) {
     if (!confirm(`Supprimer ce mouvement ?`)) return;
-    this.svc.deleteMouvement(m.id).subscribe(() => { this.loadMouvements(); this.loadDashboard(); this.cdr.markForCheck(); });
+    this.svc.deleteMouvement(m.id).subscribe(() => {
+      this.loadMouvements();
+      this.loadDashboard();
+      this.loadFlux();
+      this.cdr.markForCheck();
+    });
   }
 
   // Alertes
@@ -724,7 +832,91 @@ export class TresorerieAvanceeComponent implements OnInit {
     });
   }
 
+  // Chart
+  private buildFluxChart() {
+    const stat = this.statFlux();
+    if (!stat || !this.fluxCanvasRef) return;
+
+    this.fluxChart?.destroy();
+
+    const labels = stat.mensuel.map(m => m.label);
+    const enc    = stat.mensuel.map(m => m.encaissements);
+    const dec    = stat.mensuel.map(m => m.decaissements);
+    const net    = stat.mensuel.map(m => m.fluxNet);
+
+    this.fluxChart = new Chart(this.fluxCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Encaissements',
+            data: enc,
+            backgroundColor: 'rgba(34,197,94,0.7)',
+            borderColor: 'rgb(34,197,94)',
+            borderWidth: 1,
+            borderRadius: 4,
+          },
+          {
+            label: 'Décaissements',
+            data: dec,
+            backgroundColor: 'rgba(239,68,68,0.7)',
+            borderColor: 'rgb(239,68,68)',
+            borderWidth: 1,
+            borderRadius: 4,
+          },
+          {
+            label: 'Flux net',
+            data: net,
+            type: 'line' as const,
+            borderColor: 'rgb(59,130,246)',
+            backgroundColor: 'rgba(59,130,246,0.08)',
+            borderWidth: 2,
+            pointRadius: 3,
+            tension: 0.3,
+            fill: false,
+            yAxisID: 'y',
+          } as any,
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.dataset.label}: ${this.fmtK(ctx.parsed.y ?? 0)} FCFA`,
+            },
+          },
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 11 } } },
+        },
+      },
+    });
+  }
+
   // Helpers
+  jaugePct(c: CompteBancaireResponse): number {
+    if (!c.seuilAlerte || c.seuilAlerte <= 0) return 100;
+    const pct = (c.soldeReel / (c.seuilAlerte * 2)) * 100;
+    return Math.min(100, Math.max(0, pct));
+  }
+
+  isEntree(type: string): boolean {
+    return ['ENCAISSEMENT', 'DEPOT_ESPECES', 'REMISE_CHEQUES'].includes(type);
+  }
+
+  fmtK(n: number): string {
+    const abs = Math.abs(n);
+    const sign = n < 0 ? '-' : '';
+    if (abs >= 1_000_000) return sign + (abs / 1_000_000).toFixed(1) + ' M';
+    if (abs >= 1_000)     return sign + (abs / 1_000).toFixed(1) + ' K';
+    return sign + abs.toFixed(0);
+  }
+
   private emptyCompteForm(): CompteBancaireRequest & { typeCompte: TypeCompte } {
     return { libelle: '', banque: '', iban: '', bic: '', compteComptableNumero: '', typeCompte: 'COURANT', seuilAlerte: 0 };
   }

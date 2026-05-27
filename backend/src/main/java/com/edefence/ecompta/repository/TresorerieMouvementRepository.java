@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,4 +36,21 @@ public interface TresorerieMouvementRepository extends JpaRepository<TresorerieM
     List<TresorerieMouvement> findRecents(@Param("eid") UUID entrepriseId);
 
     Optional<TresorerieMouvement> findByIdAndEntrepriseId(UUID id, UUID entrepriseId);
+
+    @Query("""
+            SELECT MONTH(m.dateOperation),
+                   COALESCE(SUM(CASE WHEN m.typeMouvement IN :entrees THEN m.montant ELSE 0 END), 0),
+                   COALESCE(SUM(CASE WHEN m.typeMouvement IN :sorties THEN m.montant ELSE 0 END), 0)
+            FROM TresorerieMouvement m
+            WHERE m.entreprise.id = :eid
+              AND m.dateOperation >= :from AND m.dateOperation <= :to
+            GROUP BY MONTH(m.dateOperation)
+            ORDER BY MONTH(m.dateOperation)
+            """)
+    List<Object[]> fluxMensuel(
+            @Param("eid") UUID eid,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to,
+            @Param("entrees") List<TresorerieMouvement.TypeMouvement> entrees,
+            @Param("sorties") List<TresorerieMouvement.TypeMouvement> sorties);
 }

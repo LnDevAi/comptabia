@@ -92,6 +92,24 @@ public final class TresorerieDto {
             List<AlerteResponse> alertesRecentes
     ) {}
 
+    // ─── Flux mensuels ────────────────────────────────────────────────────────
+
+    public record FluxMensuel(
+            int        mois,
+            String     label,
+            BigDecimal encaissements,
+            BigDecimal decaissements,
+            BigDecimal fluxNet
+    ) {}
+
+    public record StatFlux(
+            int              exercice,
+            BigDecimal       totalEncaissements,
+            BigDecimal       totalDecaissements,
+            BigDecimal       fluxNetAnnuel,
+            List<FluxMensuel> mensuel
+    ) {}
+
     // ─── Import OFX ───────────────────────────────────────────────────────────
 
     public record ImportResult(int imported, int skipped, String message) {}

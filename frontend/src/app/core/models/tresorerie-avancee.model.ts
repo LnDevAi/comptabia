@@ -75,6 +75,22 @@ export interface TresorerieDashboard {
   alertesRecentes: AlerteResponse[];
 }
 
+export interface FluxMensuel {
+  mois: number;
+  label: string;
+  encaissements: number;
+  decaissements: number;
+  fluxNet: number;
+}
+
+export interface StatFlux {
+  exercice: number;
+  totalEncaissements: number;
+  totalDecaissements: number;
+  fluxNetAnnuel: number;
+  mensuel: FluxMensuel[];
+}
+
 export interface ImportOFXResult {
   imported: number;
   skipped: number;
