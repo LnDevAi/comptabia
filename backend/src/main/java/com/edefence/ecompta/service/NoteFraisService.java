@@ -14,7 +14,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -48,6 +51,54 @@ public class NoteFraisService {
     @Transactional(readOnly = true)
     public NoteFraisDto.Response findOne(UUID id, UUID eid) {
         return toResponse(findOrThrow(id, eid));
+    }
+
+    @Transactional(readOnly = true)
+    public NoteFraisDto.Stats getStats(UUID eid, int exercice) {
+        if (exercice <= 0) exercice = LocalDate.now().getYear();
+        String[] moisFr = {"Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"};
+
+        Map<String, long[]> byStatut = new HashMap<>();
+        Map<String, BigDecimal> montByStatut = new HashMap<>();
+        for (Object[] r : noteFraisRepo.statsParStatut(eid, exercice)) {
+            String st = r[0].toString();
+            byStatut.put(st, new long[]{ ((Number) r[1]).longValue() });
+            montByStatut.put(st, (BigDecimal) r[2]);
+        }
+        long brouillons  = get(byStatut, "BROUILLON");
+        long soumises    = get(byStatut, "SOUMISE");
+        long approuvees  = get(byStatut, "APPROUVEE");
+        long rejetees    = get(byStatut, "REJETEE");
+        long remboursees = get(byStatut, "REMBOURSEE");
+        BigDecimal montSoumis    = montByStatut.getOrDefault("SOUMISE",    BigDecimal.ZERO);
+        BigDecimal montApprouve  = montByStatut.getOrDefault("APPROUVEE",  BigDecimal.ZERO);
+        BigDecimal montRembourse = montByStatut.getOrDefault("REMBOURSEE", BigDecimal.ZERO);
+
+        List<NoteFraisDto.ParCategorie> parCategorie = new ArrayList<>();
+        for (Object[] r : noteFraisRepo.statsParCategorie(eid, exercice)) {
+            parCategorie.add(new NoteFraisDto.ParCategorie(
+                r[0].toString(), ((Number) r[1]).longValue(), (BigDecimal) r[2]));
+        }
+
+        Map<Integer, Object[]> byMois = new HashMap<>();
+        for (Object[] r : noteFraisRepo.remboursementsMensuels(eid, exercice))
+            byMois.put(((Number) r[0]).intValue(), r);
+        List<NoteFraisDto.MoisFrais> mensuel = new ArrayList<>();
+        for (int m = 1; m <= 12; m++) {
+            Object[] r = byMois.get(m);
+            mensuel.add(new NoteFraisDto.MoisFrais(m, moisFr[m - 1],
+                r != null ? ((Number) r[1]).longValue() : 0L,
+                r != null ? (BigDecimal) r[2] : BigDecimal.ZERO));
+        }
+
+        return new NoteFraisDto.Stats(exercice,
+            brouillons + soumises + approuvees + rejetees + remboursees,
+            brouillons, soumises, approuvees, rejetees, remboursees,
+            montSoumis, montApprouve, montRembourse, parCategorie, mensuel);
+    }
+
+    private long get(Map<String, long[]> m, String key) {
+        long[] v = m.get(key); return v != null ? v[0] : 0L;
     }
 
     // ─── CRUD ────────────────────────────────────────────────────────────────

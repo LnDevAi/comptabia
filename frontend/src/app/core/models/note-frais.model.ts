@@ -43,3 +43,31 @@ export interface NoteFraisSaveRequest {
 export interface RejeterRequest {
   commentaire: string | null;
 }
+
+export interface NoteFraisParCategorie {
+  categorie: string;
+  nb: number;
+  montant: number;
+}
+
+export interface NoteFraisMoisFrais {
+  mois: number;
+  label: string;
+  nb: number;
+  montant: number;
+}
+
+export interface NoteFraisStats {
+  exercice: number;
+  totalNotes: number;
+  brouillons: number;
+  soumises: number;
+  approuvees: number;
+  rejetees: number;
+  remboursees: number;
+  montantSoumis: number;
+  montantApprouve: number;
+  montantRembourse: number;
+  parCategorie: NoteFraisParCategorie[];
+  mensuel: NoteFraisMoisFrais[];
+}
