@@ -1,11 +1,15 @@
 import {
-  ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, signal
+  ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef,
+  OnDestroy, OnInit, inject, signal, ViewChild
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { Chart, registerables } from 'chart.js';
 import { DashboardRhService } from '../../core/services/dashboard-rh.service';
 import { ComparatifRh, ComparatifSection, DashboardRh, MOIS_LABELS, PaiesMensuel } from '../../core/models/dashboard-rh.model';
+
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard-rh',
@@ -390,54 +394,24 @@ import { ComparatifRh, ComparatifSection, DashboardRh, MOIS_LABELS, PaiesMensuel
         </div>
       </div>
 
-      <!-- Évolution mensuelle de la masse salariale -->
-      <div class="bg-white rounded-xl border border-gray-200 p-5">
-        <h3 class="text-sm font-semibold text-gray-700 mb-4">
-          Évolution mensuelle — Masse salariale brute
-          <span class="text-xs font-normal text-gray-400 ml-2">({{ comparatif()!.anneeN }} vs {{ comparatif()!.anneeN1 }})</span>
-        </h3>
-
-        <!-- Légende -->
-        <div class="flex gap-4 mb-4">
-          <div class="flex items-center gap-1.5">
-            <div class="w-3 h-3 rounded-sm bg-blue-500"></div>
-            <span class="text-xs text-gray-600">{{ comparatif()!.anneeN }}</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <div class="w-3 h-3 rounded-sm bg-gray-300"></div>
-            <span class="text-xs text-gray-600">{{ comparatif()!.anneeN1 }}</span>
+      <!-- Charts comparatif -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">
+            Évolution mensuelle — Masse salariale brute
+            <span class="text-xs font-normal text-gray-400 ml-1">({{ comparatif()!.anneeN }} vs {{ comparatif()!.anneeN1 }})</span>
+          </h3>
+          <div class="relative h-72">
+            <canvas #massaCanvas></canvas>
           </div>
         </div>
-
-        <!-- Graphique barres CSS -->
-        <div class="space-y-3">
-          @for (mois of moisRange; track mois) {
-            <div class="flex items-center gap-3">
-              <span class="text-xs text-gray-500 w-8 text-right shrink-0">{{ moisCourt(mois) }}</span>
-              <div class="flex-1 space-y-1">
-                <!-- Barre N -->
-                <div class="flex items-center gap-2">
-                  <div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
-                    <div class="bg-blue-500 h-3 rounded-full transition-all"
-                         [style.width]="barWidth(getValMois(comparatif()!.paiesMensuellesN, mois), maxMasse()) + '%'"></div>
-                  </div>
-                  <span class="text-xs text-gray-600 w-24 text-right shrink-0">
-                    {{ getValMois(comparatif()!.paiesMensuellesN, mois) | number:'1.0-0' }}
-                  </span>
-                </div>
-                <!-- Barre N-1 -->
-                <div class="flex items-center gap-2">
-                  <div class="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
-                    <div class="bg-gray-300 h-2 rounded-full transition-all"
-                         [style.width]="barWidth(getValMois(comparatif()!.paiesMensuellesN1, mois), maxMasse()) + '%'"></div>
-                  </div>
-                  <span class="text-xs text-gray-400 w-24 text-right shrink-0">
-                    {{ getValMois(comparatif()!.paiesMensuellesN1, mois) | number:'1.0-0' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          }
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">
+            Indicateurs clés — {{ comparatif()!.anneeN }} vs {{ comparatif()!.anneeN1 }}
+          </h3>
+          <div class="relative h-72">
+            <canvas #kpiCanvas></canvas>
+          </div>
         </div>
       </div>
 
@@ -496,10 +470,16 @@ import { ComparatifRh, ComparatifSection, DashboardRh, MOIS_LABELS, PaiesMensuel
 </div>
   `
 })
-export class DashboardRhComponent implements OnInit {
+export class DashboardRhComponent implements OnInit, OnDestroy {
 
   private svc = inject(DashboardRhService);
   private cdr = inject(ChangeDetectorRef);
+
+  @ViewChild('massaCanvas') massaCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('kpiCanvas')   kpiCanvasRef!: ElementRef<HTMLCanvasElement>;
+
+  private massaChart?: Chart;
+  private kpiChart?: Chart;
 
   loading      = signal(true);
   loadingComp  = signal(false);
@@ -512,6 +492,11 @@ export class DashboardRhComponent implements OnInit {
   moisRange = [1,2,3,4,5,6,7,8,9,10,11,12];
 
   ngOnInit() { this.load(); }
+
+  ngOnDestroy() {
+    this.massaChart?.destroy();
+    this.kpiChart?.destroy();
+  }
 
   load() {
     this.loading.set(true);
@@ -527,16 +512,117 @@ export class DashboardRhComponent implements OnInit {
 
   loadComparatif(force = false) {
     this.activeTab = 'comparatif';
-    if (this.comparatif() && !force) return;
+    if (this.comparatif() && !force) {
+      Promise.resolve().then(() => this.buildCharts());
+      return;
+    }
+    this.massaChart?.destroy(); this.massaChart = undefined;
+    this.kpiChart?.destroy();   this.kpiChart   = undefined;
     this.loadingComp.set(true);
     this.svc.getComparatif(this.anneeComparatif).subscribe({
       next: c => {
         this.comparatif.set(c);
         this.loadingComp.set(false);
         this.cdr.markForCheck();
+        Promise.resolve().then(() => this.buildCharts());
       },
       error: () => this.loadingComp.set(false)
     });
+  }
+
+  private buildCharts() {
+    this.buildMassaChart();
+    this.buildKpiChart();
+  }
+
+  private buildMassaChart() {
+    const c = this.comparatif();
+    if (!c || !this.massaCanvasRef) return;
+    this.massaChart?.destroy();
+    const labels = this.moisRange.map(m => this.moisCourt(m));
+    const dataN  = this.moisRange.map(m => this.getValMois(c.paiesMensuellesN,  m));
+    const dataN1 = this.moisRange.map(m => this.getValMois(c.paiesMensuellesN1, m));
+    this.massaChart = new Chart(this.massaCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: String(c.anneeN),
+            data: dataN,
+            backgroundColor: 'rgba(59,130,246,0.7)',
+            borderColor: 'rgba(59,130,246,1)',
+            borderWidth: 1,
+          },
+          {
+            label: String(c.anneeN1),
+            data: dataN1,
+            backgroundColor: 'rgba(209,213,219,0.6)',
+            borderColor: 'rgba(156,163,175,0.8)',
+            borderWidth: 1,
+          },
+          {
+            type: 'line' as const,
+            label: 'Net ' + c.anneeN,
+            data: this.moisRange.map(m => this.getMoisRow(c.paiesMensuellesN, m)?.netAPayer ?? 0),
+            borderColor: 'rgba(34,197,94,0.85)',
+            borderWidth: 2,
+            pointRadius: 3,
+            fill: false,
+            yAxisID: 'y',
+          } as any,
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { font: { size: 10 } }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { font: { size: 10 }, callback: v => this.fmtK(Number(v)) } },
+        },
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${this.fmtK(ctx.parsed.y ?? 0)}` } },
+        }
+      }
+    });
+  }
+
+  private buildKpiChart() {
+    const c = this.comparatif();
+    if (!c || !this.kpiCanvasRef) return;
+    this.kpiChart?.destroy();
+    const labels = ['Masse salariale', 'Net à payer', 'Notes de frais'];
+    const dataN  = [c.masseSalariale.valeurN,   c.netAPayer.valeurN,   c.notesFraisMontant.valeurN];
+    const dataN1 = [c.masseSalariale.valeurN1,  c.netAPayer.valeurN1,  c.notesFraisMontant.valeurN1];
+    this.kpiChart = new Chart(this.kpiCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: String(c.anneeN),  data: dataN,  backgroundColor: 'rgba(59,130,246,0.7)', borderWidth: 0 },
+          { label: String(c.anneeN1), data: dataN1, backgroundColor: 'rgba(209,213,219,0.6)', borderWidth: 0 },
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { font: { size: 10 }, callback: v => this.fmtK(Number(v)) } },
+        },
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${this.fmtK(ctx.parsed.y ?? 0)}` } },
+        }
+      }
+    });
+  }
+
+  fmtK(v: number): string {
+    if (Math.abs(v) >= 1_000_000) return (v / 1_000_000).toFixed(1) + ' M';
+    if (Math.abs(v) >= 1_000)     return (v / 1_000).toFixed(0) + ' K';
+    return v.toFixed(0);
   }
 
   hasAlertes(): boolean {
