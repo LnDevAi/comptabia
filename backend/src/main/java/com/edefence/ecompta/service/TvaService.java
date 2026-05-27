@@ -12,14 +12,20 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.time.Month;
+import java.time.format.TextStyle;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class TvaService {
+
+    private static final String[] MOIS_FR = {
+        "", "Janv.", "Févr.", "Mars", "Avr.", "Mai", "Juin",
+        "Juil.", "Août", "Sept.", "Oct.", "Nov.", "Déc."
+    };
 
     private final DeclarationTvaRepository  declarationRepo;
     private final EntrepriseRepository      entrepriseRepo;
@@ -58,6 +64,75 @@ public class TvaService {
                 .existsByEntrepriseIdAndPeriodeDebutAndPeriodeFin(entrepriseId, debut, fin);
 
         return new TvaDto.Simulation(debut, fin, collectee, deductible, aDecaisser, detail, dejaDeclare);
+    }
+
+    // ─── Stats annuelles ─────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public TvaDto.StatAnnuelle getStatAnnuelle(UUID entrepriseId, int exercice) {
+        LocalDate from = LocalDate.of(exercice, 1, 1);
+        LocalDate to   = LocalDate.of(exercice, 12, 31);
+
+        List<Object[]> rows = declarationRepo.tvaParMois(entrepriseId, from, to);
+
+        Map<Integer, BigDecimal[]> byMois = new LinkedHashMap<>();
+        for (Object[] row : rows) {
+            int mois          = ((Number) row[0]).intValue();
+            BigDecimal coll   = (BigDecimal) row[1];
+            BigDecimal deduct = (BigDecimal) row[2];
+            byMois.put(mois, new BigDecimal[]{ coll, deduct });
+        }
+
+        List<TvaDto.MoisTva> mensuel = new ArrayList<>();
+        BigDecimal totalColl  = BigDecimal.ZERO;
+        BigDecimal totalDeduct = BigDecimal.ZERO;
+
+        for (int m = 1; m <= 12; m++) {
+            BigDecimal[] vals = byMois.getOrDefault(m, new BigDecimal[]{ BigDecimal.ZERO, BigDecimal.ZERO });
+            BigDecimal coll   = vals[0];
+            BigDecimal deduct = vals[1];
+            BigDecimal net    = coll.subtract(deduct);
+            totalColl   = totalColl.add(coll);
+            totalDeduct = totalDeduct.add(deduct);
+            mensuel.add(new TvaDto.MoisTva(m, MOIS_FR[m], coll, deduct, net));
+        }
+
+        BigDecimal totalNet = totalColl.subtract(totalDeduct);
+
+        List<DeclarationTva> decls = declarationRepo.findByEntrepriseIdOrderByPeriodeDebutDesc(entrepriseId)
+                .stream()
+                .filter(d -> d.getPeriodeDebut().getYear() == exercice)
+                .toList();
+
+        List<Integer> moisDeclares = decls.stream()
+                .map(d -> d.getPeriodeDebut().getMonthValue())
+                .distinct().sorted().toList();
+
+        return new TvaDto.StatAnnuelle(exercice, totalColl, totalDeduct, totalNet,
+                decls.size(), moisDeclares, mensuel);
+    }
+
+    // ─── Export CSV ──────────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public String exportCsv(UUID entrepriseId, int exercice) {
+        List<DeclarationTva> decls = declarationRepo.findByEntrepriseIdOrderByPeriodeDebutDesc(entrepriseId)
+                .stream()
+                .filter(d -> d.getPeriodeDebut().getYear() == exercice || exercice == 0)
+                .toList();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Période début;Période fin;TVA collectée;TVA déductible;À décaisser;Statut;OD\n");
+        for (DeclarationTva d : decls) {
+            sb.append(d.getPeriodeDebut()).append(';')
+              .append(d.getPeriodeFin()).append(';')
+              .append(d.getTvaCollectee()).append(';')
+              .append(d.getTvaDeductible()).append(';')
+              .append(d.getTvaADecaisser()).append(';')
+              .append(d.getStatut().name()).append(';')
+              .append(d.getEcritureId() != null ? "OD générée" : "—").append('\n');
+        }
+        return sb.toString();
     }
 
     // ─── Valider et générer OD ───────────────────────────────────────────────

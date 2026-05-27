@@ -51,4 +51,22 @@ public final class TvaDto {
             @NotNull LocalDate periodeDebut,
             @NotNull LocalDate periodeFin
     ) {}
+
+    public record MoisTva(
+            int        mois,
+            String     label,
+            BigDecimal tvaCollectee,
+            BigDecimal tvaDeductible,
+            BigDecimal tvaADecaisser
+    ) {}
+
+    public record StatAnnuelle(
+            int              exercice,
+            BigDecimal       totalCollectee,
+            BigDecimal       totalDeductible,
+            BigDecimal       totalADecaisser,
+            int              nbDeclarations,
+            List<Integer>    moisDeclares,
+            List<MoisTva>    mensuel
+    ) {}
 }

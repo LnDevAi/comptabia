@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { DeclarationTva, SimulationTva } from '../models/tva.model';
+import { DeclarationTva, SimulationTva, StatAnnuelle } from '../models/tva.model';
 
 @Injectable({ providedIn: 'root' })
 export class TvaService {
@@ -13,6 +13,15 @@ export class TvaService {
   simuler(debut: string, fin: string) {
     return this.http.get<SimulationTva>('/api/tva/simuler',
       { params: new HttpParams().set('debut', debut).set('fin', fin) });
+  }
+
+  getAnnuel(exercice: number) {
+    return this.http.get<StatAnnuelle>('/api/tva/annuel',
+      { params: new HttpParams().set('exercice', exercice) });
+  }
+
+  exportCsvUrl(exercice: number): string {
+    return `/api/tva/export-csv?exercice=${exercice}`;
   }
 
   valider(periodeDebut: string, periodeFin: string) {

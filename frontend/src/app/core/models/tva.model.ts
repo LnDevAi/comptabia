@@ -27,3 +27,21 @@ export interface DeclarationTva {
   ecritureId: string | null;
   createdAt: string;
 }
+
+export interface MoisTva {
+  mois: number;
+  label: string;
+  tvaCollectee: number;
+  tvaDeductible: number;
+  tvaADecaisser: number;
+}
+
+export interface StatAnnuelle {
+  exercice: number;
+  totalCollectee: number;
+  totalDeductible: number;
+  totalADecaisser: number;
+  nbDeclarations: number;
+  moisDeclares: number[];
+  mensuel: MoisTva[];
+}

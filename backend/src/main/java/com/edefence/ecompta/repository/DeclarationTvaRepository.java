@@ -66,4 +66,23 @@ public interface DeclarationTvaRepository extends JpaRepository<DeclarationTva, 
             @Param("eid") UUID entrepriseId,
             @Param("from") LocalDate from,
             @Param("to") LocalDate to);
+
+    @Query("""
+            SELECT MONTH(e.dateEcriture),
+                   COALESCE(SUM(CASE WHEN c.numero LIKE '443%' THEN l.credit - l.debit ELSE 0 END), 0),
+                   COALESCE(SUM(CASE WHEN c.numero LIKE '445%' THEN l.debit - l.credit ELSE 0 END), 0)
+            FROM LigneEcriture l
+            JOIN l.compte c
+            JOIN l.ecriture e
+            WHERE e.entreprise.id = :eid
+            AND e.statut = 'VALIDEE'
+            AND (c.numero LIKE '443%' OR c.numero LIKE '445%')
+            AND e.dateEcriture >= :from AND e.dateEcriture <= :to
+            GROUP BY MONTH(e.dateEcriture)
+            ORDER BY MONTH(e.dateEcriture)
+            """)
+    List<Object[]> tvaParMois(
+            @Param("eid") UUID entrepriseId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to);
 }
