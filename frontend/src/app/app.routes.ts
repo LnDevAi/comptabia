@@ -47,6 +47,21 @@ export const routes: Routes = [
       import('./features/paiement/paiement.component').then(m => m.PaiementComponent)
   },
   {
+    path: 'aide',
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/aide/aide.component').then(m => m.AideComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () =>
+          import('./features/aide/aide.component').then(m => m.AideComponent)
+      }
+    ]
+  },
+  {
     path: 'auth',
     children: [
       {

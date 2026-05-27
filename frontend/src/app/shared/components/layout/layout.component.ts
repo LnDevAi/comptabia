@@ -355,6 +355,13 @@ import { ToastComponent } from '../toast/toast.component';
 
         <!-- Right side: user info + notification bell -->
         <div class="flex items-center gap-3 text-sm shrink-0">
+          <a routerLink="/aide"
+             class="p-1.5 rounded-lg hover:bg-gray-100 transition text-gray-400 hover:text-emerald-600"
+             title="Centre d'aide">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </a>
           <span class="text-gray-500">{{ user()?.nomEntreprise }}</span>
           <a routerLink="/dashboard/profile"
              class="font-medium text-gray-800 hover:text-blue-600 transition">
@@ -437,6 +444,7 @@ import { ToastComponent } from '../toast/toast.component';
       <footer class="border-t border-gray-200 bg-white py-3 px-6">
         <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-400">
           <span>© {{ currentYear }} L'N EXPERTISE</span>
+          <a routerLink="/aide" class="hover:text-emerald-600 transition-colors">Centre d'aide</a>
           <a routerLink="/legal/mentions-legales" class="hover:text-emerald-600 transition-colors">Mentions légales</a>
           <a routerLink="/legal/cgu" class="hover:text-emerald-600 transition-colors">CGU</a>
           <a routerLink="/legal/cgv" class="hover:text-emerald-600 transition-colors">CGV</a>
