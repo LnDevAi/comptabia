@@ -163,6 +163,10 @@ import { ToastComponent } from '../toast/toast.component';
                class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
               Import FEC
             </a>
+            <a routerLink="/dashboard/migration" routerLinkActive="bg-blue-50 text-blue-700"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Migration
+            </a>
           }
           @if (licenceSvc.hasModule('DOCUMENTS')) {
             <a routerLink="/dashboard/documents" routerLinkActive="bg-blue-50 text-blue-700"
