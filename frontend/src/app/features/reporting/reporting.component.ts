@@ -1,8 +1,12 @@
 import {
-  ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, signal
+  ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef,
+  OnDestroy, OnInit, inject, signal, ViewChild
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 import { ReportingService } from '../../core/services/reporting.service';
 import {
   SyntheseRh, RapportConges, RapportPresences,
@@ -55,6 +59,12 @@ type Tab = 'synthese' | 'conges' | 'presences' | 'notes' | 'prets';
           </div>
         }
       </div>
+      <!-- Chart alertes -->
+      <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+        <h2 class="text-sm font-semibold text-gray-700 mb-3">Indicateurs RH</h2>
+        <canvas #syntheseCanvas height="120"></canvas>
+      </div>
+
       <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
         <h2 class="text-sm font-semibold text-gray-700 mb-3">Alertes</h2>
         <ul class="space-y-1.5 text-sm">
@@ -104,6 +114,12 @@ type Tab = 'synthese' | 'conges' | 'presences' | 'notes' | 'prets';
           <p class="text-xs text-gray-400">Jours approuvés</p>
         </div>
       </div>
+      <!-- Chart statuts congés -->
+      <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+        <h2 class="text-sm font-semibold text-gray-700 mb-3">Répartition par statut</h2>
+        <canvas #congesCanvas height="140"></canvas>
+      </div>
+
       <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
         <table class="w-full text-sm">
           <thead class="bg-gray-50 text-gray-500 text-xs">
@@ -283,9 +299,14 @@ type Tab = 'synthese' | 'conges' | 'presences' | 'notes' | 'prets';
 </div>
 `,
 })
-export class ReportingComponent implements OnInit {
+export class ReportingComponent implements OnInit, OnDestroy {
   private svc = inject(ReportingService);
   private cdr = inject(ChangeDetectorRef);
+
+  @ViewChild('syntheseCanvas') syntheseCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('congesCanvas')   congesCanvasRef!:   ElementRef<HTMLCanvasElement>;
+  private syntheseChart?: Chart;
+  private congesChart?: Chart;
 
   activeTab = signal<Tab>('synthese');
 
@@ -324,18 +345,39 @@ export class ReportingComponent implements OnInit {
 
   ngOnInit() { this.selectTab('synthese'); }
 
+  ngOnDestroy() {
+    this.syntheseChart?.destroy();
+    this.congesChart?.destroy();
+  }
+
   selectTab(tab: Tab) {
     this.activeTab.set(tab);
     switch (tab) {
-      case 'synthese':   if (!this.synthese)         { this.svc.synthese().subscribe({ next: d => { this.synthese = d; this.cdr.markForCheck(); } }); } break;
+      case 'synthese':
+        if (!this.synthese) {
+          this.svc.synthese().subscribe({ next: d => {
+            this.synthese = d; this.cdr.markForCheck();
+            Promise.resolve().then(() => this.buildSyntheseChart());
+          }});
+        } else {
+          Promise.resolve().then(() => this.buildSyntheseChart());
+        }
+        break;
       case 'conges':     this.loadConges(); break;
       case 'presences':  this.loadPresences(); break;
       case 'notes':      this.loadNotes(); break;
-      case 'prets':      if (!this.rapportPrets)     { this.svc.prets().subscribe({ next: d => { this.rapportPrets = d; this.cdr.markForCheck(); } }); } break;
+      case 'prets':      if (!this.rapportPrets) { this.svc.prets().subscribe({ next: d => { this.rapportPrets = d; this.cdr.markForCheck(); } }); } break;
     }
   }
 
-  loadConges()    { this.rapportConges = null; this.svc.conges(this.filterAnnee).subscribe({ next: d => { this.rapportConges = d; this.cdr.markForCheck(); } }); }
+  loadConges() {
+    this.rapportConges = null;
+    this.congesChart?.destroy(); this.congesChart = undefined;
+    this.svc.conges(this.filterAnnee).subscribe({ next: d => {
+      this.rapportConges = d; this.cdr.markForCheck();
+      Promise.resolve().then(() => this.buildCongesChart());
+    }});
+  }
   loadPresences() { this.rapportPresences = null; this.svc.presences(this.filterMois, this.filterAnnee).subscribe({ next: d => { this.rapportPresences = d; this.cdr.markForCheck(); } }); }
   loadNotes()     { this.rapportNotes = null; this.svc.notesFrais(this.filterAnnee).subscribe({ next: d => { this.rapportNotes = d; this.cdr.markForCheck(); } }); }
 
@@ -345,6 +387,51 @@ export class ReportingComponent implements OnInit {
       SOUMISE: 'bg-amber-100 text-amber-700', BROUILLON: 'bg-gray-100 text-gray-600'
     };
     return m[s] ?? 'bg-gray-100 text-gray-600';
+  }
+
+  private buildSyntheseChart() {
+    if (!this.synthese || !this.syntheseCanvasRef) return;
+    this.syntheseChart?.destroy();
+    const s = this.synthese;
+    const labels = ['Congés att.', 'Notes att.', 'Prêts', 'Docs exp.', 'Recrutement', 'Onboarding'];
+    const values = [s.congesEnAttente, s.notesFraisEnAttente, s.pretsEnCours, s.documentsExpirant30j, s.recrutementOuvert, s.onboardingEnCours];
+    const colors = ['#f59e0b','#f59e0b','#6366f1','#ef4444','#10b981','#14b8a6'];
+    this.syntheseChart = new Chart(this.syntheseCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ label: 'Indicateurs RH', data: values, backgroundColor: colors, borderRadius: 4 }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f3f4f6' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  private buildCongesChart() {
+    if (!this.rapportConges || !this.congesCanvasRef) return;
+    this.congesChart?.destroy();
+    const lignes = this.rapportConges.lignes;
+    const counts: Record<string, number> = { APPROUVEE: 0, SOUMISE: 0, REJETEE: 0, BROUILLON: 0 };
+    lignes.forEach(l => { if (counts[l.statut] !== undefined) counts[l.statut]++; else counts[l.statut] = 1; });
+    const labels = Object.keys(counts).filter(k => counts[k] > 0);
+    const data   = labels.map(k => counts[k]);
+    const palette: Record<string, string> = { APPROUVEE: '#22c55e', SOUMISE: '#f59e0b', REJETEE: '#ef4444', BROUILLON: '#9ca3af' };
+    const colors = labels.map(k => palette[k] ?? '#6b7280');
+    this.congesChart = new Chart(this.congesCanvasRef.nativeElement, {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2 }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'right', labels: { font: { size: 11 }, boxWidth: 12 } } },
+        cutout: '65%'
+      }
+    });
   }
 
   exportCSV() {
