@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -57,4 +58,12 @@ public interface ImmobilisationRepository extends JpaRepository<Immobilisation, 
             """)
     long countActifsSansDotation(@Param("eid") UUID entrepriseId,
                                  @Param("exercice") int exercice);
+
+    @Query("""
+            SELECT i.categorie, COUNT(i), COALESCE(SUM(i.valeurBrute), 0)
+            FROM Immobilisation i
+            WHERE i.entreprise.id = :eid AND i.statut = 'ACTIF'
+            GROUP BY i.categorie
+            """)
+    List<Object[]> statsParCategorie(@Param("eid") UUID eid);
 }

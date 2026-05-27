@@ -16,7 +16,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -61,6 +63,27 @@ public class ImmobilisationService {
         BigDecimal cumul   = amortRepo.totalCumulEntreprise(entrepriseId);
         BigDecimal vnc     = brute.subtract(cumul);
         return new ImmobilisationDto.Stats(total, brute, cumul, vnc);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ImmobilisationDto.StatsCat> statsParCategorie(UUID entrepriseId) {
+        List<Object[]> bruteRows = immoRepo.statsParCategorie(entrepriseId);
+        List<Object[]> cumulRows = amortRepo.cumulParCategorie(entrepriseId);
+
+        Map<String, BigDecimal> cumulMap = new HashMap<>();
+        for (Object[] r : cumulRows) {
+            cumulMap.put(r[0].toString(), (BigDecimal) r[1]);
+        }
+
+        List<ImmobilisationDto.StatsCat> result = new ArrayList<>();
+        for (Object[] r : bruteRows) {
+            String cat   = r[0].toString();
+            long count   = ((Number) r[1]).longValue();
+            BigDecimal brute = (BigDecimal) r[2];
+            BigDecimal cumul = cumulMap.getOrDefault(cat, BigDecimal.ZERO);
+            result.add(new ImmobilisationDto.StatsCat(cat, count, brute, cumul, brute.subtract(cumul)));
+        }
+        return result;
     }
 
     // ─── Mutations ────────────────────────────────────────────────────────────

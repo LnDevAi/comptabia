@@ -1,14 +1,18 @@
 import {
-  ChangeDetectionStrategy, Component, inject, OnInit, signal
+  ChangeDetectionStrategy, Component, ElementRef, inject,
+  OnDestroy, OnInit, signal, ViewChild
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Chart, registerables } from 'chart.js';
 import { ImmobilisationService } from '../../core/services/immobilisation.service';
 import {
-  Immobilisation, ImmoRequest, ImmoStats, PlanAmortissement,
+  Immobilisation, ImmoRequest, ImmoStats, ImmoStatsCat, PlanAmortissement,
   CategorieImmo, StatutImmo
 } from '../../core/models/immobilisation.model';
 import { PageResponse } from '../../core/models/ecriture.model';
+
+Chart.register(...registerables);
 
 interface FormState {
   code: string; designation: string; categorie: CategorieImmo;
@@ -78,6 +82,20 @@ const STATUT_META: Record<StatutImmo, { label: string; css: string }> = {
       <p class="text-2xl font-bold text-blue-700 mt-1">{{ stats()!.valeurNette | number:'1.0-0' }}</p>
     </div>
   </div>
+  }
+
+  <!-- Charts -->
+  @if (statsCat().length > 0) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Répartition par catégorie (valeur brute)</h3>
+        <canvas #catCanvas height="180"></canvas>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Valeur brute vs Valeur nette par catégorie</h3>
+        <canvas #vncCanvas height="180"></canvas>
+      </div>
+    </div>
   }
 
   <!-- Filters -->
@@ -421,12 +439,19 @@ const STATUT_META: Record<StatutImmo, { label: string; css: string }> = {
 </div>
   `,
 })
-export class ImmobilisationsComponent implements OnInit {
+export class ImmobilisationsComponent implements OnInit, OnDestroy {
 
   private svc = inject(ImmobilisationService);
 
+  @ViewChild('catCanvas') catCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('vncCanvas') vncCanvasRef!: ElementRef<HTMLCanvasElement>;
+
+  private catChart?: Chart;
+  private vncChart?: Chart;
+
   page     = signal<PageResponse<Immobilisation> | null>(null);
   stats    = signal<ImmoStats | null>(null);
+  statsCat = signal<ImmoStatsCat[]>([]);
   loading  = signal(false);
   error    = signal<string | null>(null);
 
@@ -455,6 +480,11 @@ export class ImmobilisationsComponent implements OnInit {
 
   ngOnInit() { this.loadStats(); this.loadPage(); }
 
+  ngOnDestroy() {
+    this.catChart?.destroy();
+    this.vncChart?.destroy();
+  }
+
   // ─── Data ─────────────────────────────────────────────────────────────────
 
   loadPage() {
@@ -470,7 +500,83 @@ export class ImmobilisationsComponent implements OnInit {
     });
   }
 
-  loadStats() { this.svc.stats().subscribe({ next: s => this.stats.set(s) }); }
+  loadStats() {
+    this.svc.stats().subscribe({ next: s => this.stats.set(s) });
+    this.svc.statsParCategorie().subscribe({
+      next: cats => {
+        this.statsCat.set(cats);
+        Promise.resolve().then(() => this.buildCharts());
+      }
+    });
+  }
+
+  private buildCharts() {
+    this.buildCatChart();
+    this.buildVncChart();
+  }
+
+  private buildCatChart() {
+    const cats = this.statsCat();
+    if (!cats.length || !this.catCanvasRef) return;
+    this.catChart?.destroy();
+    const palette: Record<string, string> = {
+      CORPORELLE:   '#3b82f6',
+      INCORPORELLE: '#a855f7',
+      FINANCIERE:   '#22c55e',
+    };
+    this.catChart = new Chart(this.catCanvasRef.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels: cats.map(c => this.catLabel(c.categorie)),
+        datasets: [{
+          data: cats.map(c => c.valeurBrute),
+          backgroundColor: cats.map(c => palette[c.categorie] ?? '#9ca3af'),
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } } },
+        cutout: '62%',
+      }
+    });
+  }
+
+  private buildVncChart() {
+    const cats = this.statsCat();
+    if (!cats.length || !this.vncCanvasRef) return;
+    this.vncChart?.destroy();
+    this.vncChart = new Chart(this.vncCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: cats.map(c => this.catLabel(c.categorie)),
+        datasets: [
+          { label: 'Valeur brute',   data: cats.map(c => c.valeurBrute),  backgroundColor: 'rgba(209,213,219,0.7)', borderWidth: 0 },
+          { label: 'Amortissements', data: cats.map(c => c.cumulAmort),   backgroundColor: 'rgba(251,146,60,0.75)', borderWidth: 0 },
+          { label: 'Valeur nette',   data: cats.map(c => c.valeurNette),  backgroundColor: 'rgba(59,130,246,0.8)',  borderWidth: 0 },
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { font: { size: 10 }, callback: v => this.fmtK(Number(v)) } },
+        },
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } } },
+      }
+    });
+  }
+
+  private catLabel(cat: string): string {
+    const labels: Record<string, string> = { CORPORELLE: 'Corporelle', INCORPORELLE: 'Incorporelle', FINANCIERE: 'Financière' };
+    return labels[cat] ?? cat;
+  }
+
+  private fmtK(v: number): string {
+    if (Math.abs(v) >= 1_000_000) return (v / 1_000_000).toFixed(1) + ' M';
+    if (Math.abs(v) >= 1_000)     return (v / 1_000).toFixed(0) + ' K';
+    return v.toFixed(0);
+  }
 
   onFilterChange() { this.currentPage = 0; this.loadPage(); }
   onSearchChange() {
