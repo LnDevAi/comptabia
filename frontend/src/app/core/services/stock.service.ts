@@ -87,4 +87,11 @@ export class StockService {
   ajusterInventaire(req: AjustementInventaireRequest): Observable<MouvementResponse[]> {
     return this.http.post<MouvementResponse[]>(`${this.base}/inventaire/ajuster`, req);
   }
+
+  getStatsMensuel(exercice: number): Observable<import('../models/stock.model').StatsMouvements> {
+    return this.http.get<import('../models/stock.model').StatsMouvements>(
+      `${this.base}/stats-mensuel`,
+      { params: new HttpParams().set('exercice', exercice) }
+    );
+  }
 }

@@ -87,4 +87,21 @@ public class StockDto {
             BigDecimal stockActuel, BigDecimal coutMoyen, BigDecimal valeurStock,
             BigDecimal totalEntrees, BigDecimal totalSorties
     ) {}
+
+    // ─── Stats mouvements mensuels ────────────────────────────────────────────
+
+    public record MoisMouvement(
+            int mois, String label,
+            BigDecimal qtEntrees, BigDecimal qtSorties,
+            BigDecimal valEntrees, BigDecimal valSorties
+    ) {}
+
+    public record StatsMouvements(
+            int exercice,
+            BigDecimal totalValEntrees,
+            BigDecimal totalValSorties,
+            long totalNbEntrees,
+            long totalNbSorties,
+            List<MoisMouvement> mensuel
+    ) {}
 }

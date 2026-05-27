@@ -56,4 +56,28 @@ public interface FactureRepository extends JpaRepository<Facture, UUID> {
     List<Facture> findByTiersPortail(@Param("eid") UUID eid, @Param("tiersId") UUID tiersId);
 
     java.util.Optional<Facture> findByIdAndEntrepriseId(UUID id, UUID entrepriseId);
+
+    @Query("""
+            SELECT MONTH(f.dateFacture),
+                   COALESCE(SUM(CASE WHEN f.statut = 'PAYEE'  THEN f.montantTtc ELSE 0 END), 0),
+                   COALESCE(SUM(CASE WHEN f.statut = 'EMISE'  THEN f.montantTtc ELSE 0 END), 0),
+                   COALESCE(SUM(CASE WHEN f.statut <> 'ANNULEE' THEN f.montantTtc ELSE 0 END), 0)
+            FROM Facture f
+            WHERE f.entreprise.id = :eid
+              AND f.dateFacture >= :from AND f.dateFacture <= :to
+            GROUP BY MONTH(f.dateFacture)
+            ORDER BY MONTH(f.dateFacture)
+            """)
+    List<Object[]> caMensuel(@Param("eid") UUID eid,
+                              @Param("from") LocalDate from,
+                              @Param("to") LocalDate to);
+
+    @Query("""
+            SELECT f.statut, COUNT(f), COALESCE(SUM(f.montantTtc), 0)
+            FROM Facture f
+            WHERE f.entreprise.id = :eid
+              AND YEAR(f.dateFacture) = :exercice
+            GROUP BY f.statut
+            """)
+    List<Object[]> statsByStatut(@Param("eid") UUID eid, @Param("exercice") int exercice);
 }

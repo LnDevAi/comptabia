@@ -32,6 +32,12 @@ public class StockController {
         return svc.getDashboard(TenantContext.get());
     }
 
+    @GetMapping("/stats-mensuel")
+    public StockDto.StatsMouvements statsMensuel(
+            @RequestParam(defaultValue = "0") int exercice) {
+        return svc.getStatsMensuel(TenantContext.get(), exercice);
+    }
+
     // ─── Dépôts ───────────────────────────────────────────────────────────────
 
     @GetMapping("/depots")

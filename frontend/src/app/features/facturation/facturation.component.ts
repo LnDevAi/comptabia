@@ -1,15 +1,19 @@
 import {
-  ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, signal, computed, inject
+  ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef,
+  OnDestroy, OnInit, signal, computed, inject, ViewChild
 } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Chart, registerables } from 'chart.js';
 import { FactureService } from '../../core/services/facture.service';
 import { TiersService } from '../../core/services/tiers.service';
 import {
   FactureResume, FactureDetail, FactureStatut, StatutNormalisation,
-  LigneFactureForm, FactureCreateRequest, NormalisationRequest
+  LigneFactureForm, FactureCreateRequest, NormalisationRequest, StatFacturation
 } from '../../core/models/facture.model';
 import { Tiers } from '../../core/models/tiers.model';
+
+Chart.register(...registerables);
 
 type View = 'list' | 'form' | 'detail' | 'payer';
 
@@ -42,14 +46,18 @@ const NFN_CLASSES: Record<StatutNormalisation, string> = {
 <div class="p-6 space-y-5">
 
   <!-- Header -->
-  <div class="flex items-center justify-between">
+  <div class="flex items-center justify-between flex-wrap gap-3">
     <div>
       <h1 class="text-xl font-bold text-gray-800">Facturation clients</h1>
       <p class="text-xs text-gray-400 mt-0.5">
         {{ totalElements() }} facture{{ totalElements() !== 1 ? 's' : '' }}
       </p>
     </div>
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 flex-wrap">
+      <select [(ngModel)]="selectedExercice" (ngModelChange)="onExerciceChange($event)"
+              class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        @for (y of exercices; track y) { <option [value]="y">{{ y }}</option> }
+      </select>
       <select [ngModel]="filterStatut()" (ngModelChange)="filterStatut.set($event); loadList()"
               class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         <option value="">Tous les statuts</option>
@@ -64,6 +72,56 @@ const NFN_CLASSES: Record<StatutNormalisation, string> = {
       </button>
     </div>
   </div>
+
+  <!-- KPI Stats -->
+  @if (stats()) {
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+      <p class="text-xs text-gray-500 uppercase tracking-wide">CA Total TTC</p>
+      <p class="text-lg font-bold text-gray-900 mt-1 font-mono">{{ fmtK(stats()!.caTotalTtc) }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+      <p class="text-xs text-gray-500 uppercase tracking-wide">Encaissé</p>
+      <p class="text-lg font-bold text-green-700 mt-1 font-mono">{{ fmtK(stats()!.caPayee) }}</p>
+      <p class="text-xs text-gray-400 mt-0.5">{{ stats()!.nbPayees }} facture{{ stats()!.nbPayees > 1 ? 's' : '' }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+      <p class="text-xs text-gray-500 uppercase tracking-wide">En attente</p>
+      <p class="text-lg font-bold text-blue-700 mt-1 font-mono">{{ fmtK(stats()!.caEmise) }}</p>
+      <p class="text-xs text-gray-400 mt-0.5">{{ stats()!.nbEmises }} émise{{ stats()!.nbEmises > 1 ? 's' : '' }}</p>
+    </div>
+    <div class="rounded-xl border p-4"
+         [class]="stats()!.tauxRecouvrement >= 80 ? 'bg-green-50 border-green-200' : stats()!.tauxRecouvrement >= 50 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'">
+      <p class="text-xs text-gray-500 uppercase tracking-wide">Recouvrement</p>
+      <p class="text-lg font-bold mt-1"
+         [class]="stats()!.tauxRecouvrement >= 80 ? 'text-green-700' : stats()!.tauxRecouvrement >= 50 ? 'text-yellow-700' : 'text-red-700'">
+        {{ stats()!.tauxRecouvrement | number:'1.1-1' }} %
+      </p>
+      <div class="mt-1.5 h-1.5 bg-white/60 rounded-full overflow-hidden">
+        <div class="h-1.5 rounded-full"
+             [class]="stats()!.tauxRecouvrement >= 80 ? 'bg-green-500' : stats()!.tauxRecouvrement >= 50 ? 'bg-yellow-400' : 'bg-red-500'"
+             [style.width.%]="stats()!.tauxRecouvrement > 100 ? 100 : stats()!.tauxRecouvrement">
+        </div>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+      <p class="text-xs text-gray-500 uppercase tracking-wide">Brouillons</p>
+      <p class="text-lg font-bold mt-1"
+         [class]="stats()!.nbBrouillons > 0 ? 'text-yellow-600' : 'text-gray-900'">
+        {{ stats()!.nbBrouillons }}
+      </p>
+      <p class="text-xs text-gray-400 mt-0.5">annulées : {{ stats()!.nbAnnulees }}</p>
+    </div>
+  </div>
+
+  <!-- Graphique CA mensuel -->
+  <div class="bg-white rounded-xl border border-gray-200 p-4">
+    <p class="text-sm font-semibold text-gray-700 mb-2">CA mensuel TTC — {{ selectedExercice }}</p>
+    <div class="relative h-56">
+      <canvas #caCanvas></canvas>
+    </div>
+  </div>
+  }
 
   <!-- ── LIST VIEW ── -->
   @if (view() === 'list') {
@@ -515,11 +573,18 @@ const NFN_CLASSES: Record<StatutNormalisation, string> = {
 }
   `
 })
-export class FacturationComponent implements OnInit {
+export class FacturationComponent implements OnInit, OnDestroy {
+
+  @ViewChild('caCanvas') caCanvasRef!: ElementRef<HTMLCanvasElement>;
 
   private factureSvc = inject(FactureService);
   private tiersSvc   = inject(TiersService);
   private cdr        = inject(ChangeDetectorRef);
+
+  stats           = signal<StatFacturation | null>(null);
+  selectedExercice = new Date().getFullYear();
+  exercices       = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+  private caChart?: Chart;
 
   view          = signal<View>('list');
   loading       = signal(false);
@@ -552,6 +617,83 @@ export class FacturationComponent implements OnInit {
   ngOnInit() {
     this.loadList();
     this.loadClients();
+    this.loadStats();
+  }
+
+  ngOnDestroy() {
+    this.caChart?.destroy();
+  }
+
+  onExerciceChange(y: number) {
+    this.selectedExercice = +y;
+    this.loadStats();
+  }
+
+  loadStats() {
+    this.caChart?.destroy();
+    this.caChart = undefined;
+    this.factureSvc.getStats(this.selectedExercice).subscribe({
+      next: s => {
+        this.stats.set(s);
+        this.cdr.detectChanges();
+        Promise.resolve().then(() => this.buildCaChart());
+      }
+    });
+  }
+
+  private buildCaChart() {
+    const s = this.stats();
+    if (!s || !this.caCanvasRef?.nativeElement) return;
+    if (this.caChart) this.caChart.destroy();
+
+    const labels  = s.mensuel.map(m => m.label);
+    const payees  = s.mensuel.map(m => m.payees);
+    const emises  = s.mensuel.map(m => m.emises);
+
+    this.caChart = new Chart(this.caCanvasRef.nativeElement.getContext('2d')!, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Encaissé (Payées)',
+            data: payees,
+            backgroundColor: 'rgba(34,197,94,0.7)',
+            borderColor: 'rgba(34,197,94,1)',
+            borderWidth: 1,
+          },
+          {
+            label: 'En attente (Émises)',
+            data: emises,
+            backgroundColor: 'rgba(59,130,246,0.6)',
+            borderColor: 'rgba(59,130,246,0.9)',
+            borderWidth: 1,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { stacked: false, ticks: { font: { size: 10 } } },
+          y: { ticks: { font: { size: 10 }, callback: (v) => this.fmtK(Number(v)) } }
+        },
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${this.fmtK(ctx.parsed.y ?? 0)}`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  fmtK(v: number): string {
+    if (Math.abs(v) >= 1_000_000) return (v / 1_000_000).toFixed(1) + ' M';
+    if (Math.abs(v) >= 1_000)     return (v / 1_000).toFixed(0) + ' K';
+    return v.toFixed(0);
   }
 
   loadList() {

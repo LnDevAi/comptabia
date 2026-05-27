@@ -1,11 +1,15 @@
 import {
-  ChangeDetectionStrategy, Component, OnInit, inject, signal
+  ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit,
+  ViewChild, inject, signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Chart, registerables } from 'chart.js';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardData, DashboardStats, MoisEvolution, MoisStat } from '../../core/models/dashboard.model';
+
+Chart.register(...registerables);
 
 const JOURNAL_META: Record<string, { label: string; color: string; bg: string }> = {
   AC: { label: 'Achats',         color: '#f97316', bg: 'bg-orange-100 text-orange-700' },
@@ -142,36 +146,10 @@ function conicGradient(segments: { pct: number; color: string }[]): string {
             </div>
           </div>
 
-          <!-- Graphique charges vs produits (6 mois) -->
+          <!-- Graphique charges vs produits (Chart.js) -->
           <div class="bg-white rounded-xl border border-gray-200 p-5">
             <h3 class="text-sm font-semibold text-gray-700 mb-4">Charges vs Produits — 6 derniers mois</h3>
-            <div class="flex items-end gap-3 h-32">
-              @for (m of stats()!.evolution6Mois; track m.mois) {
-                <div class="flex-1 flex flex-col items-center gap-1 min-w-0">
-                  <div class="w-full flex items-end gap-0.5" style="height:100px">
-                    <div class="flex-1 rounded-t transition-all duration-500"
-                         [style.height]="evoBarHeight(m.charges, stats()!.evolution6Mois, false) + 'px'"
-                         style="min-height:2px; background:#f97316; opacity:0.8"></div>
-                    <div class="flex-1 rounded-t transition-all duration-500"
-                         [style.height]="evoBarHeight(m.produits, stats()!.evolution6Mois, true) + 'px'"
-                         style="min-height:2px; background:#22c55e; opacity:0.8"></div>
-                  </div>
-                  <span class="text-xs text-gray-400 truncate w-full text-center" style="font-size:10px">
-                    {{ shortMois(m.mois) }}
-                  </span>
-                </div>
-              }
-            </div>
-            <div class="flex items-center gap-4 mt-2 justify-center">
-              <div class="flex items-center gap-1.5">
-                <div class="w-3 h-3 rounded-sm" style="background:#f97316"></div>
-                <span class="text-xs text-gray-500">Charges</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <div class="w-3 h-3 rounded-sm" style="background:#22c55e"></div>
-                <span class="text-xs text-gray-500">Produits</span>
-              </div>
-            </div>
+            <canvas #evoCanvas height="130"></canvas>
           </div>
         }
 
@@ -263,53 +241,13 @@ function conicGradient(segments: { pct: number; color: string }[]): string {
         <!-- Charts row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-          <!-- Répartition par journal (donut) -->
+          <!-- Répartition par journal (Chart.js doughnut) -->
           <div class="bg-white rounded-xl border border-gray-200 p-5">
             <h3 class="text-sm font-semibold text-gray-700 mb-4">
               Répartition par journal
             </h3>
             @if (totalJournal() > 0) {
-              <div class="flex items-center gap-6">
-                <!-- Donut -->
-                <div class="relative shrink-0" style="width:120px;height:120px">
-                  <div class="w-full h-full rounded-full"
-                       [style.background]="donutGradient()"></div>
-                  <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="w-16 h-16 rounded-full bg-white flex flex-col items-center justify-center">
-                      <span class="text-sm font-bold text-gray-900 leading-none">
-                        {{ totalJournal() }}
-                      </span>
-                      <span class="text-xs text-gray-400">total</span>
-                    </div>
-                  </div>
-                </div>
-                <!-- Legend -->
-                <div class="flex-1 space-y-2">
-                  @for (j of data()!.parJournal; track j.journal) {
-                    @if (j.count > 0) {
-                      <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                          <div class="w-3 h-3 rounded-full shrink-0"
-                               [style.background]="journalColor(j.journal)"></div>
-                          <span class="text-xs text-gray-700">
-                            {{ journalLabel(j.journal) }}
-                          </span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                          <div class="h-1.5 rounded-full bg-gray-100 w-16 overflow-hidden">
-                            <div class="h-full rounded-full"
-                                 [style.width]="pct(j.count) + '%'"
-                                 [style.background]="journalColor(j.journal)"></div>
-                          </div>
-                          <span class="text-xs font-semibold text-gray-600 w-6 text-right">
-                            {{ j.count }}
-                          </span>
-                        </div>
-                      </div>
-                    }
-                  }
-                </div>
-              </div>
+              <canvas #journalCanvas height="140"></canvas>
             } @else {
               <div class="flex items-center justify-center h-28 text-gray-400 text-sm">
                 Aucune écriture
@@ -449,7 +387,10 @@ function conicGradient(segments: { pct: number; color: string }[]): string {
     </div>
   `
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
+
+  @ViewChild('evoCanvas')     evoCanvasRef!:     ElementRef<HTMLCanvasElement>;
+  @ViewChild('journalCanvas') journalCanvasRef!: ElementRef<HTMLCanvasElement>;
 
   protected readonly auth = inject(AuthService);
   private readonly svc    = inject(DashboardService);
@@ -457,9 +398,18 @@ export class DashboardComponent implements OnInit {
   data  = signal<DashboardData | null>(null);
   stats = signal<DashboardStats | null>(null);
 
+  private evoChart?:     Chart;
+  private journalChart?: Chart;
+
   ngOnInit() {
-    this.svc.get().subscribe(d => this.data.set(d));
-    this.svc.getStats().subscribe(s => this.stats.set(s));
+    this.svc.get().subscribe(d => {
+      this.data.set(d);
+      Promise.resolve().then(() => this.buildCharts());
+    });
+    this.svc.getStats().subscribe(s => {
+      this.stats.set(s);
+      Promise.resolve().then(() => this.buildCharts());
+    });
   }
 
   totalJournal(): number {
@@ -510,5 +460,97 @@ export class DashboardComponent implements OnInit {
     const allVals = months.flatMap(m => [m.charges, m.produits]);
     const max = Math.max(...allVals, 1);
     return Math.max(2, Math.round((val / max) * 100));
+  }
+
+  ngOnDestroy(): void {
+    this.evoChart?.destroy();
+    this.journalChart?.destroy();
+  }
+
+  private buildCharts(): void {
+    if (this.stats()) this.buildEvoChart();
+    if (this.data() && this.totalJournal() > 0) this.buildJournalChart();
+  }
+
+  private buildEvoChart(): void {
+    if (!this.evoCanvasRef) return;
+    this.evoChart?.destroy();
+    const months = this.stats()!.evolution6Mois;
+    this.evoChart = new Chart(this.evoCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: months.map(m => this.shortMois(m.mois)),
+        datasets: [
+          {
+            label: 'Charges',
+            data: months.map(m => m.charges),
+            backgroundColor: 'rgba(249,115,22,0.7)',
+            borderColor: '#f97316',
+            borderWidth: 1,
+            order: 2
+          },
+          {
+            label: 'Produits',
+            data: months.map(m => m.produits),
+            backgroundColor: 'rgba(34,197,94,0.7)',
+            borderColor: '#22c55e',
+            borderWidth: 1,
+            order: 2
+          },
+          {
+            label: 'Résultat net',
+            data: months.map(m => m.produits - m.charges),
+            type: 'line' as any,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59,130,246,0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            order: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: { ticks: { callback: (v: any) => this.fmtK(+v) } }
+        }
+      }
+    });
+  }
+
+  private buildJournalChart(): void {
+    if (!this.journalCanvasRef) return;
+    this.journalChart?.destroy();
+    const journals = this.data()!.parJournal.filter(j => j.count > 0);
+    this.journalChart = new Chart(this.journalCanvasRef.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels: journals.map(j => this.journalLabel(j.journal)),
+        datasets: [{
+          data: journals.map(j => j.count),
+          backgroundColor: journals.map(j => this.journalColor(j.journal)),
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+        },
+        cutout: '65%'
+      }
+    });
+  }
+
+  private fmtK(v: number): string {
+    if (Math.abs(v) >= 1_000_000) return (v / 1_000_000).toFixed(1) + 'M';
+    if (Math.abs(v) >= 1_000)     return (v / 1_000).toFixed(0) + 'K';
+    return String(v);
   }
 }

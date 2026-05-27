@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -51,4 +52,24 @@ public interface MouvementStockRepository extends JpaRepository<MouvementStock, 
         ORDER BY m.dateMouvement DESC
         """)
     List<MouvementStock> findRecents(UUID entrepriseId, LocalDate debut);
+
+    @Query("""
+        SELECT MONTH(m.dateMouvement),
+               COALESCE(SUM(CASE WHEN m.typeMouvement IN ('ENTREE','AJUSTEMENT_POS','TRANSFERT_ENTREE')
+                                 THEN m.quantite ELSE 0 END), 0),
+               COALESCE(SUM(CASE WHEN m.typeMouvement IN ('SORTIE','AJUSTEMENT_NEG','TRANSFERT_SORTIE')
+                                 THEN m.quantite ELSE 0 END), 0),
+               COALESCE(SUM(CASE WHEN m.typeMouvement IN ('ENTREE','AJUSTEMENT_POS','TRANSFERT_ENTREE')
+                                 THEN m.montant ELSE 0 END), 0),
+               COALESCE(SUM(CASE WHEN m.typeMouvement IN ('SORTIE','AJUSTEMENT_NEG','TRANSFERT_SORTIE')
+                                 THEN m.montant ELSE 0 END), 0)
+        FROM MouvementStock m
+        WHERE m.entreprise.id = :eid
+          AND m.dateMouvement >= :from AND m.dateMouvement <= :to
+        GROUP BY MONTH(m.dateMouvement)
+        ORDER BY MONTH(m.dateMouvement)
+        """)
+    List<Object[]> mouvementsMensuels(@Param("eid") UUID eid,
+                                       @Param("from") LocalDate from,
+                                       @Param("to") LocalDate to);
 }

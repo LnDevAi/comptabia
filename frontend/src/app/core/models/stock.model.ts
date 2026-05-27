@@ -128,6 +128,24 @@ export interface DashboardStock {
   derniersMovements: MouvementResponse[];
 }
 
+export interface MoisMouvement {
+  mois:       number;
+  label:      string;
+  qtEntrees:  number;
+  qtSorties:  number;
+  valEntrees: number;
+  valSorties: number;
+}
+
+export interface StatsMouvements {
+  exercice:       number;
+  totalValEntrees: number;
+  totalValSorties: number;
+  totalNbEntrees:  number;
+  totalNbSorties:  number;
+  mensuel:        MoisMouvement[];
+}
+
 export interface PageResponse<T> {
   content: T[];
   totalElements: number;

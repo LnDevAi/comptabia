@@ -30,6 +30,12 @@ public class FactureController {
     private final FactureService       svc;
     private final EntrepriseRepository entrepriseRepo;
 
+    @GetMapping("/stats")
+    public FactureDto.StatFacturation stats(
+            @RequestParam(defaultValue = "0") int exercice) {
+        return svc.getStats(TenantContext.get(), exercice);
+    }
+
     @GetMapping
     public Page<FactureDto.Resume> findAll(
             @RequestParam(required = false) Facture.Statut statut,
