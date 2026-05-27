@@ -187,6 +187,11 @@ export const routes: Routes = [
           import('./features/import-fec/import-fec.component').then(m => m.ImportFecComponent)
       },
       {
+        path: 'migration',
+        loadComponent: () =>
+          import('./features/migration/migration.component').then(m => m.MigrationComponent)
+      },
+      {
         path: 'balance-agee',
         loadComponent: () =>
           import('./features/balance-agee/balance-agee.component').then(m => m.BalanceAgeeComponent)
