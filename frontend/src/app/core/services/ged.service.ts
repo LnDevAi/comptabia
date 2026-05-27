@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   GedDocumentSummary, GedDocumentDetail, GedTypeDocument, GedTag,
-  GedStats, GedAuditEntry, GedDocumentRequest, PageResponse
+  GedStats, GedStatsMensuel, GedAuditEntry, GedDocumentRequest, PageResponse
 } from '../models/ged.model';
 
 @Injectable({ providedIn: 'root' })
@@ -80,6 +80,12 @@ export class GedService {
 
   deleteTag(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/tags/${id}`);
+  }
+
+  getStatsMensuel(exercice: number): Observable<GedStatsMensuel> {
+    return this.http.get<GedStatsMensuel>(`${this.base}/stats-mensuel`, {
+      params: new HttpParams().set('exercice', exercice)
+    });
   }
 
   listAudit(page = 0, size = 50): Observable<PageResponse<GedAuditEntry>> {

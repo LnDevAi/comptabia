@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,4 +38,14 @@ public interface GedDocumentRepository extends JpaRepository<GedDocument, UUID> 
     @Query("SELECT COUNT(d) FROM GedDocument d WHERE d.entreprise.id = :eid AND d.statut = :statut")
     long countByEntrepriseIdAndStatut(@Param("eid") UUID entrepriseId,
                                       @Param("statut") GedDocument.Statut statut);
+
+    @Query("""
+            SELECT MONTH(d.createdAt), COUNT(d)
+            FROM GedDocument d
+            WHERE d.entreprise.id = :eid
+              AND YEAR(d.createdAt) = :exercice
+            GROUP BY MONTH(d.createdAt)
+            ORDER BY MONTH(d.createdAt)
+            """)
+    List<Object[]> creesParMois(@Param("eid") UUID eid, @Param("exercice") int exercice);
 }

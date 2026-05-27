@@ -76,6 +76,18 @@ export interface GedStats {
   tailleStockageMo: number;
 }
 
+export interface GedMoisGed {
+  mois: number;
+  label: string;
+  nb: number;
+}
+
+export interface GedStatsMensuel {
+  exercice: number;
+  totalCreations: number;
+  mensuel: GedMoisGed[];
+}
+
 export interface GedAuditEntry {
   id: string;
   documentId: string;
