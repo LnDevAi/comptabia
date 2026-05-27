@@ -444,6 +444,7 @@ import { ToastComponent } from '../toast/toast.component';
       <footer class="border-t border-gray-200 bg-white py-3 px-6">
         <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-400">
           <span>© {{ currentYear }} L'N EXPERTISE</span>
+          <a routerLink="/produit" class="hover:text-emerald-600 transition-colors">À propos</a>
           <a routerLink="/aide" class="hover:text-emerald-600 transition-colors">Centre d'aide</a>
           <a routerLink="/legal/mentions-legales" class="hover:text-emerald-600 transition-colors">Mentions légales</a>
           <a routerLink="/legal/cgu" class="hover:text-emerald-600 transition-colors">CGU</a>

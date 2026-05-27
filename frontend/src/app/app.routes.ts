@@ -47,6 +47,21 @@ export const routes: Routes = [
       import('./features/paiement/paiement.component').then(m => m.PaiementComponent)
   },
   {
+    path: 'produit',
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/commercial-docs/commercial-docs.component').then(m => m.CommercialDocsComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () =>
+          import('./features/commercial-docs/commercial-docs.component').then(m => m.CommercialDocsComponent)
+      }
+    ]
+  },
+  {
     path: 'aide',
     children: [
       {
