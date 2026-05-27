@@ -21,8 +21,8 @@ public interface DocumentReglementaireRepository extends JpaRepository<DocumentR
             WHERE d.entreprise.id = :eid
               AND d.dateEcheance IS NOT NULL
               AND d.dateEcheance <= :horizon
-              AND d.statut NOT IN (com.edefence.ecompta.domain.DocumentReglementaire.Statut.VALIDE,
-                                   com.edefence.ecompta.domain.DocumentReglementaire.Statut.EXPIRE)
+              AND d.statut NOT IN (com.edefence.ecompta.domain.DocumentReglementaire$Statut.VALIDE,
+                                   com.edefence.ecompta.domain.DocumentReglementaire$Statut.EXPIRE)
             ORDER BY d.dateEcheance ASC
             """)
     List<DocumentReglementaire> findEcheancesProches(@Param("eid") UUID entrepriseId,

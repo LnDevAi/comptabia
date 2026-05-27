@@ -34,7 +34,7 @@ type Onglet = 'axes' | 'rapport' | 'bailleur';
   <!-- Onglets -->
   <div class="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
     @for (tab of [['axes','Axes analytiques'],['rapport','Rapport analytique'],['bailleur','Rapport bailleur']]; track tab[0]) {
-      <button (click)="onglet.set(tab[0])"
+      <button (click)="onglet.set($any(tab[0]))"
               [class]="onglet() === tab[0]
                 ? 'px-4 py-1.5 rounded-lg bg-white text-gray-800 text-sm font-medium shadow-sm'
                 : 'px-4 py-1.5 rounded-lg text-gray-500 text-sm hover:text-gray-700'">
@@ -246,7 +246,7 @@ type Onglet = 'axes' | 'rapport' | 'bailleur';
     @if (rapError()) { <p class="text-sm text-red-600">{{ rapError() }}</p> }
   </div>
 
-  @if (rapportFiltré()) {
+  @if (rapportFiltre()) {
 
     <!-- Graphique budget vs réalisé -->
     @if (rapportAvecBudget().length > 0) {
@@ -259,11 +259,11 @@ type Onglet = 'axes' | 'rapport' | 'bailleur';
     }
 
     <!-- KPI synthèse -->
-    @if (rapportFiltré()!.length > 0) {
+    @if (rapportFiltre()!.length > 0) {
     <div class="grid grid-cols-3 gap-4">
       <div class="bg-white rounded-xl border border-gray-200 p-4">
         <p class="text-xs text-gray-500 uppercase tracking-wide">Axes analysés</p>
-        <p class="text-2xl font-bold text-gray-800 mt-1">{{ rapportFiltré()!.length }}</p>
+        <p class="text-2xl font-bold text-gray-800 mt-1">{{ rapportFiltre()!.length }}</p>
       </div>
       <div class="bg-white rounded-xl border border-red-100 bg-red-50 p-4">
         <p class="text-xs text-red-600 uppercase tracking-wide">Total dépenses (débit)</p>
@@ -282,12 +282,12 @@ type Onglet = 'axes' | 'rapport' | 'bailleur';
     </div>
     }
 
-    @if (rapportFiltré()!.length === 0) {
+    @if (rapportFiltre()!.length === 0) {
       <div class="bg-white rounded-xl border border-gray-200 flex items-center justify-center h-24 text-gray-400 text-sm">
         Aucune ligne ventilée sur cette période.
       </div>
     } @else {
-      @for (axe of rapportFiltré()!; track axe.axeId) {
+      @for (axe of rapportFiltre()!; track axe.axeId) {
       <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div class="flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-200">
           <div class="flex items-center gap-3 flex-wrap">
@@ -599,7 +599,7 @@ export class AnalytiqueComponent implements OnInit, OnDestroy {
     return f ? this.axes().filter(a => a.type === f) : this.axes();
   });
 
-  rapportFiltré = computed(() => {
+  rapportFiltre = computed(() => {
     const r = this.rapport();
     if (!r) return null;
     const f = this.rapFiltreType();
@@ -607,11 +607,11 @@ export class AnalytiqueComponent implements OnInit, OnDestroy {
   });
 
   rapportAvecBudget = computed(() =>
-    (this.rapportFiltré() ?? []).filter(a => a.montantBudget != null && a.montantBudget > 0)
+    (this.rapportFiltre() ?? []).filter(a => a.montantBudget != null && a.montantBudget > 0)
   );
 
   totalDebitRapport = computed(() =>
-    (this.rapportFiltré() ?? []).reduce((s, a) => s + a.totalDebit, 0)
+    (this.rapportFiltre() ?? []).reduce((s, a) => s + a.totalDebit, 0)
   );
 
   tauxMoyenExecution = computed(() => {

@@ -283,7 +283,7 @@ const NFN_CLASSES: Record<StatutNormalisation, string> = {
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100">
-                @for (l of form.lignes; track $index; let i = $index) {
+                @for (l of form.lignes; track l; let i = $index) {
                   <tr>
                     <td class="px-3 py-2">
                       <input type="text" [(ngModel)]="l.description" placeholder="Description"

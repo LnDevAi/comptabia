@@ -87,15 +87,14 @@ const STATUT_CSS: Record<StatutDocument, string> = {
   @if (loading) {
     <p class="text-sm text-gray-400 text-center py-10">Chargement...</p>
   } @else {
-    @let displayed = activeTab() === 'expirant' ? expirants : filteredDocs;
-    @if (displayed.length === 0) {
+    @if ((activeTab() === 'expirant' ? expirants : filteredDocs).length === 0) {
       <div class="text-center py-12 text-gray-400">
         <div class="text-4xl mb-2">📁</div>
         <p class="text-sm">Aucun document.</p>
       </div>
     } @else {
       <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        @for (d of displayed; track d.id) {
+        @for (d of (activeTab() === 'expirant' ? expirants : filteredDocs); track d.id) {
           <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-2"
                [class]="d.statut === 'EXPIRE' ? 'border-red-200 bg-red-50/30' : ''">
             <div class="flex items-start justify-between gap-2">

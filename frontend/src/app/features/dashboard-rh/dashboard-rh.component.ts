@@ -434,25 +434,22 @@ Chart.register(...registerables);
             </thead>
             <tbody class="divide-y divide-gray-100">
               @for (mois of moisRange; track mois) {
-                @let rowN = getMoisRow(comparatif()!.paiesMensuellesN, mois);
-                @let rowN1 = getMoisRow(comparatif()!.paiesMensuellesN1, mois);
                 <tr class="hover:bg-gray-50">
                   <td class="px-4 py-2 font-medium text-gray-700">{{ moisLabel(mois) }}</td>
-                  <td class="px-4 py-2 text-right text-gray-600">{{ rowN?.nbSalaries ?? '—' }}</td>
+                  <td class="px-4 py-2 text-right text-gray-600">{{ getMoisRow(comparatif()!.paiesMensuellesN, mois)?.nbSalaries ?? '—' }}</td>
                   <td class="px-4 py-2 text-right text-gray-800 font-medium">
-                    {{ rowN ? (rowN.masseBrute | number:'1.0-0') : '—' }}
+                    {{ getMoisRow(comparatif()!.paiesMensuellesN, mois) ? (getMoisRow(comparatif()!.paiesMensuellesN, mois)!.masseBrute | number:'1.0-0') : '—' }}
                   </td>
                   <td class="px-4 py-2 text-right text-gray-600">
-                    {{ rowN ? (rowN.netAPayer | number:'1.0-0') : '—' }}
+                    {{ getMoisRow(comparatif()!.paiesMensuellesN, mois) ? (getMoisRow(comparatif()!.paiesMensuellesN, mois)!.netAPayer | number:'1.0-0') : '—' }}
                   </td>
                   <td class="px-4 py-2 text-right text-gray-400">
-                    {{ rowN1 ? (rowN1.masseBrute | number:'1.0-0') : '—' }}
+                    {{ getMoisRow(comparatif()!.paiesMensuellesN1, mois) ? (getMoisRow(comparatif()!.paiesMensuellesN1, mois)!.masseBrute | number:'1.0-0') : '—' }}
                   </td>
                   <td class="px-4 py-2 text-right">
-                    @if (rowN && rowN1) {
-                      @let diff = rowN.masseBrute - rowN1.masseBrute;
-                      <span [class]="diff >= 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'">
-                        {{ diff >= 0 ? '+' : '' }}{{ diff | number:'1.0-0' }}
+                    @if (getMoisRow(comparatif()!.paiesMensuellesN, mois) && getMoisRow(comparatif()!.paiesMensuellesN1, mois)) {
+                      <span [class]="(getMoisRow(comparatif()!.paiesMensuellesN, mois)!.masseBrute - getMoisRow(comparatif()!.paiesMensuellesN1, mois)!.masseBrute) >= 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'">
+                        {{ (getMoisRow(comparatif()!.paiesMensuellesN, mois)!.masseBrute - getMoisRow(comparatif()!.paiesMensuellesN1, mois)!.masseBrute) >= 0 ? '+' : '' }}{{ (getMoisRow(comparatif()!.paiesMensuellesN, mois)!.masseBrute - getMoisRow(comparatif()!.paiesMensuellesN1, mois)!.masseBrute) | number:'1.0-0' }}
                       </span>
                     } @else {
                       <span class="text-gray-300">—</span>

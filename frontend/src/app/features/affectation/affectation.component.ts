@@ -92,7 +92,7 @@ const COMPTES_DEFAUT_PERTE: LigneAffectation[] = [
           </div>
 
           <div class="space-y-3">
-            @for (ligne of lignes; track $index) {
+            @for (ligne of lignes; track ligne) {
               <div class="grid grid-cols-12 gap-2 items-center">
                 <div class="col-span-3">
                   <input [(ngModel)]="ligne.compteNumero" [name]="'compte-' + $index"

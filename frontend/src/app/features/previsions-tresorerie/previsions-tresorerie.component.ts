@@ -65,12 +65,11 @@ Chart.register(...registerables);
       <div class="bg-white rounded-xl border border-gray-200 p-4">
         <p class="text-xs text-gray-500 uppercase tracking-wide">Solde projeté fin S{{ semaines }}</p>
         @if (data.semaines.length > 0) {
-          @let derniere = data.semaines[data.semaines.length - 1];
           <p class="text-2xl font-bold mt-1"
-             [ngClass]="derniere.soldeFin >= 0 ? 'text-green-600' : 'text-red-600'">
-            {{ fmt(derniere.soldeFin) }}
+             [ngClass]="data.semaines[data.semaines.length - 1].soldeFin >= 0 ? 'text-green-600' : 'text-red-600'">
+            {{ fmt(data.semaines[data.semaines.length - 1].soldeFin) }}
           </p>
-          <p class="text-xs text-gray-400 mt-1">{{ derniere.alerte ? '⚠ en dessous du seuil' : 'au-dessus du seuil' }}</p>
+          <p class="text-xs text-gray-400 mt-1">{{ data.semaines[data.semaines.length - 1].alerte ? '⚠ en dessous du seuil' : 'au-dessus du seuil' }}</p>
         }
       </div>
     </div>

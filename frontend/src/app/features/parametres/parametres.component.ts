@@ -117,7 +117,7 @@ const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin',
           <label class="block text-xs text-gray-500 mb-1">Début d'exercice</label>
           <select [(ngModel)]="form.debutExerciceMois" name="debutExerciceMois"
                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            @for (m of mois; track $index) {
+            @for (m of mois; track m) {
               <option [value]="$index + 1">{{ m }}</option>
             }
           </select>

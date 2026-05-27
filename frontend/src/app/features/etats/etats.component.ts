@@ -244,7 +244,7 @@ const TABS: TabDef[] = [
                   </tr>
                 </thead>
                 <tbody>
-                  @for (m of grandLivre()!.mouvements; track $index) {
+                  @for (m of grandLivre()!.mouvements; track m) {
                     <tr class="border-t border-gray-50 hover:bg-gray-50">
                       <td class="px-4 py-1.5 font-mono text-xs">{{ m.date }}</td>
                       <td class="px-4 py-1.5 text-xs">{{ m.numeroPiece }}</td>
@@ -292,7 +292,7 @@ const TABS: TabDef[] = [
               </div>
               <table class="w-full text-xs ml-8 mb-2">
                 <tbody>
-                  @for (l of e.lignes; track $index) {
+                  @for (l of e.lignes; track l) {
                     <tr>
                       <td class="pl-8 pr-4 py-0.5 font-mono w-24">{{ l.compteNumero }}</td>
                       <td class="pr-4 py-0.5 text-gray-600 flex-1">{{ l.compteIntitule }}</td>
@@ -983,7 +983,7 @@ const TABS: TabDef[] = [
                         </tr>
                       </thead>
                       <tbody>
-                        @for (l of currentNoteData()!.lignes; track $index) {
+                        @for (l of currentNoteData()!.lignes; track l) {
                           <tr class="border-t border-gray-50 hover:bg-gray-50"
                               [class.bg-gray-800]="l.numero === '' && l.intitule.startsWith('▸')"
                               [class.text-white]="l.numero === '' && l.intitule.startsWith('▸')">

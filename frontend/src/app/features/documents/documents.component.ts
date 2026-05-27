@@ -544,7 +544,7 @@ type Tab = 'dashboard' | 'documents' | 'upload' | 'config' | 'audit';
             <button (click)="changeStatut('APPROUVE', '')" class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200">
               ✓ Approuver
             </button>
-            <button (click)="changeStatut('BROUILLON', 'Refus d\'approbation')" class="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200">
+            <button (click)="changeStatut('BROUILLON', 'Refus approbation')" class="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200">
               ← Rejeter
             </button>
           }

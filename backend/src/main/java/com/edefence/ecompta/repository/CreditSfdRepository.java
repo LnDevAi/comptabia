@@ -22,8 +22,8 @@ public interface CreditSfdRepository extends JpaRepository<CreditSfd, UUID> {
             FROM CreditSfd c
             WHERE c.entreprise.id = :eid
               AND c.statut NOT IN (
-                com.edefence.ecompta.domain.CreditSfd.Statut.REMBOURSE,
-                com.edefence.ecompta.domain.CreditSfd.Statut.PASSE_EN_PERTES
+                com.edefence.ecompta.domain.CreditSfd$Statut.REMBOURSE,
+                com.edefence.ecompta.domain.CreditSfd$Statut.PASSE_EN_PERTES
               )
             """)
     BigDecimal sumEncoursTotalActif(@Param("eid") UUID entrepriseId);
@@ -35,8 +35,8 @@ public interface CreditSfdRepository extends JpaRepository<CreditSfd, UUID> {
             WHERE c.entreprise.id = :eid
               AND c.joursRetard > 30
               AND c.statut NOT IN (
-                com.edefence.ecompta.domain.CreditSfd.Statut.REMBOURSE,
-                com.edefence.ecompta.domain.CreditSfd.Statut.PASSE_EN_PERTES
+                com.edefence.ecompta.domain.CreditSfd$Statut.REMBOURSE,
+                com.edefence.ecompta.domain.CreditSfd$Statut.PASSE_EN_PERTES
               )
             """)
     BigDecimal sumEncoursPAR30(@Param("eid") UUID entrepriseId);
@@ -48,8 +48,8 @@ public interface CreditSfdRepository extends JpaRepository<CreditSfd, UUID> {
             WHERE c.entreprise.id = :eid
               AND c.joursRetard > 90
               AND c.statut NOT IN (
-                com.edefence.ecompta.domain.CreditSfd.Statut.REMBOURSE,
-                com.edefence.ecompta.domain.CreditSfd.Statut.PASSE_EN_PERTES
+                com.edefence.ecompta.domain.CreditSfd$Statut.REMBOURSE,
+                com.edefence.ecompta.domain.CreditSfd$Statut.PASSE_EN_PERTES
               )
             """)
     BigDecimal sumEncoursPAR90(@Param("eid") UUID entrepriseId);
@@ -68,8 +68,8 @@ public interface CreditSfdRepository extends JpaRepository<CreditSfd, UUID> {
             SELECT COUNT(c) FROM CreditSfd c
             WHERE c.entreprise.id = :eid
               AND c.statut NOT IN (
-                com.edefence.ecompta.domain.CreditSfd.Statut.REMBOURSE,
-                com.edefence.ecompta.domain.CreditSfd.Statut.PASSE_EN_PERTES
+                com.edefence.ecompta.domain.CreditSfd$Statut.REMBOURSE,
+                com.edefence.ecompta.domain.CreditSfd$Statut.PASSE_EN_PERTES
               )
             """)
     long countCreditsActifs(@Param("eid") UUID entrepriseId);
@@ -80,8 +80,8 @@ public interface CreditSfdRepository extends JpaRepository<CreditSfd, UUID> {
             FROM CreditSfd c
             WHERE c.entreprise.id = :eid
               AND c.statut NOT IN (
-                com.edefence.ecompta.domain.CreditSfd.Statut.REMBOURSE,
-                com.edefence.ecompta.domain.CreditSfd.Statut.PASSE_EN_PERTES
+                com.edefence.ecompta.domain.CreditSfd$Statut.REMBOURSE,
+                com.edefence.ecompta.domain.CreditSfd$Statut.PASSE_EN_PERTES
               )
             GROUP BY c.typeCredit
             ORDER BY c.typeCredit
