@@ -22,4 +22,8 @@ export class BudgetService {
   delete(id: string) {
     return this.http.delete<void>(`/api/budgets/${id}`);
   }
+
+  exportCsvUrl(exercice: number): string {
+    return `/api/budgets/export-csv?exercice=${exercice}`;
+  }
 }
