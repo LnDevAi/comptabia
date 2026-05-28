@@ -1,6 +1,6 @@
-# e-Compta IA
+# ComptaBIA
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/LnDevAi/e-compta-ia-inter/releases/tag/v1.0.0)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/LnDevAi/comptabia/releases/tag/v1.0.0)
 [![Licence](https://img.shields.io/badge/licence-propriétaire-red.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://adoptium.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.5-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -35,7 +35,7 @@ Développé par **L'N EXPERTISE** — Ouagadougou, Burkina Faso.
 
 ## Présentation
 
-e-Compta IA est une plateforme SaaS multi-tenant qui couvre l'ensemble du cycle comptable
+ComptaBIA est une plateforme SaaS multi-tenant qui couvre l'ensemble du cycle comptable
 et financier d'une entreprise soumise au référentiel **SYSCOHADA Révisé** :
 
 - Tenue de la comptabilité générale jusqu'à la production des **états financiers annuels**
@@ -218,8 +218,8 @@ Voir le [comparatif complet](/produit/comparatif-plans) dans l'application.
 
 ```bash
 # 1. Cloner le dépôt
-git clone https://github.com/LnDevAi/e-compta-ia-inter.git
-cd e-compta-ia-inter
+git clone https://github.com/LnDevAi/comptabia.git
+cd comptabia
 
 # 2. Configurer les variables d'environnement
 cp .env.example .env

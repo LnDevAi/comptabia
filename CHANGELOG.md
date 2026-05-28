@@ -1,4 +1,4 @@
-# Changelog — e-Compta IA
+# Changelog — ComptaBIA
 
 Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
@@ -8,7 +8,7 @@ Ce projet suit le [Versionnage Sémantique](https://semver.org/lang/fr/).
 
 ## [1.0.0] - 2026-05-27
 
-Première version complète d'e-Compta IA — logiciel de comptabilité en ligne conforme
+Première version complète d'ComptaBIA — logiciel de comptabilité en ligne conforme
 SYSCOHADA Révisé, conçu pour les entreprises d'Afrique de l'Ouest (UEMOA / OHADA).
 Cette version couvre l'intégralité des modules comptables, fiscaux, RH, sectoriels,
 ainsi que la documentation complète et le système de paiement SaaS.
@@ -216,5 +216,5 @@ conventions de développement.
 
 ---
 
-[1.0.0]: https://github.com/LnDevAi/e-compta-ia-inter/compare/v0.1.0...v1.0.0
-[0.1.0]: https://github.com/LnDevAi/e-compta-ia-inter/releases/tag/v0.1.0
+[1.0.0]: https://github.com/LnDevAi/comptabia/compare/v0.1.0...v1.0.0
+[0.1.0]: https://github.com/LnDevAi/comptabia/releases/tag/v0.1.0
