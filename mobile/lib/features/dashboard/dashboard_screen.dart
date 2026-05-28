@@ -105,7 +105,7 @@ class DashboardTab extends ConsumerWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    authState.profile?.nomEntreprise ?? 'E-Compta IA',
+                    authState.profile?.nomEntreprise ?? 'ComptaBIA IA',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,

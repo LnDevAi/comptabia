@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-const String kBaseUrl = 'http://api.ecompta.edefence.tech';
+const String kBaseUrl = 'http://api.comptabia.edefence.tech';
 const String kTokenKey = 'jwt_token';
 
 class ApiException implements Exception {

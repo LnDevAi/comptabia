@@ -305,7 +305,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
             const SizedBox(height: 8),
             Center(
               child: Text(
-                'Rapport généré le $now par E-Compta IA\n'
+                'Rapport généré le $now par ComptaBIA IA\n'
                 '© 2026 E-Défence — Plateforme SaaS Analyse Financière',
                 style: const TextStyle(
                   color: AppTheme.textSecondary,

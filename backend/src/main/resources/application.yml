@@ -1,7 +1,7 @@
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ecompta}
-    username: ${SPRING_DATASOURCE_USERNAME:ecompta}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/comptabia}
+    username: ${SPRING_DATASOURCE_USERNAME:comptabia}
     password: ${SPRING_DATASOURCE_PASSWORD:changeme}
     driver-class-name: org.postgresql.Driver
     hikari:
@@ -109,7 +109,7 @@ app:
   upload:
     dir: ${UPLOAD_DIR:./uploads}
   mail:
-    from: ${MAIL_FROM:noreply@ecompta.app}
+    from: ${MAIL_FROM:noreply@comptabia.app}
     enabled: ${MAIL_ENABLED:false}
   sms:
     provider: ${SMS_PROVIDER:mock}
@@ -120,5 +120,5 @@ app:
 
 logging:
   level:
-    com.edefence.ecompta: INFO
+    com.edefence.comptabia: INFO
     org.springframework.security: WARN

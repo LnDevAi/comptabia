@@ -12,10 +12,10 @@
   </parent>
 
   <groupId>com.edefence</groupId>
-  <artifactId>ecompta</artifactId>
+  <artifactId>comptabia</artifactId>
   <version>0.1.0-SNAPSHOT</version>
-  <name>e-compta-ia-inter</name>
-  <description>Plateforme comptable IA multi-tenant SYSCOHADA</description>
+  <name>ComptaBIA</name>
+  <description>ComptaBIA — Plateforme comptable IA multi-tenant SYSCOHADA/IFRS</description>
 
   <properties>
     <java.version>17</java.version>

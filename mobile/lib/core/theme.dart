@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Couleurs de la marque E-Compta
+  // Couleurs de la marque ComptaBIA
   static const Color primary = Color(0xFF1A5276);
   static const Color primaryLight = Color(0xFF2980B9);
   static const Color primaryDark = Color(0xFF0E2F44);

@@ -19,7 +19,6 @@ com\edefence\ecompta\dto\ecriture\EcritureDto$Response.class
 com\edefence\ecompta\dto\sfd\CreditSfdDto$UpdateRequest.class
 com\edefence\ecompta\controller\TwoFactorController.class
 com\edefence\ecompta\licence\LicenceService.class
-com\edefence\ecompta\dto\notefrais\NoteFraisDto$ParCategorie.class
 com\edefence\ecompta\domain\CompteBancaire$TypeCompte.class
 com\edefence\ecompta\dto\abonnement\AbonnementDto$SaveRequest.class
 com\edefence\ecompta\dto\etats\NoteAnnexeDto$CreateRequest.class
@@ -102,7 +101,6 @@ com\edefence\ecompta\domain\Pointage$PointageBuilder.class
 com\edefence\ecompta\domain\DeclarationIs$DeclarationIsBuilder.class
 com\edefence\ecompta\repository\FeuillePaieRepository.class
 com\edefence\ecompta\dto\ged\GedDto$WorkflowEntry.class
-com\edefence\ecompta\dto\tresorerie\TresorerieDto$FluxMensuel.class
 com\edefence\ecompta\dto\etats\BilanCimaDto.class
 com\edefence\ecompta\dto\temps\TempsPresenceDto$PointagePatchRequest.class
 com\edefence\ecompta\repository\LigneEcritureRepository.class
@@ -122,7 +120,6 @@ com\edefence\ecompta\domain\DeclarationTva$Statut.class
 com\edefence\ecompta\domain\CrmDestinataire.class
 com\edefence\ecompta\dto\academie\AcademeDto$CertificatResponse.class
 com\edefence\ecompta\dto\crm\CrmDto$DashboardResponse.class
-com\edefence\ecompta\service\RatiosFinanciersService$Agg.class
 com\edefence\ecompta\controller\ImmobilisationController.class
 com\edefence\ecompta\dto\analytique\AnalytiqueDto$RapportBailleurResponse.class
 com\edefence\ecompta\dto\consolidation\ConsolidationDto$EliminationResponse.class
@@ -137,7 +134,6 @@ com\edefence\ecompta\dto\formation\FormationDto$InscriptionResponse.class
 com\edefence\ecompta\controller\NotificationHistoryController.class
 com\edefence\ecompta\dto\analytique\AnalytiqueDto$AxeResponse.class
 com\edefence\ecompta\dto\evaluation\EvaluationDto$EvaluationCreateRequest.class
-com\edefence\ecompta\dto\paiement\SouscriptionSaasDto.class
 com\edefence\ecompta\domain\LigneFacture.class
 com\edefence\ecompta\dto\conge\CongeDto$CalendrierItem.class
 com\edefence\ecompta\dto\ecriture\EcritureDto$Request.class
@@ -222,8 +218,6 @@ com\edefence\ecompta\dto\gouvernance\AssembleeDto$ResolutionRequest.class
 com\edefence\ecompta\service\AlerteService.class
 com\edefence\ecompta\repository\FactureAbonnementRepository.class
 com\edefence\ecompta\service\RelanceService.class
-com\edefence\ecompta\dto\tresorerie\TresorerieDto$StatFlux.class
-com\edefence\ecompta\dto\tiers\TiersDto$StatsEvolution.class
 com\edefence\ecompta\dto\ecriture\CsvImportDto$Result.class
 com\edefence\ecompta\dto\stock\StockDto$LigneInventaire.class
 com\edefence\ecompta\repository\NoteFraisRepository.class
@@ -269,7 +263,6 @@ com\edefence\ecompta\repository\FactureRepository.class
 com\edefence\ecompta\dto\notesannexes\NotesAnnexesDto$PaieAnnuelle.class
 com\edefence\ecompta\service\ProvisionTechniqueService.class
 com\edefence\ecompta\repository\ReleveBancaireRepository.class
-com\edefence\ecompta\dto\immobilisation\ImmobilisationDto$StatsCat.class
 com\edefence\ecompta\controller\EtatFinancierController.class
 com\edefence\ecompta\dto\rapprochement\RapprochementDto.class
 com\edefence\ecompta\repository\FormationRepository.class
@@ -353,7 +346,6 @@ com\edefence\ecompta\repository\GedTagRepository.class
 com\edefence\ecompta\dto\evaluation\EvaluationDto$EvaluationResponse.class
 com\edefence\ecompta\dto\auth\AuthResponseDto.class
 com\edefence\ecompta\dto\parametres\ParametresDto$EntrepriseResponse.class
-com\edefence\ecompta\domain\SouscriptionSaas$ModePaiement.class
 com\edefence\ecompta\dto\previsions\PrevisionsTresorerieDto.class
 com\edefence\ecompta\dto\compte\CompteDto$Response.class
 com\edefence\ecompta\service\DashboardRhService.class
@@ -366,7 +358,6 @@ com\edefence\ecompta\dto\DashboardDto.class
 com\edefence\ecompta\controller\DeviseController.class
 com\edefence\ecompta\dto\analytique\AnalytiqueDto$SousAxe.class
 com\edefence\ecompta\service\EmailNotificationService$1.class
-com\edefence\ecompta\config\WebClientConfig.class
 com\edefence\ecompta\domain\DossierDisciplinaire$Statut.class
 com\edefence\ecompta\domain\GedWorkflowHistory$GedWorkflowHistoryBuilder.class
 com\edefence\ecompta\repository\ModeleEcritureRepository.class
@@ -422,7 +413,6 @@ com\edefence\ecompta\domain\Conge.class
 com\edefence\ecompta\domain\Entreprise$TypeEntite.class
 com\edefence\ecompta\dto\devise\DeviseDto$ConversionRequest.class
 com\edefence\ecompta\dto\islamique\ProduitIslamiqueDto$EtatResultatIslamiqueResponse.class
-com\edefence\ecompta\domain\SouscriptionSaas$Statut.class
 com\edefence\ecompta\dto\notefrais\NoteFraisDto$Resume.class
 com\edefence\ecompta\dto\consolidation\ConsolidationDto.class
 com\edefence\ecompta\dto\tresorerie\TresorerieDto$SoldeRequest.class
@@ -447,11 +437,9 @@ com\edefence\ecompta\domain\Regularisation$TypeRegularisation.class
 com\edefence\ecompta\dto\immobilisation\ImmobilisationDto.class
 com\edefence\ecompta\domain\SessionFormation$Statut.class
 com\edefence\ecompta\dto\reporting\ReportingDto$LigneConge.class
-com\edefence\ecompta\dto\ged\GedDto$MoisGed.class
 com\edefence\ecompta\controller\GedController.class
 com\edefence\ecompta\domain\Abonnement$AbonnementBuilder.class
 com\edefence\ecompta\dto\crm\CrmDto$ActiviteResponse.class
-com\edefence\ecompta\controller\PaiementSaasController.class
 com\edefence\ecompta\domain\Resolution$ResolutionBuilder.class
 com\edefence\ecompta\domain\ExerciceComptable$Statut.class
 com\edefence\ecompta\domain\Formation$Statut.class
@@ -471,7 +459,6 @@ com\edefence\ecompta\dto\fiscal\FiscalDto$ObligationRefResponse.class
 com\edefence\ecompta\dto\devise\DeviseDto.class
 com\edefence\ecompta\dto\relance\RelanceDto.class
 com\edefence\ecompta\repository\InscriptionFormationRepository.class
-com\edefence\ecompta\dto\tiers\TiersDto$MoisTiers.class
 com\edefence\ecompta\dto\etats\EvcapDto$Ligne.class
 com\edefence\ecompta\dto\ia\InvoiceAnalysisDto$LigneSuggeree.class
 com\edefence\ecompta\controller\DocumentReglementaireController.class
@@ -536,17 +523,14 @@ com\edefence\ecompta\dto\reporting\ReportingDto.class
 com\edefence\ecompta\dto\academie\AcademeDto$QuestionInfo.class
 com\edefence\ecompta\domain\RefCotisationSociale.class
 com\edefence\ecompta\dto\devise\DeviseDto$TauxLatest.class
-com\edefence\ecompta\dto\tva\TvaDto$MoisTva.class
 com\edefence\ecompta\repository\AcademeCoursRepository.class
 com\edefence\ecompta\domain\ArticleStock$Categorie.class
 com\edefence\ecompta\controller\DocumentRhController.class
 com\edefence\ecompta\domain\InscriptionFormation$Statut.class
-com\edefence\ecompta\domain\SouscriptionSaas.class
 com\edefence\ecompta\dto\dashboard\DashboardGlobalDto$Response.class
 com\edefence\ecompta\service\CompteComptableService.class
 com\edefence\ecompta\controller\GestionFiscaleController.class
 com\edefence\ecompta\domain\GedTypeDocument.class
-com\edefence\ecompta\dto\facture\FactureDto$StatFacturation.class
 com\edefence\ecompta\dto\dashboard\DashboardRhDto$KpiEvaluations.class
 com\edefence\ecompta\dto\ecriture\CsvImportDto$LineError.class
 com\edefence\ecompta\service\ProduitIslamiqueService.class
@@ -597,7 +581,6 @@ com\edefence\ecompta\dto\ia\InvoiceAnalysisDto$ImputationSuggeree.class
 com\edefence\ecompta\dto\islamique\ProduitIslamiqueDto$ZakatCreateRequest.class
 com\edefence\ecompta\dto\pret\PretDto$EcheanceResponse.class
 com\edefence\ecompta\repository\ApprobationRepository.class
-com\edefence\ecompta\service\PaiementSaasService$4.class
 com\edefence\ecompta\domain\ArticleStock$MethodeEvaluation.class
 com\edefence\ecompta\repository\MouvementStockRepository.class
 com\edefence\ecompta\domain\EliminationInterco$EliminationIntercoBuilder.class
@@ -635,8 +618,6 @@ com\edefence\ecompta\controller\CongeController.class
 com\edefence\ecompta\domain\Entreprise$PlanType.class
 com\edefence\ecompta\domain\CompteComptable$CompteComptableBuilder.class
 com\edefence\ecompta\dto\tiers\TiersDto$Stats.class
-com\edefence\ecompta\service\FactureService$1.class
-com\edefence\ecompta\dto\notefrais\NoteFraisDto$Stats.class
 com\edefence\ecompta\dto\portail\ClientPortailDto$PortailTokenResponse.class
 com\edefence\ecompta\repository\ExerciceComptableRepository.class
 com\edefence\ecompta\dto\commercial\CommercialDto$PlanResponse.class
@@ -678,7 +659,6 @@ com\edefence\ecompta\domain\GedDocumentVersion$GedDocumentVersionBuilder.class
 com\edefence\ecompta\domain\ProvisionTechnique$TypeProvision.class
 com\edefence\ecompta\domain\Evaluation$Statut.class
 com\edefence\ecompta\repository\ObjectifRepository.class
-com\edefence\ecompta\dto\ged\GedDto$StatsGedMensuel.class
 com\edefence\ecompta\service\DocumentReglementaireService.class
 com\edefence\ecompta\dto\etats\SmtDto.class
 com\edefence\ecompta\service\FecImportService.class
@@ -691,7 +671,6 @@ com\edefence\ecompta\dto\gouvernance\AssembleeDto.class
 com\edefence\ecompta\domain\GedTag$GedTagBuilder.class
 com\edefence\ecompta\controller\ParametresController.class
 com\edefence\ecompta\dto\discipline\DisciplineDto$DossierResume.class
-com\edefence\ecompta\dto\stock\StockDto$StatsMouvements.class
 com\edefence\ecompta\domain\Candidature$Statut.class
 com\edefence\ecompta\dto\dashboard\DashboardRhDto$KpiPaie.class
 com\edefence\ecompta\domain\OnboardingTache.class
@@ -712,7 +691,6 @@ com\edefence\ecompta\repository\CreditSfdRepository.class
 com\edefence\ecompta\domain\SessionFormation$SessionFormationBuilder.class
 com\edefence\ecompta\controller\PrevisionsTresorerieController.class
 com\edefence\ecompta\dto\auth\TwoFactorDto$DisableRequest.class
-com\edefence\ecompta\dto\facture\FactureDto$MoisCA.class
 com\edefence\ecompta\controller\ProduitIslamiqueController.class
 com\edefence\ecompta\dto\dashboard\DashboardGlobalDto$TopAxe.class
 com\edefence\ecompta\dto\balance\BalanceAgeeDto$LigneTiers.class
@@ -723,7 +701,6 @@ com\edefence\ecompta\dto\crm\CrmDto$TemplateRequest.class
 com\edefence\ecompta\dto\islamique\ProduitIslamiqueDto$DashboardResponse.class
 com\edefence\ecompta\dto\notefrais\NoteFraisDto$Response.class
 com\edefence\ecompta\domain\DepotStock.class
-com\edefence\ecompta\repository\SouscriptionSaasRepository.class
 com\edefence\ecompta\dto\exercice\ExerciceDto$ClotureResponse.class
 com\edefence\ecompta\dto\notesannexes\NotesAnnexesDto$TableauLigne.class
 com\edefence\ecompta\dto\stock\StockDto$DashboardStock.class
@@ -750,10 +727,8 @@ com\edefence\ecompta\domain\OffreEmploi$OffreEmploiBuilder.class
 com\edefence\ecompta\domain\FeuillePaie$Statut.class
 com\edefence\ecompta\dto\provision\ProvisionTechniqueDto$CreateRequest.class
 com\edefence\ecompta\dto\notefrais\NoteFraisDto.class
-com\edefence\ecompta\dto\paiement\InitPaiementResponse.class
 com\edefence\ecompta\dto\crm\CrmDto$CampagneResponse.class
 com\edefence\ecompta\service\AdminUtilisateurService.class
-com\edefence\ecompta\dto\paiement\PlanPublicDto.class
 com\edefence\ecompta\domain\DeclarationSociale$DeclarationSocialeBuilder.class
 com\edefence\ecompta\dto\reporting\ReportingDto$LignePresence.class
 com\edefence\ecompta\controller\ExportController.class
@@ -809,7 +784,6 @@ com\edefence\ecompta\dto\devise\DeviseDto$TauxRequest.class
 com\edefence\ecompta\dto\dashboard\DashboardGlobalDto$MoisTendance.class
 com\edefence\ecompta\domain\FeuillePaie.class
 com\edefence\ecompta\domain\MembreGroupe$MethodeConsolidation.class
-com\edefence\ecompta\dto\notefrais\NoteFraisDto$MoisFrais.class
 com\edefence\ecompta\repository\ZakatCalculRepository.class
 com\edefence\ecompta\dto\liasse\LiasseFiscaleDto.class
 com\edefence\ecompta\domain\AcademeQuestion.class
@@ -873,7 +847,6 @@ com\edefence\ecompta\dto\portail\PortailDto$PretResume.class
 com\edefence\ecompta\dto\conge\CongeDto$RejeterRequest.class
 com\edefence\ecompta\repository\AbonnementRepository.class
 com\edefence\ecompta\domain\EtapeProcedure$EtapeProcedureBuilder.class
-com\edefence\ecompta\dto\paiement\InitPaiementResponse$VirementDetails.class
 com\edefence\ecompta\dto\etats\EvcapDto.class
 com\edefence\ecompta\domain\EcritureComptable$Statut.class
 com\edefence\ecompta\repository\CrmCampagneRepository.class
@@ -894,7 +867,6 @@ com\edefence\ecompta\domain\Entreprise$EntrepriseBuilder.class
 com\edefence\ecompta\security\JwtAuthFilter.class
 com\edefence\ecompta\domain\DossierDisciplinaire$DossierDisciplinaireBuilder.class
 com\edefence\ecompta\dto\formation\FormationDto$FormationResponse.class
-com\edefence\ecompta\dto\tva\TvaDto$StatAnnuelle.class
 com\edefence\ecompta\controller\DeclarationIsController.class
 com\edefence\ecompta\dto\ratios\RatiosDto$Response.class
 com\edefence\ecompta\domain\EcritureComptable$EcritureComptableBuilder.class
@@ -905,7 +877,6 @@ com\edefence\ecompta\dto\evaluation\EvaluationDto$ObjectifSaveRequest.class
 com\edefence\ecompta\dto\stock\StockDto$StatsArticle.class
 com\edefence\ecompta\domain\InscriptionFormation.class
 com\edefence\ecompta\controller\TiersController.class
-com\edefence\ecompta\domain\SouscriptionSaas$Periodicite.class
 com\edefence\ecompta\domain\Immobilisation$Statut.class
 com\edefence\ecompta\repository\BudgetRhRepository.class
 com\edefence\ecompta\dto\dashboard\DashboardGlobalDto$KpiFinancier.class
@@ -948,7 +919,6 @@ com\edefence\ecompta\domain\DeclarationFiscale.class
 com\edefence\ecompta\dto\pret\PretDto.class
 com\edefence\ecompta\domain\CrmTemplate$Type.class
 com\edefence\ecompta\dto\affectation\AffectationDto.class
-com\edefence\ecompta\dto\paiement\InitPaiementRequest.class
 com\edefence\ecompta\dto\etats\EtatsDepuisBalanceDto.class
 com\edefence\ecompta\service\CongeService.class
 com\edefence\ecompta\dto\dashboard\DashboardGlobalDto$Alerte.class
@@ -956,7 +926,6 @@ com\edefence\ecompta\dto\portail\PortailDto$PointageResume.class
 com\edefence\ecompta\domain\DeclarationTva.class
 com\edefence\ecompta\dto\modele\ModeleDto.class
 com\edefence\ecompta\dto\pilotage\PilotageDto$Response.class
-com\edefence\ecompta\service\PaiementSaasService.class
 com\edefence\ecompta\domain\LigneEcriture$LigneEcritureBuilder.class
 com\edefence\ecompta\dto\pilotage\PilotageDto$ChargePoste.class
 com\edefence\ecompta\dto\recrutement\RecrutementDto.class
@@ -969,7 +938,6 @@ com\edefence\ecompta\dto\stock\StockDto$MouvementRequest.class
 com\edefence\ecompta\repository\OnboardingTacheRepository.class
 com\edefence\ecompta\domain\DeclarationFiscale$Statut.class
 com\edefence\ecompta\domain\ProduitIslamique$ProduitIslamiqueBuilder.class
-com\edefence\ecompta\dto\budget\BudgetDto$MoisRealise.class
 com\edefence\ecompta\domain\AssembleeGenerale.class
 com\edefence\ecompta\service\DashboardGlobalService.class
 com\edefence\ecompta\dto\kpi\KpiExecutifDto$Alerte.class
@@ -978,7 +946,6 @@ com\edefence\ecompta\dto\facture\FactureDto$CreateRequest.class
 com\edefence\ecompta\dto\gouvernance\AssocieDto$CreateRequest.class
 com\edefence\ecompta\dto\relance\RelanceDto$TiersImpaye.class
 com\edefence\ecompta\dto\provision\ProvisionTechniqueDto$Response.class
-com\edefence\ecompta\service\PaiementSaasService$2.class
 com\edefence\ecompta\dto\fiscal\FiscalDto$CalendrierItem.class
 com\edefence\ecompta\service\RegularisationService$1.class
 com\edefence\ecompta\dto\kpi\KpiExecutifDto$Ratios.class
@@ -1014,7 +981,6 @@ com\edefence\ecompta\controller\ReportingController.class
 com\edefence\ecompta\dto\document\DocumentReglementaireDto$Response.class
 com\edefence\ecompta\dto\reporting\ReportingDto$RapportConges.class
 com\edefence\ecompta\repository\PieceJointeRepository.class
-com\edefence\ecompta\dto\stock\StockDto$MoisMouvement.class
 com\edefence\ecompta\dto\etats\JournalLivreDto.class
 com\edefence\ecompta\dto\gouvernance\AssembleeDto$UpdateRequest.class
 com\edefence\ecompta\domain\ReleveBancaire.class
@@ -1022,7 +988,6 @@ com\edefence\ecompta\domain\DocumentReglementaire$DocumentReglementaireBuilder.c
 com\edefence\ecompta\dto\rapprochement\RapprochementDto$LigneReleve.class
 com\edefence\ecompta\domain\Associe.class
 com\edefence\ecompta\dto\etats\BalanceDto.class
-com\edefence\ecompta\service\PaiementSaasService$3.class
 com\edefence\ecompta\dto\budget\BudgetRhDto$ComparatifRh.class
 com\edefence\ecompta\service\EtatFinancierService.class
 com\edefence\ecompta\dto\etats\BalanceSixColonnesDto$Ligne.class
@@ -1049,7 +1014,6 @@ com\edefence\ecompta\repository\CrmDestinataireRepository.class
 com\edefence\ecompta\dto\paie\PayeDto$Response.class
 com\edefence\ecompta\domain\Immobilisation.class
 com\edefence\ecompta\domain\AcademeCours$Categorie.class
-com\edefence\ecompta\service\PaiementSaasService$1.class
 com\edefence\ecompta\domain\LigneEvaluation.class
 com\edefence\ecompta\domain\CrmCampagne$Type.class
 com\edefence\ecompta\repository\DeclarationSocialeRepository.class

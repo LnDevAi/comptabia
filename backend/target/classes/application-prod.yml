@@ -16,7 +16,7 @@ logging:
   pattern:
     console: '{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%level","logger":"%logger{36}","message":"%msg"}%n'
   level:
-    com.edefence.ecompta: INFO
+    com.edefence.comptabia: INFO
     org.springframework.security: WARN
     org.hibernate: WARN
 

@@ -1,4 +1,4 @@
-package tech.edefence.ecompta
+package tech.edefence.comptabia
 
 import io.flutter.embedding.android.FlutterActivity
 

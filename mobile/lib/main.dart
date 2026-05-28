@@ -29,20 +29,20 @@ void main() async {
 
   runApp(
     const ProviderScope(
-      child: EComptaApp(),
+      child: ComptaBIAApp(),
     ),
   );
 }
 
-class EComptaApp extends ConsumerWidget {
-  const EComptaApp({super.key});
+class ComptaBIAApp extends ConsumerWidget {
+  const ComptaBIAApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'E-Compta IA',
+      title: 'ComptaBIA IA',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: router,

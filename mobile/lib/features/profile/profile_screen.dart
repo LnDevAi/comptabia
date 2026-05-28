@@ -156,7 +156,7 @@ class ProfileScreen extends ConsumerWidget {
                 _InfoTile(
                   icon: Icons.cloud_outlined,
                   label: 'Serveur API',
-                  value: 'api.ecompta.edefence.tech',
+                  value: 'api.comptabia.edefence.tech',
                 ),
                 const Divider(height: 1, indent: 56),
                 _InfoTile(

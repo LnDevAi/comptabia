@@ -1,5 +1,5 @@
-name: ecompta_mobile
-description: E-Compta IA — Application mobile analyse financière intelligente
+name: comptabia_mobile
+description: ComptaBIA — Application mobile analyse financière intelligente
 version: 1.0.0+1
 
 environment:

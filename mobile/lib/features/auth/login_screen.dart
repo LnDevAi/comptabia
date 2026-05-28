@@ -65,7 +65,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                'E-Compta IA',
+                'ComptaBIA IA',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: AppTheme.primary,
                       fontWeight: FontWeight.bold,
