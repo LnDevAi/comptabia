@@ -1,6 +1,6 @@
 # Changelog — ComptaBIA
 
-[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/LnDevAi/comptabia/releases/tag/v1.5.0)
+[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg)](https://github.com/LnDevAi/comptabia/releases/tag/v1.6.0)
 
 Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
