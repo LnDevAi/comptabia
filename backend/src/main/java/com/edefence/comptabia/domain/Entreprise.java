@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -105,7 +106,14 @@ public class Entreprise {
     @Builder.Default
     private TypeEntite typeEntite = TypeEntite.ENTREPRISE;
 
-    public enum PlanType { FREE, PRO, ENTERPRISE }
+    @Column(name = "plan_expiration")
+    private LocalDate planExpiration;
+
+    @Column(name = "statut_abonnement", length = 20)
+    @Builder.Default
+    private String statutAbonnement = "TRIAL";
+
+    public enum PlanType { FREE, STARTER, PRO, ENTERPRISE }
     public enum SystemeComptable { NORMAL, SMT }
     public enum RegimeFiscal { RNI, RSI, CME }
     public enum TypeEntite { ENTREPRISE, ASSOCIATION, ASSURANCE, MICROFINANCE, FINANCE_ISLAMIQUE }

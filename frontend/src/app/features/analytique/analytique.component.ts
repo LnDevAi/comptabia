@@ -1,5 +1,6 @@
 import {
-  ChangeDetectionStrategy, Component, inject, OnInit, signal, computed
+  ChangeDetectionStrategy, Component, ElementRef, inject,
+  OnDestroy, OnInit, signal, computed, ViewChild
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +9,9 @@ import {
   AxeAnalytique, RapportAnalytique, RapportAxe, RapportBailleur,
   RapportBailleurResponse, SousAxe, TypeAxe, TYPES_AXE
 } from '../../core/models/analytique.model';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 type Onglet = 'axes' | 'rapport' | 'bailleur';
 
@@ -30,7 +34,7 @@ type Onglet = 'axes' | 'rapport' | 'bailleur';
   <!-- Onglets -->
   <div class="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
     @for (tab of [['axes','Axes analytiques'],['rapport','Rapport analytique'],['bailleur','Rapport bailleur']]; track tab[0]) {
-      <button (click)="onglet.set(tab[0])"
+      <button (click)="onglet.set($any(tab[0]))"
               [class]="onglet() === tab[0]
                 ? 'px-4 py-1.5 rounded-lg bg-white text-gray-800 text-sm font-medium shadow-sm'
                 : 'px-4 py-1.5 rounded-lg text-gray-500 text-sm hover:text-gray-700'">
@@ -41,6 +45,19 @@ type Onglet = 'axes' | 'rapport' | 'bailleur';
 
   <!-- ═══════════════════════════════════════════ AXES ══════════════════════ -->
   @if (onglet() === 'axes') {
+
+  <!-- KPI axes -->
+  @if (axes().length > 0) {
+  <div class="grid grid-cols-5 gap-3">
+    @for (t of typesAxe; track t.value) {
+      <div class="bg-white rounded-xl border border-gray-200 p-3 text-center">
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" [ngClass]="t.color">{{ t.label }}</span>
+        <p class="text-2xl font-bold text-gray-800 mt-1">{{ countByType(t.value) }}</p>
+        <p class="text-xs text-gray-400">axe(s)</p>
+      </div>
+    }
+  </div>
+  }
 
   <!-- Filtre par type -->
   <div class="flex items-center gap-2 flex-wrap">
@@ -213,7 +230,7 @@ type Onglet = 'axes' | 'rapport' | 'bailleur';
       </div>
       <div>
         <label class="block text-xs text-gray-500 mb-1">Type</label>
-        <select [(ngModel)]="rapFiltreType"
+        <select [ngModel]="rapFiltreType()" (ngModelChange)="onRapFiltreChange($event)"
                 class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
           <option value="">Tous types</option>
           @for (t of typesAxe; track t.value) {
@@ -229,13 +246,48 @@ type Onglet = 'axes' | 'rapport' | 'bailleur';
     @if (rapError()) { <p class="text-sm text-red-600">{{ rapError() }}</p> }
   </div>
 
-  @if (rapportFiltré()) {
-    @if (rapportFiltré()!.length === 0) {
+  @if (rapportFiltre()) {
+
+    <!-- Graphique budget vs réalisé -->
+    @if (rapportAvecBudget().length > 0) {
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <h3 class="text-sm font-semibold text-gray-700 mb-4">Budget vs Réalisé — vue d'ensemble</h3>
+      <div class="relative" [style.height.px]="chartRapportHeight()">
+        <canvas #rapCanvas></canvas>
+      </div>
+    </div>
+    }
+
+    <!-- KPI synthèse -->
+    @if (rapportFiltre()!.length > 0) {
+    <div class="grid grid-cols-3 gap-4">
+      <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Axes analysés</p>
+        <p class="text-2xl font-bold text-gray-800 mt-1">{{ rapportFiltre()!.length }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-red-100 bg-red-50 p-4">
+        <p class="text-xs text-red-600 uppercase tracking-wide">Total dépenses (débit)</p>
+        <p class="text-2xl font-bold text-red-800 mt-1">{{ fmtK(totalDebitRapport()) }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Axes avec budget</p>
+        <p class="text-2xl font-bold text-gray-800 mt-1">{{ rapportAvecBudget().length }}</p>
+        @if (rapportAvecBudget().length > 0) {
+          <p class="text-xs mt-1"
+             [ngClass]="tauxMoyenExecution() > 100 ? 'text-red-600' : tauxMoyenExecution() > 80 ? 'text-orange-500' : 'text-green-600'">
+            Taux moyen : {{ tauxMoyenExecution() | number:'1.1-1' }}%
+          </p>
+        }
+      </div>
+    </div>
+    }
+
+    @if (rapportFiltre()!.length === 0) {
       <div class="bg-white rounded-xl border border-gray-200 flex items-center justify-center h-24 text-gray-400 text-sm">
         Aucune ligne ventilée sur cette période.
       </div>
     } @else {
-      @for (axe of rapportFiltré()!; track axe.axeId) {
+      @for (axe of rapportFiltre()!; track axe.axeId) {
       <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div class="flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-200">
           <div class="flex items-center gap-3 flex-wrap">
@@ -335,6 +387,31 @@ type Onglet = 'axes' | 'rapport' | 'bailleur';
         <span class="text-xs">Créez des axes de type BAILLEUR et rattachez-y des projets/activités.</span>
       </div>
     } @else {
+
+      <!-- Graphique synthèse bailleurs -->
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-4">Synthèse des bailleurs — Budget vs Dépenses</h3>
+        <div class="relative" [style.height.px]="chartBailleurHeight()">
+          <canvas #bailleurCanvas></canvas>
+        </div>
+      </div>
+
+      <!-- KPI synthèse bailleurs -->
+      <div class="grid grid-cols-3 gap-4">
+        <div class="bg-white rounded-xl border border-gray-200 p-4">
+          <p class="text-xs text-gray-500 uppercase tracking-wide">Bailleurs</p>
+          <p class="text-2xl font-bold text-gray-800 mt-1">{{ rapBailleur()!.bailleurs.length }}</p>
+        </div>
+        <div class="rounded-xl border border-red-100 bg-red-50 p-4">
+          <p class="text-xs text-red-600 uppercase tracking-wide">Total dépenses</p>
+          <p class="text-2xl font-bold text-red-800 mt-1">{{ fmtK(totalDepensesBailleurs()) }}</p>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
+          <p class="text-xs text-gray-600 uppercase tracking-wide">Total budget</p>
+          <p class="text-2xl font-bold text-gray-800 mt-1">{{ fmtK(totalBudgetBailleurs()) }}</p>
+        </div>
+      </div>
+
       @for (b of rapBailleur()!.bailleurs; track b.bailleurId) {
       <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
 
@@ -469,7 +546,10 @@ type Onglet = 'axes' | 'rapport' | 'bailleur';
 </div>
   `,
 })
-export class AnalytiqueComponent implements OnInit {
+export class AnalytiqueComponent implements OnInit, OnDestroy {
+
+  @ViewChild('rapCanvas')     rapCanvasRef!:     ElementRef<HTMLCanvasElement>;
+  @ViewChild('bailleurCanvas') bailleurCanvasRef!: ElementRef<HTMLCanvasElement>;
 
   private svc = inject(AnalytiqueService);
 
@@ -493,12 +573,12 @@ export class AnalytiqueComponent implements OnInit {
   editParentId = '';
 
   // Rapport général
-  rapport      = signal<RapportAnalytique | null>(null);
-  loadingRap   = signal(false);
-  rapError     = signal<string | null>(null);
-  rapDebut     = '';
-  rapFin       = '';
-  rapFiltreType = '';
+  rapport       = signal<RapportAnalytique | null>(null);
+  loadingRap    = signal(false);
+  rapError      = signal<string | null>(null);
+  rapFiltreType = signal('');
+  rapDebut      = '';
+  rapFin        = '';
 
   // Rapport bailleur
   rapBailleur     = signal<RapportBailleurResponse | null>(null);
@@ -509,6 +589,9 @@ export class AnalytiqueComponent implements OnInit {
 
   readonly typesAxe = TYPES_AXE;
 
+  private rapChart?:     Chart;
+  private bailleurChart?: Chart;
+
   bailleurs = computed(() => this.axes().filter(a => a.type === 'BAILLEUR'));
 
   axesFiltres = computed(() => {
@@ -516,14 +599,52 @@ export class AnalytiqueComponent implements OnInit {
     return f ? this.axes().filter(a => a.type === f) : this.axes();
   });
 
-  rapportFiltré = computed(() => {
+  rapportFiltre = computed(() => {
     const r = this.rapport();
     if (!r) return null;
-    const f = this.rapFiltreType;
+    const f = this.rapFiltreType();
     return f ? r.axes.filter(a => a.axeType === f) : r.axes;
   });
 
+  rapportAvecBudget = computed(() =>
+    (this.rapportFiltre() ?? []).filter(a => a.montantBudget != null && a.montantBudget > 0)
+  );
+
+  totalDebitRapport = computed(() =>
+    (this.rapportFiltre() ?? []).reduce((s, a) => s + a.totalDebit, 0)
+  );
+
+  tauxMoyenExecution = computed(() => {
+    const avecBudget = this.rapportAvecBudget();
+    if (avecBudget.length === 0) return 0;
+    const sum = avecBudget.reduce((s, a) => s + (a.tauxExecution ?? 0), 0);
+    return sum / avecBudget.length;
+  });
+
+  totalDepensesBailleurs = computed(() =>
+    (this.rapBailleur()?.bailleurs ?? []).reduce((s, b) => s + b.totalDebit, 0)
+  );
+
+  totalBudgetBailleurs = computed(() =>
+    (this.rapBailleur()?.bailleurs ?? []).reduce((s, b) => s + (b.montantBudget ?? 0), 0)
+  );
+
+  chartRapportHeight = computed(() => {
+    const n = Math.min(15, this.rapportAvecBudget().length);
+    return Math.max(200, n * 44 + 60);
+  });
+
+  chartBailleurHeight = computed(() => {
+    const n = this.rapBailleur()?.bailleurs.length ?? 0;
+    return Math.max(180, n * 44 + 60);
+  });
+
   ngOnInit() { this.chargerAxes(); }
+
+  ngOnDestroy() {
+    this.rapChart?.destroy();
+    this.bailleurChart?.destroy();
+  }
 
   chargerAxes() {
     this.svc.listerAxes().subscribe({ next: list => this.axes.set(list) });
@@ -531,6 +652,15 @@ export class AnalytiqueComponent implements OnInit {
 
   axeById(id: string): AxeAnalytique | undefined {
     return this.axes().find(a => a.id === id);
+  }
+
+  countByType(type: TypeAxe): number {
+    return this.axes().filter(a => a.type === type).length;
+  }
+
+  onRapFiltreChange(val: string) {
+    this.rapFiltreType.set(val);
+    Promise.resolve().then(() => this.buildRapportChart());
   }
 
   creer() {
@@ -590,7 +720,11 @@ export class AnalytiqueComponent implements OnInit {
     if (!this.rapDebut || !this.rapFin) return;
     this.loadingRap.set(true); this.rapError.set(null);
     this.svc.rapport(this.rapDebut, this.rapFin).subscribe({
-      next: r  => { this.rapport.set(r); this.loadingRap.set(false); },
+      next: r => {
+        this.rapport.set(r);
+        this.loadingRap.set(false);
+        Promise.resolve().then(() => this.buildRapportChart());
+      },
       error: e => { this.rapError.set(e?.error?.message ?? 'Erreur.'); this.loadingRap.set(false); },
     });
   }
@@ -599,10 +733,151 @@ export class AnalytiqueComponent implements OnInit {
     if (!this.bailleurDebut || !this.bailleurFin) return;
     this.loadingBailleur.set(true); this.bailleurError.set(null);
     this.svc.rapportBailleur(this.bailleurDebut, this.bailleurFin).subscribe({
-      next: r  => { this.rapBailleur.set(r); this.loadingBailleur.set(false); },
+      next: r => {
+        this.rapBailleur.set(r);
+        this.loadingBailleur.set(false);
+        Promise.resolve().then(() => this.buildBailleurChart());
+      },
       error: e => { this.bailleurError.set(e?.error?.message ?? 'Erreur.'); this.loadingBailleur.set(false); },
     });
   }
+
+  // ─── Charts ──────────────────────────────────────────────────────────────
+
+  private buildRapportChart() {
+    const axes = this.rapportAvecBudget();
+    if (!axes.length || !this.rapCanvasRef) return;
+
+    this.rapChart?.destroy();
+
+    const top15 = [...axes].sort((a, b) => b.totalDebit - a.totalDebit).slice(0, 15);
+    const labels  = top15.map(a => a.axeCode);
+    const budgets = top15.map(a => a.montantBudget ?? 0);
+    const realise = top15.map(a => a.totalDebit);
+    const bgColors = top15.map(a => {
+      const t = a.tauxExecution ?? 0;
+      if (t > 100) return 'rgba(239,68,68,0.75)';
+      if (t > 80)  return 'rgba(249,115,22,0.75)';
+      return 'rgba(34,197,94,0.75)';
+    });
+
+    this.rapChart = new Chart(this.rapCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Budget alloué',
+            data: budgets,
+            backgroundColor: 'rgba(156,163,175,0.35)',
+            borderColor: 'rgba(156,163,175,0.8)',
+            borderWidth: 1,
+            borderRadius: 4,
+          },
+          {
+            label: 'Réalisé (débit)',
+            data: realise,
+            backgroundColor: bgColors,
+            borderColor: bgColors.map(c => c.replace('0.75', '1')),
+            borderWidth: 1,
+            borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.dataset.label}: ${this.fmtK(ctx.parsed.x ?? 0)}`,
+              afterLabel: ctx => {
+                if (ctx.datasetIndex === 1) {
+                  const a = top15[ctx.dataIndex];
+                  return a.tauxExecution != null ? `Taux : ${a.tauxExecution.toFixed(1)}%` : '';
+                }
+                return '';
+              },
+            },
+          },
+        },
+        scales: {
+          x: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 11 } } },
+          y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        },
+      },
+    });
+  }
+
+  private buildBailleurChart() {
+    const bailleurs = this.rapBailleur()?.bailleurs;
+    if (!bailleurs?.length || !this.bailleurCanvasRef) return;
+
+    this.bailleurChart?.destroy();
+
+    const labels   = bailleurs.map(b => b.bailleurCode);
+    const budgets  = bailleurs.map(b => b.montantBudget ?? 0);
+    const depenses = bailleurs.map(b => b.totalDebit);
+    const bgColors = bailleurs.map(b => {
+      const t = b.tauxExecution ?? 0;
+      if (t > 100) return 'rgba(239,68,68,0.75)';
+      if (t > 80)  return 'rgba(249,115,22,0.75)';
+      return 'rgba(34,197,94,0.75)';
+    });
+
+    this.bailleurChart = new Chart(this.bailleurCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Budget subvention',
+            data: budgets,
+            backgroundColor: 'rgba(156,163,175,0.35)',
+            borderColor: 'rgba(156,163,175,0.8)',
+            borderWidth: 1,
+            borderRadius: 4,
+          },
+          {
+            label: 'Dépenses (débit)',
+            data: depenses,
+            backgroundColor: bgColors,
+            borderColor: bgColors.map(c => c.replace('0.75', '1')),
+            borderWidth: 1,
+            borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.dataset.label}: ${this.fmtK(ctx.parsed.x ?? 0)}`,
+              afterLabel: ctx => {
+                if (ctx.datasetIndex === 1) {
+                  const b = bailleurs[ctx.dataIndex];
+                  return b.tauxExecution != null ? `Exécution : ${b.tauxExecution.toFixed(1)}%` : '';
+                }
+                return '';
+              },
+            },
+          },
+        },
+        scales: {
+          x: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 11 } } },
+          y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        },
+      },
+    });
+  }
+
+  // ─── Export CSV ──────────────────────────────────────────────────────────
 
   exportBailleurCsv() {
     const r = this.rapBailleur();
@@ -637,6 +912,16 @@ export class AnalytiqueComponent implements OnInit {
     a.download = `rapport-bailleur-${r.periodeDebut}-${r.periodeFin}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  // ─── Helpers ─────────────────────────────────────────────────────────────
+
+  fmtK(n: number): string {
+    const abs = Math.abs(n);
+    const sign = n < 0 ? '-' : '';
+    if (abs >= 1_000_000) return sign + (abs / 1_000_000).toFixed(1) + ' M';
+    if (abs >= 1_000)     return sign + (abs / 1_000).toFixed(1) + ' K';
+    return sign + abs.toFixed(0);
   }
 
   typeLabel(type: TypeAxe): string {

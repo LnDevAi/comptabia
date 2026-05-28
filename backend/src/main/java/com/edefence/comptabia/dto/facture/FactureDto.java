@@ -104,4 +104,23 @@ public class FactureDto {
             Facture.StatutNormalisation statutNormalisation,
             boolean estNormalisee
     ) {}
+
+    public record MoisCA(
+            int mois, String label,
+            BigDecimal payees, BigDecimal emises, BigDecimal total
+    ) {}
+
+    public record StatFacturation(
+            int exercice,
+            long totalFactures,
+            BigDecimal caTotalTtc,
+            BigDecimal caPayee,
+            BigDecimal caEmise,
+            double tauxRecouvrement,
+            long nbPayees,
+            long nbEmises,
+            long nbBrouillons,
+            long nbAnnulees,
+            List<MoisCA> mensuel
+    ) {}
 }

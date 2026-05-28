@@ -39,6 +39,11 @@ public class GedController {
         return service.stats(TenantContext.get());
     }
 
+    @GetMapping("/stats-mensuel")
+    public GedDto.StatsGedMensuel statsMensuel(@RequestParam(defaultValue = "0") int exercice) {
+        return service.getStatsMensuel(TenantContext.get(), exercice);
+    }
+
     // ─── Documents ────────────────────────────────────────────────────────────
 
     @GetMapping

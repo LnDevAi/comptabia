@@ -23,6 +23,12 @@ public class NoteFraisController {
     private final NoteFraisService     svc;
     private final EntrepriseRepository entrepriseRepo;
 
+    @GetMapping("/stats")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('COMPTABLE')")
+    public NoteFraisDto.Stats stats(@RequestParam(defaultValue = "0") int exercice) {
+        return svc.getStats(TenantContext.get(), exercice);
+    }
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('COMPTABLE')")
     public List<NoteFraisDto.Resume> findAll() {

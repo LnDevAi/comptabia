@@ -83,6 +83,23 @@ public class GedService {
     }
 
     @Transactional(readOnly = true)
+    public GedDto.StatsGedMensuel getStatsMensuel(UUID eid, int exercice) {
+        if (exercice <= 0) exercice = OffsetDateTime.now().getYear();
+        String[] moisFr = {"Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"};
+        List<Object[]> raw = docRepo.creesParMois(eid, exercice);
+        Map<Integer, Long> byMois = new HashMap<>();
+        for (Object[] r : raw) byMois.put(((Number) r[0]).intValue(), ((Number) r[1]).longValue());
+        List<GedDto.MoisGed> mensuel = new ArrayList<>();
+        long total = 0;
+        for (int m = 1; m <= 12; m++) {
+            long nb = byMois.getOrDefault(m, 0L);
+            mensuel.add(new GedDto.MoisGed(m, moisFr[m - 1], nb));
+            total += nb;
+        }
+        return new GedDto.StatsGedMensuel(exercice, total, mensuel);
+    }
+
+    @Transactional(readOnly = true)
     public Page<GedDto.AuditEntry> findAudit(UUID eid, Pageable pageable) {
         return auditRepo.findByEntrepriseIdOrderByCreatedAtDesc(eid, pageable)
                         .map(a -> new GedDto.AuditEntry(a.getId(), a.getDocumentId(),

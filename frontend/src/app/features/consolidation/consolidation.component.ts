@@ -129,7 +129,7 @@ type EtatTab = 'bilan' | 'resultat' | 'tft' | 'eliminations';
             </p>
           }
 
-          @for (m of form.membres; track $index; let i = $index) {
+          @for (m of form.membres; track m; let i = $index) {
             <div class="grid grid-cols-12 gap-2 items-center mb-2 p-3 bg-gray-50 rounded-lg">
               <div class="col-span-5">
                 <label class="text-xs text-gray-500">UUID société *</label>

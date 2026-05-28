@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   NoteFraisResume, NoteFraisResponse,
-  NoteFraisSaveRequest, RejeterRequest
+  NoteFraisSaveRequest, RejeterRequest, NoteFraisStats
 } from '../models/note-frais.model';
 
 @Injectable({ providedIn: 'root' })
@@ -53,5 +53,11 @@ export class NoteFraisService {
 
   rembourser(id: string): Observable<NoteFraisResponse> {
     return this.http.post<NoteFraisResponse>(`${this.base}/${id}/rembourser`, {});
+  }
+
+  getStats(exercice: number): Observable<NoteFraisStats> {
+    return this.http.get<NoteFraisStats>(`${this.base}/stats`, {
+      params: new HttpParams().set('exercice', exercice)
+    });
   }
 }

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import {
   CompteBancaireResponse, CompteBancaireRequest, SoldeRequest,
   MouvementResponse, MouvementRequest, AlerteResponse,
-  TresorerieDashboard, ImportOFXResult, PageResponse
+  TresorerieDashboard, ImportOFXResult, PageResponse, StatFlux
 } from '../models/tresorerie-avancee.model';
 
 @Injectable({ providedIn: 'root' })
@@ -57,6 +57,11 @@ export class TresorerieAvanceeService {
 
   acquitter(id: string): Observable<AlerteResponse> {
     return this.http.patch<AlerteResponse>(`${this.base}/alertes/${id}/acquitter`, {});
+  }
+
+  getFluxMensuel(exercice: number): Observable<StatFlux> {
+    return this.http.get<StatFlux>(`${this.base}/flux-mensuel`,
+      { params: new HttpParams().set('exercice', exercice) });
   }
 
   importerOFX(compteNumero: string, file: File): Observable<ImportOFXResult> {

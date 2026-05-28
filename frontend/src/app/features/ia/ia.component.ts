@@ -314,7 +314,7 @@ type ActiveTab = 'facture' | 'chat';
       <div class="border-t border-gray-100 px-4 pt-3 pb-4 space-y-2.5">
         <div class="flex items-center justify-between">
           <label class="flex items-center gap-2 text-xs text-gray-500 cursor-pointer select-none">
-            <input type="checkbox" [checked]="includeContext()" (change)="includeContext.update(v => !v)"
+            <input type="checkbox" [checked]="includeContext()" (change)="toggleIncludeContext()"
                    class="rounded border-gray-300"/>
             Inclure les données de mon entreprise
           </label>
@@ -377,6 +377,8 @@ export class IaComponent implements OnInit {
   chatError      = signal<string | null>(null);
   includeContext = signal(true);
   chatInput      = signal('');
+
+  toggleIncludeContext() { this.includeContext.update(v => !v); }
 
   @ViewChild('messagesContainer') messagesContainer?: ElementRef<HTMLDivElement>;
 

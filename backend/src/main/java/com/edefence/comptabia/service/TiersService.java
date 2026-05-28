@@ -13,6 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -41,6 +46,30 @@ public class TiersService {
         long fournisseurs= tiersRepo.countByEntrepriseIdAndType(entrepriseId, Tiers.TypeTiers.FOURNISSEUR);
         long actifs      = tiersRepo.countByEntrepriseIdAndActifTrue(entrepriseId);
         return new TiersDto.Stats(total, clients, fournisseurs, actifs);
+    }
+
+    public TiersDto.StatsEvolution getStatsEvolution(UUID eid, int exercice) {
+        if (exercice <= 0) exercice = LocalDate.now().getYear();
+        String[] moisFr = {"Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"};
+        List<Object[]> raw = tiersRepo.creesParMoisEtType(eid, exercice);
+        Map<Integer, Map<String, Long>> byMois = new HashMap<>();
+        for (Object[] r : raw) {
+            int mois  = ((Number) r[0]).intValue();
+            String tp = r[1].toString();
+            long nb   = ((Number) r[2]).longValue();
+            byMois.computeIfAbsent(mois, k -> new HashMap<>()).put(tp, nb);
+        }
+        List<TiersDto.MoisTiers> mensuel = new ArrayList<>();
+        long total = 0;
+        for (int m = 1; m <= 12; m++) {
+            Map<String, Long> bt = byMois.getOrDefault(m, new HashMap<>());
+            long cli = bt.getOrDefault("CLIENT",      0L);
+            long fou = bt.getOrDefault("FOURNISSEUR", 0L);
+            long aut = bt.getOrDefault("AUTRE",       0L);
+            mensuel.add(new TiersDto.MoisTiers(m, moisFr[m - 1], cli, fou, aut));
+            total += cli + fou + aut;
+        }
+        return new TiersDto.StatsEvolution(exercice, total, mensuel);
     }
 
     // ─── Mutations ────────────────────────────────────────────────────────────

@@ -42,6 +42,51 @@ public class FactureService {
         return toResponse(findOrThrow(id, eid), LocalDate.now());
     }
 
+    @Transactional(readOnly = true)
+    public FactureDto.StatFacturation getStats(UUID eid, int exercice) {
+        if (exercice <= 0) exercice = LocalDate.now().getYear();
+        LocalDate from = LocalDate.of(exercice, 1, 1);
+        LocalDate to   = LocalDate.of(exercice, 12, 31);
+
+        String[] moisFr = {"Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"};
+
+        List<Object[]> rawMens = factureRepo.caMensuel(eid, from, to);
+        Map<Integer, Object[]> byMois = new HashMap<>();
+        for (Object[] r : rawMens) byMois.put(((Number) r[0]).intValue(), r);
+
+        List<FactureDto.MoisCA> mensuel = new ArrayList<>();
+        for (int m = 1; m <= 12; m++) {
+            Object[] r = byMois.get(m);
+            mensuel.add(new FactureDto.MoisCA(m, moisFr[m - 1],
+                r != null ? (BigDecimal) r[1] : BigDecimal.ZERO,
+                r != null ? (BigDecimal) r[2] : BigDecimal.ZERO,
+                r != null ? (BigDecimal) r[3] : BigDecimal.ZERO));
+        }
+
+        List<Object[]> byStatut = factureRepo.statsByStatut(eid, exercice);
+        long nbPayees = 0, nbEmises = 0, nbBrouillons = 0, nbAnnulees = 0;
+        BigDecimal caPayee = BigDecimal.ZERO, caEmise = BigDecimal.ZERO, caTotal = BigDecimal.ZERO;
+        for (Object[] r : byStatut) {
+            Facture.Statut st = (Facture.Statut) r[0];
+            long cnt = ((Number) r[1]).longValue();
+            BigDecimal montant = (BigDecimal) r[2];
+            switch (st) {
+                case PAYEE     -> { nbPayees    = cnt; caPayee = montant; caTotal = caTotal.add(montant); }
+                case EMISE     -> { nbEmises    = cnt; caEmise = montant; caTotal = caTotal.add(montant); }
+                case BROUILLON -> nbBrouillons = cnt;
+                case ANNULEE   -> nbAnnulees   = cnt;
+            }
+        }
+        long totalFactures = nbPayees + nbEmises + nbBrouillons + nbAnnulees;
+        double tauxRecouvrement = caTotal.compareTo(BigDecimal.ZERO) == 0 ? 0.0
+                : caPayee.multiply(BigDecimal.valueOf(100))
+                         .divide(caTotal, 1, RoundingMode.HALF_UP).doubleValue();
+
+        return new FactureDto.StatFacturation(exercice, totalFactures, caTotal,
+                caPayee, caEmise, tauxRecouvrement,
+                nbPayees, nbEmises, nbBrouillons, nbAnnulees, mensuel);
+    }
+
     // ─── CRUD ───────────────────────────────────────────────────────────────
 
     @Transactional

@@ -27,8 +27,8 @@ import { ExerciceComptable, ClotureResponse } from '../../core/models/exercice.m
     <p class="font-semibold">Comment fonctionne la clôture SYSCOHADA ?</p>
     <p>
       La clôture génère automatiquement deux écritures OD validées :
-      <span class="font-mono">CL-{année}-CH</span> (virement des charges vers 1301) et
-      <span class="font-mono">CL-{année}-PR</span> (virement des produits depuis 1301).
+      <span class="font-mono">CL-&#123;année&#125;-CH</span> (virement des charges vers 1301) et
+      <span class="font-mono">CL-&#123;année&#125;-PR</span> (virement des produits depuis 1301).
       Le solde du compte 1301 représente le résultat net (bénéfice ou perte).
     </p>
     <p class="text-blue-600 text-xs">

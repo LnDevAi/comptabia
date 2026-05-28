@@ -6,7 +6,10 @@ import com.edefence.comptabia.tenant.TenantContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,6 +36,26 @@ public class TvaController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate debut,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
         return service.simuler(TenantContext.get(), debut, fin);
+    }
+
+    @GetMapping("/annuel")
+    public TvaDto.StatAnnuelle statAnnuelle(
+            @RequestParam(defaultValue = "0") int exercice) {
+        int ex = exercice == 0 ? LocalDate.now().getYear() : exercice;
+        return service.getStatAnnuelle(TenantContext.get(), ex);
+    }
+
+    @GetMapping("/export-csv")
+    public ResponseEntity<String> exportCsv(
+            @RequestParam(defaultValue = "0") int exercice) {
+        String csv = service.exportCsv(TenantContext.get(), exercice);
+        String filename = exercice == 0
+                ? "declarations-tva.csv"
+                : "declarations-tva-" + exercice + ".csv";
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
+                .body(csv);
     }
 
     @PostMapping("/valider")

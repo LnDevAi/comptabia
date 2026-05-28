@@ -215,7 +215,7 @@ interface CalDay {
         </div>
         <!-- Calendar grid -->
         <div class="grid grid-cols-7 gap-px bg-gray-200">
-          @for (day of calDays; track $index) {
+          @for (day of calDays; track day) {
             <div class="bg-white min-h-16 p-1"
                  [ngClass]="day.date ? '' : 'bg-gray-50'">
               @if (day.date) {

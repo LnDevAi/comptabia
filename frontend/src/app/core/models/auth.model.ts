@@ -7,6 +7,7 @@ export interface AuthResponse {
   role: 'ADMIN' | 'COMPTABLE' | 'LECTEUR';
   entrepriseId: string;
   nomEntreprise: string;
+  typeEntite?: TypeEntite;
   requiresTwoFactor?: boolean;
   tempToken?: string;
 }

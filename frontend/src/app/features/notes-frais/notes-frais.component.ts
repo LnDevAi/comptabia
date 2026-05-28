@@ -1,15 +1,18 @@
 import {
-  Component, OnInit, ChangeDetectionStrategy,
-  ChangeDetectorRef, inject, computed
+  Component, OnInit, OnDestroy, ChangeDetectionStrategy,
+  ChangeDetectorRef, ElementRef, ViewChild, inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Chart, registerables } from 'chart.js';
 import { NoteFraisService } from '../../core/services/note-frais.service';
 import { AuthService } from '../../core/services/auth.service';
 import {
   NoteFraisResume, NoteFraisResponse,
-  NoteFraisSaveRequest, CategorieNoteFrais, StatutNoteFrais
+  NoteFraisSaveRequest, CategorieNoteFrais, StatutNoteFrais, NoteFraisStats
 } from '../../core/models/note-frais.model';
+
+Chart.register(...registerables);
 
 const CAT_INFO: Record<CategorieNoteFrais, { label: string; compte: string; color: string }> = {
   TRANSPORT:     { label: 'Transport',     compte: '6252', color: 'bg-blue-100 text-blue-700' },
@@ -70,6 +73,7 @@ const CAT_INFO: Record<CategorieNoteFrais, { label: string; compte: string; colo
           }
         </button>
         <button (click)="tab = 'toutes'; chargerToutes()" [class]="tabClass('toutes')">Toutes les notes</button>
+        <button (click)="tab = 'stats'; chargerStats()" [class]="tabClass('stats')">Statistiques</button>
       }
     </nav>
   </div>
@@ -265,6 +269,62 @@ const CAT_INFO: Record<CategorieNoteFrais, { label: string; compte: string; colo
     </div>
   }
 
+  <!-- Tab: Statistiques -->
+  @if (tab === 'stats') {
+    <div class="space-y-5">
+      <!-- Exercice selector -->
+      <div class="flex items-center gap-2 justify-end">
+        <label class="text-xs text-gray-500">Exercice :</label>
+        <select [(ngModel)]="selectedExercice" (change)="chargerStats()"
+                class="border border-gray-200 rounded-lg px-2 py-1 text-sm">
+          @for (y of exercices; track y) {
+            <option [value]="y">{{ y }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- KPI cards -->
+      @if (statsData) {
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <p class="text-xs text-gray-500">Total notes</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ statsData.totalNotes }}</p>
+            <p class="text-xs text-gray-400 mt-1">exercice {{ statsData.exercice }}</p>
+          </div>
+          <div class="bg-blue-50 rounded-xl border border-blue-200 p-4">
+            <p class="text-xs text-blue-700">Montant soumis</p>
+            <p class="text-xl font-bold text-blue-800 mt-1">{{ fmt(statsData.montantSoumis) }}</p>
+            <p class="text-xs text-blue-400 mt-1">{{ statsData.soumises }} note(s)</p>
+          </div>
+          <div class="bg-green-50 rounded-xl border border-green-200 p-4">
+            <p class="text-xs text-green-700">Montant approuvé</p>
+            <p class="text-xl font-bold text-green-800 mt-1">{{ fmt(statsData.montantApprouve) }}</p>
+            <p class="text-xs text-green-400 mt-1">{{ statsData.approuvees }} note(s)</p>
+          </div>
+          <div class="bg-teal-50 rounded-xl border border-teal-200 p-4">
+            <p class="text-xs text-teal-700">Montant remboursé</p>
+            <p class="text-xl font-bold text-teal-800 mt-1">{{ fmt(statsData.montantRembourse) }}</p>
+            <p class="text-xs text-teal-400 mt-1">{{ statsData.remboursees }} note(s)</p>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Répartition par catégorie (montant)</h3>
+            <canvas #catCanvas height="180"></canvas>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Remboursements mensuels</h3>
+            <canvas #mensuelCanvas height="180"></canvas>
+          </div>
+        </div>
+      } @else if (loadingStats) {
+        <div class="text-center py-10 text-gray-400 text-sm">Chargement des statistiques…</div>
+      }
+    </div>
+  }
+
   <!-- Toast -->
   @if (toast) {
     <div class="fixed bottom-4 right-4 px-4 py-2 rounded-lg text-sm font-medium shadow-lg z-50"
@@ -407,7 +467,10 @@ const CAT_INFO: Record<CategorieNoteFrais, { label: string; compte: string; colo
 </div>
   `
 })
-export class NotesFraisComponent implements OnInit {
+export class NotesFraisComponent implements OnInit, OnDestroy {
+
+  @ViewChild('catCanvas')     catCanvasRef!:     ElementRef<HTMLCanvasElement>;
+  @ViewChild('mensuelCanvas') mensuelCanvasRef!: ElementRef<HTMLCanvasElement>;
 
   private svc  = inject(NoteFraisService);
   private auth = inject(AuthService);
@@ -418,7 +481,15 @@ export class NotesFraisComponent implements OnInit {
   get isAdmin():    boolean { return this.auth.user()?.role === 'ADMIN'; }
   get isComptable(): boolean { return this.auth.user()?.role === 'COMPTABLE'; }
 
-  tab: 'mes' | 'soumises' | 'toutes' = 'mes';
+  tab: 'mes' | 'soumises' | 'toutes' | 'stats' = 'mes';
+
+  // Stats / charts
+  statsData:       NoteFraisStats | null = null;
+  loadingStats     = false;
+  selectedExercice = new Date().getFullYear();
+  exercices        = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+  private catChart?:     Chart;
+  private mensuelChart?: Chart;
 
   mesNotes:      NoteFraisResume[] = [];
   soumises:      NoteFraisResume[] = [];
@@ -612,6 +683,97 @@ export class NotesFraisComponent implements OnInit {
       this.showMotifRejet  = true;
       this.cdr.detectChanges();
     });
+  }
+
+  chargerStats() {
+    this.loadingStats = true;
+    this.svc.getStats(this.selectedExercice).subscribe({
+      next: s => {
+        this.statsData    = s;
+        this.loadingStats = false;
+        this.cdr.detectChanges();
+        Promise.resolve().then(() => this.buildCharts());
+      },
+      error: () => { this.loadingStats = false; this.cdr.detectChanges(); }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.catChart?.destroy();
+    this.mensuelChart?.destroy();
+  }
+
+  private buildCharts(): void {
+    this.buildCatChart();
+    this.buildMensuelChart();
+  }
+
+  private buildCatChart(): void {
+    if (!this.catCanvasRef || !this.statsData) return;
+    this.catChart?.destroy();
+    const cats = this.statsData.parCategorie.filter(c => c.montant > 0);
+    const colors: Record<string, string> = {
+      TRANSPORT: '#3b82f6', HEBERGEMENT: '#8b5cf6',
+      REPAS: '#22c55e', COMMUNICATION: '#f97316', AUTRE: '#6b7280'
+    };
+    this.catChart = new Chart(this.catCanvasRef.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels: cats.map(c => CAT_INFO[c.categorie as CategorieNoteFrais]?.label ?? c.categorie),
+        datasets: [{
+          data: cats.map(c => c.montant),
+          backgroundColor: cats.map(c => colors[c.categorie] ?? '#9ca3af'),
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${this.fmt(ctx.parsed as number)}`
+            }
+          }
+        },
+        cutout: '60%'
+      }
+    });
+  }
+
+  private buildMensuelChart(): void {
+    if (!this.mensuelCanvasRef || !this.statsData) return;
+    this.mensuelChart?.destroy();
+    const months = this.statsData.mensuel;
+    this.mensuelChart = new Chart(this.mensuelCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: months.map(m => m.label),
+        datasets: [{
+          label: 'Montant remboursé',
+          data: months.map(m => m.montant),
+          backgroundColor: 'rgba(20,184,166,0.7)',
+          borderColor: '#14b8a6',
+          borderWidth: 1,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false } },
+          y: { beginAtZero: true, ticks: { callback: (v: any) => this.fmtK(+v) } }
+        }
+      }
+    });
+  }
+
+  private fmtK(v: number): string {
+    if (Math.abs(v) >= 1_000_000) return (v / 1_000_000).toFixed(1) + 'M';
+    if (Math.abs(v) >= 1_000)     return (v / 1_000).toFixed(0) + 'K';
+    return String(v);
   }
 
   catInfo(c: CategorieNoteFrais) { return CAT_INFO[c]; }

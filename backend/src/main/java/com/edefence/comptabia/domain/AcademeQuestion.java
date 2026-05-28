@@ -29,7 +29,7 @@ public class AcademeQuestion {
     @Column(name = "option_d")
     private String optionD;
 
-    @Column(name = "bonne_reponse", nullable = false, length = 1)
+    @Column(name = "bonne_reponse", nullable = false, columnDefinition = "bpchar")
     private String bonneReponse;
 
     @Column(nullable = false)

@@ -57,7 +57,7 @@ import { LigneLettrage, CompteLettrageView } from '../../core/models/lettrage.mo
     </div>
     <div class="bg-white rounded-xl border border-gray-200 p-4">
       <p class="text-xs text-gray-500 uppercase tracking-wide">Lignes non lettrées</p>
-      <p class="text-2xl font-bold text-orange-700 mt-1">{{ nonLettrées().length }}</p>
+      <p class="text-2xl font-bold text-orange-700 mt-1">{{ nonLettrees().length }}</p>
     </div>
     <div class="bg-white rounded-xl border border-blue-200 bg-blue-50 p-4">
       <p class="text-xs text-blue-600 uppercase tracking-wide">Solde sélection</p>
@@ -87,7 +87,7 @@ import { LigneLettrage, CompteLettrageView } from '../../core/models/lettrage.mo
   <!-- Table des lignes -->
   <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
     <!-- Non lettrées -->
-    @if (nonLettrées().length > 0) {
+    @if (nonLettrees().length > 0) {
     <div class="px-4 py-2 bg-orange-50 border-b border-orange-100">
       <span class="text-xs font-semibold text-orange-700 uppercase">Lignes non lettrées</span>
     </div>
@@ -103,7 +103,7 @@ import { LigneLettrage, CompteLettrageView } from '../../core/models/lettrage.mo
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
-        @for (l of nonLettrées(); track l.id) {
+        @for (l of nonLettrees(); track l.id) {
         <tr class="hover:bg-gray-50 cursor-pointer"
             [ngClass]="selected().has(l.id) ? 'bg-blue-50' : ''"
             (click)="toggleSel(l)">
@@ -128,11 +128,11 @@ import { LigneLettrage, CompteLettrageView } from '../../core/models/lettrage.mo
     }
 
     <!-- Lettrées groupées par lettre -->
-    @if (groupesLettrés().length > 0) {
+    @if (groupesLettres().length > 0) {
     <div class="px-4 py-2 bg-green-50 border-t border-b border-green-100">
       <span class="text-xs font-semibold text-green-700 uppercase">Lignes lettrées</span>
     </div>
-    @for (g of groupesLettrés(); track g.lettre) {
+    @for (g of groupesLettres(); track g.lettre) {
     <div class="border-b border-gray-100">
       <div class="flex items-center justify-between px-4 py-2 bg-gray-50">
         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
@@ -165,7 +165,7 @@ import { LigneLettrage, CompteLettrageView } from '../../core/models/lettrage.mo
     }
     }
 
-    @if (nonLettrées().length === 0 && groupesLettrés().length === 0) {
+    @if (nonLettrees().length === 0 && groupesLettres().length === 0) {
       <div class="flex items-center justify-center h-24 text-gray-400 text-sm">
         Aucun mouvement sur ce compte (écritures validées uniquement).
       </div>
@@ -191,11 +191,11 @@ export class LettrageComponent {
   lettreSuccess = signal<string | null>(null);
   lettreError   = signal<string | null>(null);
 
-  nonLettrées = computed(() =>
+  nonLettrees = computed(() =>
     (this.vue()?.lignes ?? []).filter(l => !l.lettre)
   );
 
-  groupesLettrés = computed(() => {
+  groupesLettres = computed(() => {
     const lignes = (this.vue()?.lignes ?? []).filter(l => l.lettre);
     const map = new Map<string, LigneLettrage[]>();
     for (const l of lignes) {
@@ -210,7 +210,7 @@ export class LettrageComponent {
 
   soldeSel = computed(() => {
     const ids = this.selected();
-    const lignes = this.nonLettrées().filter(l => ids.has(l.id));
+    const lignes = this.nonLettrees().filter(l => ids.has(l.id));
     return lignes.reduce((s, l) => s + l.debit - l.credit, 0);
   });
 

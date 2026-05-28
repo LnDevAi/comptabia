@@ -1,14 +1,17 @@
 import {
-  Component, ChangeDetectionStrategy, ChangeDetectorRef,
-  inject, signal, computed
+  Component, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef,
+  OnDestroy, ViewChild, inject, signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Chart, registerables } from 'chart.js';
 import { GedService } from '../../core/services/ged.service';
 import {
   GedDocumentSummary, GedDocumentDetail, GedTypeDocument,
-  GedTag, GedStats, GedAuditEntry, PageResponse
+  GedTag, GedStats, GedStatsMensuel, GedAuditEntry, PageResponse
 } from '../../core/models/ged.model';
+
+Chart.register(...registerables);
 
 type Tab = 'dashboard' | 'documents' | 'upload' | 'config' | 'audit';
 
@@ -79,6 +82,33 @@ type Tab = 'dashboard' | 'documents' | 'upload' | 'config' | 'audit';
         </div>
       } @else {
         <div class="text-center py-8 text-gray-400 text-sm">Chargement des statistiques…</div>
+      }
+
+      <!-- Charts + exercice selector -->
+      @if (stats()) {
+        <div class="flex items-center gap-2 justify-end">
+          <label class="text-xs text-gray-500">Exercice :</label>
+          <select [(ngModel)]="selectedExercice" (change)="onExerciceChange()"
+                  class="border border-gray-200 rounded-lg px-2 py-1 text-sm">
+            @for (y of exercices; track y) {
+              <option [value]="y">{{ y }}</option>
+            }
+          </select>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <!-- Doughnut : répartition par statut -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Répartition par statut</h3>
+            <canvas #statutCanvas height="160"></canvas>
+          </div>
+          <!-- Bar : créations mensuelles -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">
+              Créations mensuelles — {{ selectedExercice }}
+            </h3>
+            <canvas #mensuelCanvas height="160"></canvas>
+          </div>
+        </div>
       }
 
       <!-- Recent docs -->
@@ -514,7 +544,7 @@ type Tab = 'dashboard' | 'documents' | 'upload' | 'config' | 'audit';
             <button (click)="changeStatut('APPROUVE', '')" class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200">
               ✓ Approuver
             </button>
-            <button (click)="changeStatut('BROUILLON', 'Refus d\'approbation')" class="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200">
+            <button (click)="changeStatut('BROUILLON', 'Refus approbation')" class="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200">
               ← Rejeter
             </button>
           }
@@ -601,7 +631,10 @@ type Tab = 'dashboard' | 'documents' | 'upload' | 'config' | 'audit';
 }
   `
 })
-export class DocumentsComponent {
+export class DocumentsComponent implements OnDestroy {
+
+  @ViewChild('statutCanvas')  statutCanvasRef!:  ElementRef<HTMLCanvasElement>;
+  @ViewChild('mensuelCanvas') mensuelCanvasRef!: ElementRef<HTMLCanvasElement>;
 
   readonly gedSvc = inject(GedService);
   private cdr = inject(ChangeDetectorRef);
@@ -614,6 +647,13 @@ export class DocumentsComponent {
     { id: 'config' as Tab, label: 'Types & Tags' },
     { id: 'audit' as Tab, label: 'Audit' },
   ];
+
+  // Chart state
+  private statutChart?:  Chart;
+  private mensuelChart?: Chart;
+  statsMensuel    = signal<GedStatsMensuel | null>(null);
+  selectedExercice = new Date().getFullYear();
+  exercices = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
   // State
   stats          = signal<GedStats | null>(null);
@@ -662,6 +702,16 @@ export class DocumentsComponent {
     this.gedSvc.stats().subscribe(s => {
       this.stats.set(s);
       this.cdr.markForCheck();
+      Promise.resolve().then(() => this.buildStatutChart());
+    });
+    this.loadStatsMensuel();
+  }
+
+  loadStatsMensuel() {
+    this.gedSvc.getStatsMensuel(this.selectedExercice).subscribe(m => {
+      this.statsMensuel.set(m);
+      this.cdr.markForCheck();
+      Promise.resolve().then(() => this.buildMensuelChart());
     });
   }
 
@@ -885,5 +935,72 @@ export class DocumentsComponent {
     if (bytes < 1024) return bytes + ' o';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' Ko';
     return (bytes / (1024 * 1024)).toFixed(1) + ' Mo';
+  }
+
+  onExerciceChange() {
+    this.loadStatsMensuel();
+  }
+
+  ngOnDestroy(): void {
+    this.statutChart?.destroy();
+    this.mensuelChart?.destroy();
+  }
+
+  private buildStatutChart(): void {
+    if (!this.statutCanvasRef || !this.stats()) return;
+    this.statutChart?.destroy();
+    const s = this.stats()!;
+    const data   = [s.brouillons, s.enAttente, s.approuves, s.archives];
+    const colors = ['#f59e0b', '#3b82f6', '#22c55e', '#6b7280'];
+    const labels = ['Brouillons', 'En attente', 'Approuvés', 'Archivés'];
+    this.statutChart = new Chart(this.statutCanvasRef.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: colors,
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+        },
+        cutout: '62%'
+      }
+    });
+  }
+
+  private buildMensuelChart(): void {
+    if (!this.mensuelCanvasRef || !this.statsMensuel()) return;
+    this.mensuelChart?.destroy();
+    const months = this.statsMensuel()!.mensuel;
+    this.mensuelChart = new Chart(this.mensuelCanvasRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: months.map(m => m.label),
+        datasets: [{
+          label: 'Documents créés',
+          data: months.map(m => m.nb),
+          backgroundColor: 'rgba(59,130,246,0.7)',
+          borderColor: '#3b82f6',
+          borderWidth: 1,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        }
+      }
+    });
   }
 }

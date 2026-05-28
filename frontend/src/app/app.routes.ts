@@ -6,6 +6,92 @@ import { licenceGuard } from './core/guards/licence.guard';
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   {
+    path: 'tarifs',
+    loadComponent: () =>
+      import('./features/tarifs/tarifs.component').then(m => m.TarifsComponent)
+  },
+  {
+    path: 'legal',
+    children: [
+      { path: '', redirectTo: 'mentions-legales', pathMatch: 'full' },
+      {
+        path: 'mentions-legales',
+        loadComponent: () =>
+          import('./features/legal/legal.component').then(m => m.LegalComponent),
+        data: { doc: 'mentions-legales' }
+      },
+      {
+        path: 'cgu',
+        loadComponent: () =>
+          import('./features/legal/legal.component').then(m => m.LegalComponent),
+        data: { doc: 'cgu' }
+      },
+      {
+        path: 'cgv',
+        loadComponent: () =>
+          import('./features/legal/legal.component').then(m => m.LegalComponent),
+        data: { doc: 'cgv' }
+      },
+      {
+        path: 'confidentialite',
+        loadComponent: () =>
+          import('./features/legal/legal.component').then(m => m.LegalComponent),
+        data: { doc: 'confidentialite' }
+      }
+    ]
+  },
+  {
+    path: 'paiement',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/paiement/paiement.component').then(m => m.PaiementComponent)
+  },
+  {
+    path: 'produit',
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/commercial-docs/commercial-docs.component').then(m => m.CommercialDocsComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () =>
+          import('./features/commercial-docs/commercial-docs.component').then(m => m.CommercialDocsComponent)
+      }
+    ]
+  },
+  {
+    path: 'aide',
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/aide/aide.component').then(m => m.AideComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () =>
+          import('./features/aide/aide.component').then(m => m.AideComponent)
+      }
+    ]
+  },
+  {
+    path: 'tech',
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/tech-docs/tech-docs.component').then(m => m.TechDocsComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () =>
+          import('./features/tech-docs/tech-docs.component').then(m => m.TechDocsComponent)
+      }
+    ]
+  },
+  {
     path: 'auth',
     children: [
       {
@@ -174,6 +260,11 @@ export const routes: Routes = [
         path: 'import-fec',
         loadComponent: () =>
           import('./features/import-fec/import-fec.component').then(m => m.ImportFecComponent)
+      },
+      {
+        path: 'migration',
+        loadComponent: () =>
+          import('./features/migration/migration.component').then(m => m.MigrationComponent)
       },
       {
         path: 'balance-agee',

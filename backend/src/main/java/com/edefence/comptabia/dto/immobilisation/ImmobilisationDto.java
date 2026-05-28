@@ -74,4 +74,12 @@ public final class ImmobilisationDto {
             BigDecimal cumulAmortissements,
             BigDecimal valeurNette
     ) {}
+
+    public record StatsCat(
+            String categorie,
+            long count,
+            BigDecimal valeurBrute,
+            BigDecimal cumulAmort,
+            BigDecimal valeurNette
+    ) {}
 }

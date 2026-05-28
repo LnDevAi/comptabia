@@ -16,21 +16,20 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.Month;
+import java.time.format.TextStyle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BudgetService {
 
-    private final BudgetRepository        budgetRepo;
-    private final EntrepriseRepository    entrepriseRepo;
+    private final BudgetRepository          budgetRepo;
+    private final EntrepriseRepository      entrepriseRepo;
     private final CompteComptableRepository compteRepo;
-    private final LigneEcritureRepository ligneRepo;
-    private final AuditService            auditSvc;
+    private final LigneEcritureRepository   ligneRepo;
+    private final AuditService              auditSvc;
 
     // ─── Comparatif ──────────────────────────────────────────────────────────
 
@@ -42,14 +41,12 @@ public class BudgetService {
         LocalDate from = LocalDate.of(exercice, 1, 1);
         LocalDate to   = LocalDate.of(exercice, 12, 31);
 
-        // Actual movements per account: numero -> [debit, credit]
         List<Object[]> balance = ligneRepo.balanceParCompte(entrepriseId, from, to);
         Map<String, BigDecimal[]> actuals = balance.stream().collect(Collectors.toMap(
                 row -> (String) row[0],
                 row -> new BigDecimal[]{(BigDecimal) row[3], (BigDecimal) row[4]}
         ));
 
-        // Account intitules
         Map<String, String> intitules = compteRepo
                 .findByEntrepriseIdOrderByNumeroAsc(entrepriseId).stream()
                 .collect(Collectors.toMap(c -> c.getNumero(), c -> c.getIntitule()));
@@ -59,7 +56,8 @@ public class BudgetService {
         BigDecimal totalRealise = BigDecimal.ZERO;
 
         for (Budget b : budgets) {
-            BigDecimal[] mv = actuals.getOrDefault(b.getCompteNumero(), new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
+            BigDecimal[] mv = actuals.getOrDefault(b.getCompteNumero(),
+                    new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
             BigDecimal realise = b.getSens() == Budget.Sens.DEBIT ? mv[0] : mv[1];
             BigDecimal ecart   = b.getMontant().subtract(realise);
             double pct = b.getMontant().compareTo(BigDecimal.ZERO) == 0 ? 0.0
@@ -77,9 +75,59 @@ public class BudgetService {
             totalRealise = totalRealise.add(realise);
         }
 
+        double tauxConsommation = totalBudget.compareTo(BigDecimal.ZERO) == 0 ? 0
+                : totalRealise.multiply(BigDecimal.valueOf(100))
+                              .divide(totalBudget, 1, RoundingMode.HALF_UP)
+                              .doubleValue();
+        int nbDepassements = (int) lignes.stream().filter(l -> l.pctConsomme() > 100).count();
+
+        List<BudgetDto.MoisRealise> tendanceMensuelle = computeTendanceMensuelle(
+                entrepriseId, budgets, from, to, totalBudget);
+
         return new BudgetDto.Comparatif(
                 exercice, totalBudget, totalRealise,
-                totalBudget.subtract(totalRealise), lignes);
+                totalBudget.subtract(totalRealise),
+                tauxConsommation, nbDepassements,
+                lignes, tendanceMensuelle);
+    }
+
+    private List<BudgetDto.MoisRealise> computeTendanceMensuelle(
+            UUID entrepriseId, List<Budget> budgets,
+            LocalDate from, LocalDate to, BigDecimal totalBudget) {
+
+        List<String> comptesDebit  = budgets.stream()
+                .filter(b -> b.getSens() == Budget.Sens.DEBIT)
+                .map(Budget::getCompteNumero).toList();
+        List<String> comptesCredit = budgets.stream()
+                .filter(b -> b.getSens() == Budget.Sens.CREDIT)
+                .map(Budget::getCompteNumero).toList();
+
+        Map<Integer, BigDecimal> monthlyRealise = new HashMap<>();
+
+        if (!comptesDebit.isEmpty()) {
+            for (Object[] r : ligneRepo.realiseMensuelComptes(entrepriseId, comptesDebit, from, to)) {
+                int m = ((Number) r[0]).intValue();
+                monthlyRealise.merge(m, (BigDecimal) r[1], BigDecimal::add);
+            }
+        }
+        if (!comptesCredit.isEmpty()) {
+            for (Object[] r : ligneRepo.realiseMensuelComptes(entrepriseId, comptesCredit, from, to)) {
+                int m = ((Number) r[0]).intValue();
+                monthlyRealise.merge(m, (BigDecimal) r[2], BigDecimal::add);
+            }
+        }
+
+        BigDecimal cibleMois = totalBudget.divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
+
+        List<BudgetDto.MoisRealise> result = new ArrayList<>();
+        for (int m = 1; m <= 12; m++) {
+            String label = Month.of(m).getDisplayName(TextStyle.SHORT, Locale.FRENCH);
+            result.add(new BudgetDto.MoisRealise(
+                    m, label,
+                    monthlyRealise.getOrDefault(m, BigDecimal.ZERO),
+                    cibleMois));
+        }
+        return result;
     }
 
     @Transactional(readOnly = true)
@@ -88,6 +136,25 @@ public class BudgetService {
         int current = LocalDate.now().getYear();
         if (!years.contains(current)) years.add(0, current);
         return years;
+    }
+
+    // ─── Export CSV ───────────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public String exportCsv(UUID entrepriseId, int exercice) {
+        BudgetDto.Comparatif c = getComparatif(entrepriseId, exercice);
+        StringBuilder sb = new StringBuilder();
+        sb.append("Compte;Intitulé;Sens;Budget;Réalisé;Écart;% Consommé\n");
+        for (BudgetDto.LigneComparatif l : c.lignes()) {
+            sb.append(l.compteNumero()).append(";")
+              .append(l.intitule().replace(";", " ")).append(";")
+              .append(l.sens()).append(";")
+              .append(l.budget()).append(";")
+              .append(l.realise()).append(";")
+              .append(l.ecart()).append(";")
+              .append(String.format("%.1f", l.pctConsomme())).append("\n");
+        }
+        return sb.toString();
     }
 
     // ─── Upsert / Delete ─────────────────────────────────────────────────────

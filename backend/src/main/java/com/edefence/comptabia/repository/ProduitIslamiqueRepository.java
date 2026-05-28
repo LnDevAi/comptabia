@@ -21,8 +21,8 @@ public interface ProduitIslamiqueRepository extends JpaRepository<ProduitIslamiq
             FROM ProduitIslamique p
             WHERE p.entreprise.id = :eid
               AND p.statut NOT IN (
-                com.edefence.comptabia.domain.ProduitIslamique.Statut.CLOTURE,
-                com.edefence.comptabia.domain.ProduitIslamique.Statut.PASSE_EN_PERTES
+                com.edefence.comptabia.domain.ProduitIslamique$Statut.CLOTURE,
+                com.edefence.comptabia.domain.ProduitIslamique$Statut.PASSE_EN_PERTES
               )
             """)
     BigDecimal sumEncoursTotalActif(@Param("eid") UUID entrepriseId);
@@ -33,8 +33,8 @@ public interface ProduitIslamiqueRepository extends JpaRepository<ProduitIslamiq
             WHERE p.entreprise.id = :eid
               AND p.joursRetard > 30
               AND p.statut NOT IN (
-                com.edefence.comptabia.domain.ProduitIslamique.Statut.CLOTURE,
-                com.edefence.comptabia.domain.ProduitIslamique.Statut.PASSE_EN_PERTES
+                com.edefence.comptabia.domain.ProduitIslamique$Statut.CLOTURE,
+                com.edefence.comptabia.domain.ProduitIslamique$Statut.PASSE_EN_PERTES
               )
             """)
     BigDecimal sumEncoursPAR30(@Param("eid") UUID entrepriseId);
@@ -43,8 +43,8 @@ public interface ProduitIslamiqueRepository extends JpaRepository<ProduitIslamiq
             SELECT COUNT(p) FROM ProduitIslamique p
             WHERE p.entreprise.id = :eid
               AND p.statut NOT IN (
-                com.edefence.comptabia.domain.ProduitIslamique.Statut.CLOTURE,
-                com.edefence.comptabia.domain.ProduitIslamique.Statut.PASSE_EN_PERTES
+                com.edefence.comptabia.domain.ProduitIslamique$Statut.CLOTURE,
+                com.edefence.comptabia.domain.ProduitIslamique$Statut.PASSE_EN_PERTES
               )
             """)
     long countActifs(@Param("eid") UUID entrepriseId);
@@ -54,8 +54,8 @@ public interface ProduitIslamiqueRepository extends JpaRepository<ProduitIslamiq
             FROM ProduitIslamique p
             WHERE p.entreprise.id = :eid
               AND p.statut NOT IN (
-                com.edefence.comptabia.domain.ProduitIslamique.Statut.CLOTURE,
-                com.edefence.comptabia.domain.ProduitIslamique.Statut.PASSE_EN_PERTES
+                com.edefence.comptabia.domain.ProduitIslamique$Statut.CLOTURE,
+                com.edefence.comptabia.domain.ProduitIslamique$Statut.PASSE_EN_PERTES
               )
             GROUP BY p.typeProduit
             ORDER BY p.typeProduit
@@ -67,8 +67,8 @@ public interface ProduitIslamiqueRepository extends JpaRepository<ProduitIslamiq
             FROM ProduitIslamique p
             WHERE p.entreprise.id = :eid
               AND p.statut NOT IN (
-                com.edefence.comptabia.domain.ProduitIslamique.Statut.CLOTURE,
-                com.edefence.comptabia.domain.ProduitIslamique.Statut.PASSE_EN_PERTES
+                com.edefence.comptabia.domain.ProduitIslamique$Statut.CLOTURE,
+                com.edefence.comptabia.domain.ProduitIslamique$Statut.PASSE_EN_PERTES
               )
             """)
     BigDecimal sumMargeTotale(@Param("eid") UUID entrepriseId);

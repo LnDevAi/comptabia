@@ -15,7 +15,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -109,6 +112,38 @@ public class StockService {
                 .toList();
 
         return new StockDto.DashboardStock(total, rupture, alerte, val, articlesRupture, recents);
+    }
+
+    @Transactional(readOnly = true)
+    public StockDto.StatsMouvements getStatsMensuel(UUID eid, int exercice) {
+        if (exercice <= 0) exercice = LocalDate.now().getYear();
+        LocalDate from = LocalDate.of(exercice, 1, 1);
+        LocalDate to   = LocalDate.of(exercice, 12, 31);
+
+        String[] moisFr = {"Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"};
+
+        List<Object[]> raw = mouvementRepo.mouvementsMensuels(eid, from, to);
+        Map<Integer, Object[]> byMois = new HashMap<>();
+        for (Object[] r : raw) byMois.put(((Number) r[0]).intValue(), r);
+
+        List<StockDto.MoisMouvement> mensuel = new ArrayList<>();
+        BigDecimal totalValEnt = BigDecimal.ZERO, totalValSor = BigDecimal.ZERO;
+        long totalNbEnt = 0, totalNbSor = 0;
+
+        for (int m = 1; m <= 12; m++) {
+            Object[] r = byMois.get(m);
+            BigDecimal qte = r != null ? ((BigDecimal) r[1]) : BigDecimal.ZERO;
+            BigDecimal qts = r != null ? ((BigDecimal) r[2]) : BigDecimal.ZERO;
+            BigDecimal ve  = r != null ? ((BigDecimal) r[3]) : BigDecimal.ZERO;
+            BigDecimal vs  = r != null ? ((BigDecimal) r[4]) : BigDecimal.ZERO;
+            mensuel.add(new StockDto.MoisMouvement(m, moisFr[m - 1], qte, qts, ve, vs));
+            totalValEnt = totalValEnt.add(ve);
+            totalValSor = totalValSor.add(vs);
+            if (r != null) { totalNbEnt++; totalNbSor++; }
+        }
+
+        return new StockDto.StatsMouvements(exercice, totalValEnt, totalValSor,
+                totalNbEnt, totalNbSor, mensuel);
     }
 
     public StockDto.ArticleResponse creerArticle(UUID entrepriseId, StockDto.ArticleRequest req) {

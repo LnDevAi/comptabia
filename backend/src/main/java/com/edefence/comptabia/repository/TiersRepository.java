@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,4 +39,13 @@ public interface TiersRepository extends JpaRepository<Tiers, UUID> {
     long countByEntrepriseIdAndActifTrue(UUID entrepriseId);
 
     long countByEntrepriseId(UUID entrepriseId);
+
+    @Query("""
+            SELECT MONTH(t.createdAt), t.type, COUNT(t)
+            FROM Tiers t
+            WHERE t.entreprise.id = :eid AND YEAR(t.createdAt) = :exercice
+            GROUP BY MONTH(t.createdAt), t.type
+            ORDER BY MONTH(t.createdAt)
+            """)
+    List<Object[]> creesParMoisEtType(@Param("eid") UUID eid, @Param("exercice") int exercice);
 }

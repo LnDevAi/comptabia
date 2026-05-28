@@ -106,6 +106,15 @@ public class TresorerieController {
         return service.acquitterAlerte(id, TenantContext.get());
     }
 
+    // ─── Flux mensuels ────────────────────────────────────────────────────────
+
+    @GetMapping("/flux-mensuel")
+    public TresorerieDto.StatFlux fluxMensuel(
+            @RequestParam(defaultValue = "0") int exercice) {
+        int ex = exercice == 0 ? java.time.LocalDate.now().getYear() : exercice;
+        return service.getStatFlux(TenantContext.get(), ex);
+    }
+
     // ─── Import OFX ───────────────────────────────────────────────────────────
 
     @PostMapping(value = "/import-ofx", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

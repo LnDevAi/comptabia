@@ -98,11 +98,11 @@ const POINTAGE_CSS: Record<string, string> = {
         <!-- Récap KPI -->
         <div class="grid grid-cols-2 gap-3">
           <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm text-center">
-            <p class="text-2xl font-bold text-amber-600">{{ congésEnAttente }}</p>
+            <p class="text-2xl font-bold text-amber-600">{{ congesEnAttente }}</p>
             <p class="text-xs text-gray-400 mt-0.5">Congé(s) en attente</p>
           </div>
           <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm text-center">
-            <p class="text-2xl font-bold text-green-600">{{ congésApprouves }}</p>
+            <p class="text-2xl font-bold text-green-600">{{ congesApprouves }}</p>
             <p class="text-xs text-gray-400 mt-0.5">Congé(s) approuvé(s)</p>
           </div>
           <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm text-center">
@@ -289,8 +289,8 @@ export class PortailCollaborateurComponent implements OnInit {
 
   readonly typesPret = TYPE_PRET_LABELS;
 
-  get congésEnAttente() { return this.tableau?.conges.filter(c => c.statut === 'SOUMISE').length ?? 0; }
-  get congésApprouves() { return this.tableau?.conges.filter(c => c.statut === 'APPROUVEE').length ?? 0; }
+  get congesEnAttente() { return this.tableau?.conges.filter(c => c.statut === 'SOUMISE').length ?? 0; }
+  get congesApprouves() { return this.tableau?.conges.filter(c => c.statut === 'APPROUVEE').length ?? 0; }
   get notesEnAttente()  { return this.tableau?.notesFrais.filter(n => n.statut === 'SOUMISE').length ?? 0; }
   get pretsEnCours()    { return this.tableau?.prets.filter(p => p.statut === 'EN_COURS').length ?? 0; }
 

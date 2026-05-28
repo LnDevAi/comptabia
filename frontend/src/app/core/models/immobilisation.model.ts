@@ -51,6 +51,14 @@ export interface ImmoStats {
   valeurNette: number;
 }
 
+export interface ImmoStatsCat {
+  categorie: string;
+  count: number;
+  valeurBrute: number;
+  cumulAmort: number;
+  valeurNette: number;
+}
+
 export interface ImmoRequest {
   code: string;
   designation: string;

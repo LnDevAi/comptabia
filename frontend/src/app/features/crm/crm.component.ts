@@ -505,7 +505,7 @@ type Tab = 'dashboard' | 'contacts' | 'pipeline' | 'campagnes' | 'templates';
               }
               <div class="col-span-2">
                 <label class="block text-xs font-medium text-gray-700 mb-1">Contenu *</label>
-                <textarea [(ngModel)]="campagneForm.contenu" rows="5" placeholder="Variables: {{nom}}, {{email}}, {{societe}}"
+                <textarea [(ngModel)]="campagneForm.contenu" rows="5" placeholder="Variables: {nom}, {email}, {societe}"
                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none font-mono"></textarea>
               </div>
             </div>
@@ -662,7 +662,7 @@ type Tab = 'dashboard' | 'contacts' | 'pipeline' | 'campagnes' | 'templates';
               }
               <div class="col-span-2">
                 <label class="block text-xs font-medium text-gray-700 mb-1">Contenu *</label>
-                <textarea [(ngModel)]="templateForm.contenu" rows="8" placeholder="Utilisez {{nom}}, {{email}}, {{societe}}, {{poste}}, {{telephone}}"
+                <textarea [(ngModel)]="templateForm.contenu" rows="8" placeholder="Utilisez {nom}, {email}, {societe}, {poste}, {telephone}"
                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none font-mono"></textarea>
               </div>
             </div>

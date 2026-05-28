@@ -15,7 +15,7 @@ import { FecImportResult } from '../../core/models/fec-import.model';
 
   <!-- Header -->
   <div>
-    <h1 class="text-xl font-bold text-gray-800">Import FEC OHADA</html>
+    <h1 class="text-xl font-bold text-gray-800">Import FEC OHADA</h1>
     <p class="text-sm text-gray-500 mt-0.5">
       Importez vos écritures depuis un fichier FEC (Format d'Échanges Comptable) — tab-séparé, dates yyyyMMdd
     </p>

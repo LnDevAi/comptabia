@@ -62,3 +62,25 @@ export interface NormalisationRequest {
   nfn:          string;
   codeControle: string;
 }
+
+export interface MoisCA {
+  mois:    number;
+  label:   string;
+  payees:  number;
+  emises:  number;
+  total:   number;
+}
+
+export interface StatFacturation {
+  exercice:          number;
+  totalFactures:     number;
+  caTotalTtc:        number;
+  caPayee:           number;
+  caEmise:           number;
+  tauxRecouvrement:  number;
+  nbPayees:          number;
+  nbEmises:          number;
+  nbBrouillons:      number;
+  nbAnnulees:        number;
+  mensuel:           MoisCA[];
+}

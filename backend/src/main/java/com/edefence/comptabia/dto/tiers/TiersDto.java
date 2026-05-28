@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public final class TiersDto {
@@ -41,4 +42,8 @@ public final class TiersDto {
             long fournisseurs,
             long actifs
     ) {}
+
+    public record MoisTiers(int mois, String label, long clients, long fournisseurs, long autres) {}
+
+    public record StatsEvolution(int exercice, long totalCreations, List<MoisTiers> mensuel) {}
 }

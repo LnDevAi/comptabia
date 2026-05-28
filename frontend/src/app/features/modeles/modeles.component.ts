@@ -138,7 +138,7 @@ type Vue = 'liste' | 'form' | 'instancier';
           <span class="col-span-1"></span>
         </div>
 
-        @for (ligne of form.lignes; track $index) {
+        @for (ligne of form.lignes; track ligne) {
           <div class="grid grid-cols-12 gap-2 items-center">
             <div class="col-span-3">
               <select [(ngModel)]="ligne.compteId" [name]="'compte-' + $index"

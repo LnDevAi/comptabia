@@ -12,7 +12,7 @@ spring:
       max-lifetime: 1800000
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
@@ -82,6 +82,23 @@ springdoc:
     display-request-duration: true
   server-url: ${API_BASE_URL:http://localhost:8080}
   default-produces-media-type: application/json
+
+paiement:
+  cinetpay:
+    api-key: ${CINETPAY_API_KEY:}
+    site-id: ${CINETPAY_SITE_ID:}
+    base-url: https://api-checkout.cinetpay.com/v2
+    notify-url: ${CINETPAY_NOTIFY_URL:http://localhost:8080/api/public/paiement/cinetpay/notify}
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+    success-url: ${STRIPE_SUCCESS_URL:http://localhost:4200/paiement/succes}
+    cancel-url: ${STRIPE_CANCEL_URL:http://localhost:4200/tarifs}
+  virement:
+    banque: ${VIREMENT_BANQUE:Coris Bank International}
+    titulaire: ${VIREMENT_TITULAIRE:eDefence SAS}
+    iban: ${VIREMENT_IBAN:BF00 0000 0000 0000 0000 0000 000}
+    swift: ${VIREMENT_SWIFT:COBIBFBF}
 
 app:
   licence:

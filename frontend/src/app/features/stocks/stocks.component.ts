@@ -1,14 +1,18 @@
 import {
-  Component, OnInit, ChangeDetectionStrategy, signal, inject
+  Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef,
+  signal, inject, ViewChild, ElementRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Chart, registerables } from 'chart.js';
 import { StockService } from '../../core/services/stock.service';
 import {
   DashboardStock, ArticleResponse, ArticleRequest,
   MouvementResponse, MouvementRequest,
-  LigneInventaire, DepotResponse
+  LigneInventaire, DepotResponse, StatsMouvements
 } from '../../core/models/stock.model';
+
+Chart.register(...registerables);
 
 type Tab = 'dashboard' | 'articles' | 'mouvements' | 'inventaire';
 
@@ -53,6 +57,38 @@ type Tab = 'dashboard' | 'articles' | 'mouvements' | 'inventaire';
           <div class="kpi-value">{{ dashboard()!.articlesEnRupture }}</div>
           <div class="kpi-label">En rupture</div>
         </div>
+      </div>
+
+      <!-- Sélecteur exercice + Graphique mouvements mensuels -->
+      <div class="card mt-4">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+          <h3>Mouvements mensuels — entrées / sorties</h3>
+          <select [(ngModel)]="selectedExercice" (ngModelChange)="onExerciceChange($event)"
+                  style="border:1px solid #d1d5db;border-radius:6px;padding:4px 8px;font-size:12px">
+            @for (y of exercices; track y) { <option [value]="y">{{ y }}</option> }
+          </select>
+        </div>
+        @if (statsMouv()) {
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:12px">
+            <div style="background:#eff6ff;border-radius:8px;padding:10px;text-align:center">
+              <div style="font-size:11px;color:#6b7280;text-transform:uppercase">Valeur entrées</div>
+              <div style="font-size:18px;font-weight:700;color:#1d4ed8">{{ fmtK(statsMouv()!.totalValEntrees) }}</div>
+            </div>
+            <div style="background:#fef2f2;border-radius:8px;padding:10px;text-align:center">
+              <div style="font-size:11px;color:#6b7280;text-transform:uppercase">Valeur sorties</div>
+              <div style="font-size:18px;font-weight:700;color:#dc2626">{{ fmtK(statsMouv()!.totalValSorties) }}</div>
+            </div>
+            <div style="background:#f0fdf4;border-radius:8px;padding:10px;text-align:center">
+              <div style="font-size:11px;color:#6b7280;text-transform:uppercase">Solde net</div>
+              <div style="font-size:18px;font-weight:700" [style.color]="statsMouv()!.totalValEntrees >= statsMouv()!.totalValSorties ? '#15803d' : '#dc2626'">
+                {{ fmtK(statsMouv()!.totalValEntrees - statsMouv()!.totalValSorties) }}
+              </div>
+            </div>
+          </div>
+          <div style="position:relative;height:220px;padding:0 12px 12px">
+            <canvas #mouvCanvas></canvas>
+          </div>
+        }
       </div>
 
       @if (dashboard()!.articlesRupture.length > 0) {
@@ -568,8 +604,16 @@ type Tab = 'dashboard' | 'articles' | 'mouvements' | 'inventaire';
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   `]
 })
-export class StocksComponent implements OnInit {
+export class StocksComponent implements OnInit, OnDestroy {
+  @ViewChild('mouvCanvas') mouvCanvasRef!: ElementRef<HTMLCanvasElement>;
+
   private svc = inject(StockService);
+  private cdr = inject(ChangeDetectorRef);
+
+  statsMouv       = signal<StatsMouvements | null>(null);
+  selectedExercice = new Date().getFullYear();
+  exercices       = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+  private mouvChart?: Chart;
 
   activeTab = signal<Tab>('dashboard');
   tabs = [
@@ -623,10 +667,87 @@ export class StocksComponent implements OnInit {
 
   unitesMesure = ['UNITE', 'KG', 'LITRE', 'METRE', 'M2', 'M3', 'BOITE', 'PALETTE', 'SAC', 'CARTON'];
 
+  ngOnDestroy() {
+    this.mouvChart?.destroy();
+  }
+
+  onExerciceChange(y: number) {
+    this.selectedExercice = +y;
+    this.loadStatsMensuel();
+  }
+
+  loadStatsMensuel() {
+    this.mouvChart?.destroy();
+    this.mouvChart = undefined;
+    this.svc.getStatsMensuel(this.selectedExercice).subscribe({
+      next: s => {
+        this.statsMouv.set(s);
+        this.cdr.markForCheck();
+        Promise.resolve().then(() => this.buildMouvChart());
+      }
+    });
+  }
+
+  private buildMouvChart() {
+    const s = this.statsMouv();
+    if (!s || !this.mouvCanvasRef?.nativeElement) return;
+    if (this.mouvChart) this.mouvChart.destroy();
+
+    const labels  = s.mensuel.map(m => m.label);
+    const entrees = s.mensuel.map(m => m.valEntrees);
+    const sorties = s.mensuel.map(m => m.valSorties);
+
+    this.mouvChart = new Chart(this.mouvCanvasRef.nativeElement.getContext('2d')!, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Entrées (valeur)',
+            data: entrees,
+            backgroundColor: 'rgba(59,130,246,0.7)',
+            borderColor: 'rgba(59,130,246,1)',
+            borderWidth: 1,
+          },
+          {
+            label: 'Sorties (valeur)',
+            data: sorties,
+            backgroundColor: 'rgba(239,68,68,0.65)',
+            borderColor: 'rgba(239,68,68,0.9)',
+            borderWidth: 1,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { font: { size: 10 } } },
+          y: { ticks: { font: { size: 10 }, callback: (v) => this.fmtK(Number(v)) } }
+        },
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${this.fmtK(ctx.parsed.y ?? 0)}`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  fmtK(v: number): string {
+    if (Math.abs(v) >= 1_000_000) return (v / 1_000_000).toFixed(1) + ' M';
+    if (Math.abs(v) >= 1_000)     return (v / 1_000).toFixed(0) + ' K';
+    return v.toFixed(0);
+  }
+
   ngOnInit(): void {
     this.chargerDashboard();
     this.chargerArticles();
     this.chargerDepots();
+    this.loadStatsMensuel();
   }
 
   chargerDashboard(): void {

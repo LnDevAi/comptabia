@@ -104,9 +104,9 @@ import { NotesAnnexesDocument, NotesAnnexesSection } from '../../core/models/not
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                  @for (ligne of section.tableau; track $index) {
+                  @for (ligne of section.tableau; track ligne) {
                     <tr [class]="isTotal(ligne.cellules[0]) ? 'bg-gray-50 font-semibold' : 'hover:bg-gray-50'">
-                      @for (cell of ligne.cellules; track $index) {
+                      @for (cell of ligne.cellules; track cell) {
                         <td [class]="'px-3 py-2 ' + (isNumericCell(cell) ? 'text-right font-mono' : '')"
                             [class.text-gray-400]="cell === '—'">
                           {{ cell }}

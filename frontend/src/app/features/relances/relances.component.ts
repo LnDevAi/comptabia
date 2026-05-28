@@ -198,7 +198,7 @@ const NIVEAUX = ['1 — Amiable', '2 — Rappel', '3 — Mise en demeure'];
         <label class="block text-xs text-gray-500 mb-1">Niveau</label>
         <select [(ngModel)]="modalNiveau"
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-          @for (n of niveaux; track $index) {
+          @for (n of niveaux; track n) {
             <option [value]="$index + 1">{{ n }}</option>
           }
         </select>

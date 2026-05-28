@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class NoteFraisDto {
@@ -51,5 +52,18 @@ public class NoteFraisDto {
             NoteFrais.Statut statut,
             String collaborateurNom,
             OffsetDateTime createdAt
+    ) {}
+
+    public record ParCategorie(String categorie, long nb, BigDecimal montant) {}
+
+    public record MoisFrais(int mois, String label, long nb, BigDecimal montant) {}
+
+    public record Stats(
+            int exercice,
+            long totalNotes,
+            long brouillons, long soumises, long approuvees, long rejetees, long remboursees,
+            BigDecimal montantSoumis, BigDecimal montantApprouve, BigDecimal montantRembourse,
+            List<ParCategorie> parCategorie,
+            List<MoisFrais> mensuel
     ) {}
 }

@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -38,6 +39,11 @@ public class ImmobilisationController {
     @GetMapping("/stats")
     public ImmobilisationDto.Stats stats() {
         return service.stats(TenantContext.get());
+    }
+
+    @GetMapping("/stats-par-categorie")
+    public List<ImmobilisationDto.StatsCat> statsParCategorie() {
+        return service.statsParCategorie(TenantContext.get());
     }
 
     @GetMapping("/{id}/plan")

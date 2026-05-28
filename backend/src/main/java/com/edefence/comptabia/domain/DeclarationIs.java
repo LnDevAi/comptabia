@@ -15,7 +15,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "declarations_is",
        uniqueConstraints = @UniqueConstraint(columnNames = {"entreprise_id", "exercice"}))
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "entrepriseId", type = UUID.class))
 @Filter(name = "tenantFilter", condition = "entreprise_id = :entrepriseId")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class DeclarationIs {

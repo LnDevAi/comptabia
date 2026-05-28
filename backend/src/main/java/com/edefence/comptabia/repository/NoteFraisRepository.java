@@ -63,4 +63,30 @@ public interface NoteFraisRepository extends JpaRepository<NoteFrais, UUID> {
     java.math.BigDecimal sumMontantRembourseesInPeriod(@Param("eid") UUID eid,
                                                         @Param("debut") java.time.LocalDate debut,
                                                         @Param("fin") java.time.LocalDate fin);
+
+    @Query("""
+        SELECT n.statut, COUNT(n), COALESCE(SUM(n.montant), 0)
+        FROM NoteFrais n
+        WHERE n.entreprise.id = :eid AND YEAR(n.dateDebut) = :exercice
+        GROUP BY n.statut
+        """)
+    List<Object[]> statsParStatut(@Param("eid") UUID eid, @Param("exercice") int exercice);
+
+    @Query("""
+        SELECT n.categorie, COUNT(n), COALESCE(SUM(n.montant), 0)
+        FROM NoteFrais n
+        WHERE n.entreprise.id = :eid AND YEAR(n.dateDebut) = :exercice
+        GROUP BY n.categorie
+        """)
+    List<Object[]> statsParCategorie(@Param("eid") UUID eid, @Param("exercice") int exercice);
+
+    @Query("""
+        SELECT MONTH(n.dateDebut), COUNT(n), COALESCE(SUM(n.montant), 0)
+        FROM NoteFrais n
+        WHERE n.entreprise.id = :eid AND n.statut = 'REMBOURSEE'
+          AND YEAR(n.dateDebut) = :exercice
+        GROUP BY MONTH(n.dateDebut)
+        ORDER BY MONTH(n.dateDebut)
+        """)
+    List<Object[]> remboursementsMensuels(@Param("eid") UUID eid, @Param("exercice") int exercice);
 }

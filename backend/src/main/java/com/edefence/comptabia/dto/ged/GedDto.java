@@ -126,4 +126,8 @@ public final class GedDto {
             String faitParEmail,
             OffsetDateTime createdAt
     ) {}
+
+    public record MoisGed(int mois, String label, long nb) {}
+
+    public record StatsGedMensuel(int exercice, long totalCreations, List<MoisGed> mensuel) {}
 }

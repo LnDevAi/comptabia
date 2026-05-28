@@ -18,21 +18,31 @@ public final class BudgetDto {
     ) {}
 
     public record LigneComparatif(
-            String  compteNumero,
-            String  intitule,
-            String  sens,
+            String     compteNumero,
+            String     intitule,
+            String     sens,
             BigDecimal budget,
             BigDecimal realise,
             BigDecimal ecart,
-            double  pctConsomme,
-            UUID    budgetId
+            double     pctConsomme,
+            UUID       budgetId
+    ) {}
+
+    public record MoisRealise(
+            int        mois,
+            String     label,
+            BigDecimal realise,
+            BigDecimal cibleMois
     ) {}
 
     public record Comparatif(
-            int     exercice,
-            BigDecimal totalBudget,
-            BigDecimal totalRealise,
-            BigDecimal totalEcart,
-            List<LigneComparatif> lignes
+            int                   exercice,
+            BigDecimal            totalBudget,
+            BigDecimal            totalRealise,
+            BigDecimal            totalEcart,
+            double                tauxConsommation,
+            int                   nbDepassements,
+            List<LigneComparatif> lignes,
+            List<MoisRealise>     tendanceMensuelle
     ) {}
 }

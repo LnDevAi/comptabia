@@ -1,22 +1,24 @@
 import {
   ChangeDetectionStrategy, Component, inject, OnInit, signal
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../core/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
+import { PaiementService } from '../../core/services/paiement.service';
 import {
   UtilisateurAdmin, EntrepriseSettings, ROLE_LABELS, UserRole
 } from '../../core/models/admin.model';
 import { OHADA_PAYS } from '../../core/models/auth.model';
+import { SouscriptionSaas } from '../../core/models/paiement.model';
 
-type Tab = 'utilisateurs' | 'entreprise';
+type Tab = 'utilisateurs' | 'entreprise' | 'souscriptions';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DecimalPipe],
   template: `
 <div class="p-6 max-w-5xl mx-auto space-y-5">
 
@@ -37,6 +39,11 @@ type Tab = 'utilisateurs' | 'entreprise';
             [class]="tabClass('entreprise')"
             class="px-4 py-2 text-sm font-medium rounded-t-lg -mb-px border border-b-0 transition-colors">
       Paramètres entreprise
+    </button>
+    <button (click)="loadSouscriptions(); activeTab.set('souscriptions')"
+            [class]="tabClass('souscriptions')"
+            class="px-4 py-2 text-sm font-medium rounded-t-lg -mb-px border border-b-0 transition-colors">
+      Souscriptions SaaS
     </button>
   </div>
 
@@ -216,16 +223,82 @@ type Tab = 'utilisateurs' | 'entreprise';
     </div>
   }
 
+  <!-- ── Tab Souscriptions SaaS ───────────────────────────────────── -->
+  @if (activeTab() === 'souscriptions') {
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <p class="text-sm text-gray-500">{{ souscriptions().length }} souscription(s)</p>
+        <button (click)="loadSouscriptions()" class="text-xs text-blue-600 hover:underline">Actualiser</button>
+      </div>
+      @if (souscriptions().length === 0) {
+        <p class="text-sm text-gray-400 text-center py-8">Aucune souscription.</p>
+      } @else {
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
+              <tr>
+                <th class="px-4 py-3 text-left">Entreprise</th>
+                <th class="px-4 py-3 text-left">Plan</th>
+                <th class="px-4 py-3 text-center">Mode</th>
+                <th class="px-4 py-3 text-right">Montant</th>
+                <th class="px-4 py-3 text-center">Statut</th>
+                <th class="px-4 py-3 text-center">Date</th>
+                <th class="px-4 py-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of souscriptions(); track s.id) {
+                <tr class="border-t border-gray-100 hover:bg-gray-50">
+                  <td class="px-4 py-2.5">
+                    <p class="font-medium text-gray-800">{{ s.entrepriseNom }}</p>
+                    <p class="text-xs text-gray-400">{{ s.customerEmail }}</p>
+                  </td>
+                  <td class="px-4 py-2.5">
+                    <span class="font-semibold text-gray-800">{{ s.planCode }}</span>
+                    <p class="text-xs text-gray-400">{{ s.periodicite }}</p>
+                  </td>
+                  <td class="px-4 py-2.5 text-center">
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" [class]="modeClass(s.modePaiement)">{{ s.modePaiement }}</span>
+                  </td>
+                  <td class="px-4 py-2.5 text-right font-semibold text-gray-900">
+                    {{ s.montant | number:'1.0-0' }} <span class="text-xs text-gray-400">FCFA</span>
+                  </td>
+                  <td class="px-4 py-2.5 text-center">
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" [class]="statutClass(s.statut)">{{ s.statut }}</span>
+                  </td>
+                  <td class="px-4 py-2.5 text-center text-xs text-gray-500">{{ s.createdAt | date:'dd/MM/yy' }}</td>
+                  <td class="px-4 py-2.5 text-center">
+                    @if (s.statut === 'EN_ATTENTE' && s.modePaiement === 'VIREMENT') {
+                      <button (click)="confirmerVirementAdmin(s.id)"
+                              class="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700">
+                        Confirmer
+                      </button>
+                    }
+                    @if (s.referenceVirement) {
+                      <span class="text-xs text-gray-400 font-mono ml-1">{{ s.referenceVirement }}</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
 </div>
   `
 })
 export class AdminComponent implements OnInit {
-  private svc  = inject(AdminService);
-  private auth = inject(AuthService);
+  private svc     = inject(AdminService);
+  private auth    = inject(AuthService);
+  private paiSvc  = inject(PaiementService);
 
-  activeTab    = signal<Tab>('utilisateurs');
-  utilisateurs = signal<UtilisateurAdmin[]>([]);
-  settings     = signal<EntrepriseSettings | null>(null);
+  activeTab      = signal<Tab>('utilisateurs');
+  utilisateurs   = signal<UtilisateurAdmin[]>([]);
+  settings       = signal<EntrepriseSettings | null>(null);
+  souscriptions  = signal<SouscriptionSaas[]>([]);
 
   inviteOpen   = signal(false);
   inviteSaving = signal(false);
@@ -246,6 +319,31 @@ export class AdminComponent implements OnInit {
     if (r === 'ADMIN')     return 'px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700';
     if (r === 'COMPTABLE') return 'px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700';
     return 'px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600';
+  }
+
+  loadSouscriptions() {
+    this.paiSvc.listAll().subscribe(list => this.souscriptions.set(list));
+  }
+
+  confirmerVirementAdmin(id: string) {
+    if (!confirm('Confirmer ce virement et activer l\'abonnement ?')) return;
+    this.paiSvc.confirmerVirement(id).subscribe({
+      next: updated => this.souscriptions.update(list => list.map(s => s.id === id ? updated : s)),
+      error: (e: any) => alert(e?.error?.message ?? 'Erreur')
+    });
+  }
+
+  modeClass(mode: string): string {
+    if (mode === 'CINETPAY') return 'bg-orange-100 text-orange-700';
+    if (mode === 'STRIPE')   return 'bg-indigo-100 text-indigo-700';
+    return 'bg-blue-100 text-blue-700';
+  }
+
+  statutClass(statut: string): string {
+    if (statut === 'CONFIRME')  return 'bg-green-100 text-green-700';
+    if (statut === 'EN_ATTENTE') return 'bg-amber-100 text-amber-700';
+    if (statut === 'ECHEC')     return 'bg-red-100 text-red-700';
+    return 'bg-gray-100 text-gray-600';
   }
 
   tabClass(tab: Tab): string {

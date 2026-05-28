@@ -6,6 +6,7 @@ import com.edefence.comptabia.tenant.TenantContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,18 @@ public class BudgetController {
             @RequestParam(defaultValue = "0") int exercice) {
         int annee = exercice > 0 ? exercice : LocalDate.now().getYear();
         return service.getComparatif(TenantContext.get(), annee);
+    }
+
+    @GetMapping("/export-csv")
+    public ResponseEntity<String> exportCsv(
+            @RequestParam(defaultValue = "0") int exercice) {
+        int annee = exercice > 0 ? exercice : LocalDate.now().getYear();
+        String csv = service.exportCsv(TenantContext.get(), annee);
+        return ResponseEntity.ok()
+                .header("Content-Type", "text/csv;charset=UTF-8")
+                .header("Content-Disposition",
+                        "attachment; filename=\"budget-" + annee + ".csv\"")
+                .body(csv);
     }
 
     @PostMapping("/{exercice}")

@@ -241,4 +241,22 @@ public interface LigneEcritureRepository extends JpaRepository<LigneEcriture, UU
                                            @Param("classe") String classe,
                                            @Param("from") LocalDate from,
                                            @Param("to") LocalDate to);
+
+    @Query("""
+            SELECT MONTH(e.dateEcriture),
+                   COALESCE(SUM(l.debit),  0),
+                   COALESCE(SUM(l.credit), 0)
+            FROM LigneEcriture l JOIN l.compte c JOIN l.ecriture e
+            WHERE e.entreprise.id = :eid
+              AND e.statut = 'VALIDEE'
+              AND c.numero IN :comptes
+              AND e.dateEcriture >= :from
+              AND e.dateEcriture <= :to
+            GROUP BY MONTH(e.dateEcriture)
+            ORDER BY MONTH(e.dateEcriture)
+            """)
+    List<Object[]> realiseMensuelComptes(@Param("eid") UUID eid,
+                                          @Param("comptes") List<String> comptes,
+                                          @Param("from") LocalDate from,
+                                          @Param("to") LocalDate to);
 }

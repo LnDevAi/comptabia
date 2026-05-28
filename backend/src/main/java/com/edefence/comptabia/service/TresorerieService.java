@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -277,6 +278,58 @@ public class TresorerieService {
         String s = raw.replaceAll("[\\[\\]]", "").trim();
         if (s.length() >= 8) s = s.substring(0, 8);
         return LocalDate.parse(s, DateTimeFormatter.BASIC_ISO_DATE);
+    }
+
+    // ─── Flux mensuels ───────────────────────────────────────────────────────
+
+    private static final List<TresorerieMouvement.TypeMouvement> TYPES_ENTREE = List.of(
+            TresorerieMouvement.TypeMouvement.ENCAISSEMENT,
+            TresorerieMouvement.TypeMouvement.DEPOT_ESPECES,
+            TresorerieMouvement.TypeMouvement.REMISE_CHEQUES
+    );
+
+    private static final List<TresorerieMouvement.TypeMouvement> TYPES_SORTIE = List.of(
+            TresorerieMouvement.TypeMouvement.DECAISSEMENT,
+            TresorerieMouvement.TypeMouvement.RETRAIT_ESPECES,
+            TresorerieMouvement.TypeMouvement.FRAIS_BANCAIRES
+    );
+
+    private static final String[] MOIS_FR = {
+            "", "Janv.", "Févr.", "Mars", "Avr.", "Mai", "Juin",
+            "Juil.", "Août", "Sept.", "Oct.", "Nov.", "Déc."
+    };
+
+    @Transactional(readOnly = true)
+    public TresorerieDto.StatFlux getStatFlux(UUID eid, int exercice) {
+        LocalDate from = LocalDate.of(exercice, 1, 1);
+        LocalDate to   = LocalDate.of(exercice, 12, 31);
+
+        List<Object[]> rows = mvtRepo.fluxMensuel(eid, from, to, TYPES_ENTREE, TYPES_SORTIE);
+
+        java.util.Map<Integer, BigDecimal[]> byMois = new java.util.LinkedHashMap<>();
+        for (Object[] row : rows) {
+            int mois      = ((Number) row[0]).intValue();
+            BigDecimal enc = (BigDecimal) row[1];
+            BigDecimal dec = (BigDecimal) row[2];
+            byMois.put(mois, new BigDecimal[]{ enc, dec });
+        }
+
+        List<TresorerieDto.FluxMensuel> mensuel = new ArrayList<>();
+        BigDecimal totalEnc = BigDecimal.ZERO;
+        BigDecimal totalDec = BigDecimal.ZERO;
+
+        for (int m = 1; m <= 12; m++) {
+            BigDecimal[] v = byMois.getOrDefault(m, new BigDecimal[]{ BigDecimal.ZERO, BigDecimal.ZERO });
+            BigDecimal enc = v[0];
+            BigDecimal dec = v[1];
+            BigDecimal net = enc.subtract(dec);
+            totalEnc = totalEnc.add(enc);
+            totalDec = totalDec.add(dec);
+            mensuel.add(new TresorerieDto.FluxMensuel(m, MOIS_FR[m], enc, dec, net));
+        }
+
+        return new TresorerieDto.StatFlux(exercice, totalEnc, totalDec,
+                totalEnc.subtract(totalDec), mensuel);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────

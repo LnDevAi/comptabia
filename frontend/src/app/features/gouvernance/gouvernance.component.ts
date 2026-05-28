@@ -331,7 +331,7 @@ type Tab = 'associes' | 'assemblees';
             <button type="button" (click)="ajouterResolution()" class="text-xs text-blue-600 hover:text-blue-800 font-medium">+ Ajouter</button>
           </div>
           <div formArrayName="resolutions" class="space-y-3">
-            @for (ctrl of resolutionsArray.controls; track $index) {
+            @for (ctrl of resolutionsArray.controls; track ctrl) {
               <div [formGroupName]="$index" class="border rounded-lg p-3 bg-gray-50 relative">
                 <button type="button" (click)="supprimerResolution($index)"
                         class="absolute top-2 right-2 text-gray-300 hover:text-red-500 text-lg leading-none">×</button>

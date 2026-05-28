@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {
-  Immobilisation, ImmoRequest, ImmoStats,
+  Immobilisation, ImmoRequest, ImmoStats, ImmoStatsCat,
   PlanAmortissement, DotationResult, CategorieImmo, StatutImmo
 } from '../models/immobilisation.model';
 import { PageResponse } from '../models/ecriture.model';
@@ -28,6 +28,10 @@ export class ImmobilisationService {
 
   stats() {
     return this.http.get<ImmoStats>('/api/immobilisations/stats');
+  }
+
+  statsParCategorie() {
+    return this.http.get<ImmoStatsCat[]>('/api/immobilisations/stats-par-categorie');
   }
 
   plan(id: string) {
