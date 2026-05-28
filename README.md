@@ -1,6 +1,6 @@
 # ComptaBIA
 
-[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://github.com/LnDevAi/comptabia/releases/tag/v1.4.0)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/LnDevAi/comptabia/releases/tag/v1.5.0)
 [![Licence](https://img.shields.io/badge/licence-propriétaire-red.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://adoptium.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.5-brightgreen.svg)](https://spring.io/projects/spring-boot)
