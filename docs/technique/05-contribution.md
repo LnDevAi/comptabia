@@ -1,6 +1,6 @@
 # Guide de contribution
 
-Merci de contribuer à e-Compta IA ! Ce guide décrit les conventions à respecter pour maintenir la qualité du code.
+Merci de contribuer à ComptaBIA ! Ce guide décrit les conventions à respecter pour maintenir la qualité du code.
 
 ---
 

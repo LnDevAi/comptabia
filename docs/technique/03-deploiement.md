@@ -19,8 +19,8 @@
 ### 1. Cloner le dépôt
 
 ```bash
-git clone https://github.com/LnDevAi/e-compta-ia-inter.git
-cd e-compta-ia-inter
+git clone https://github.com/LnDevAi/comptabia.git
+cd comptabia
 ```
 
 ### 2. Configurer les variables d'environnement
@@ -29,9 +29,9 @@ Créez un fichier `.env` à la racine (ne jamais committer ce fichier) :
 
 ```env
 # Base de données
-DB_USER=ecompta
+DB_USER=comptabia
 DB_PASSWORD=changeme_in_production
-DB_NAME=ecompta
+DB_NAME=comptabia
 
 # JWT
 JWT_SECRET=votre_secret_jwt_base64_min_32_chars
@@ -125,7 +125,7 @@ npm run build
 ```yaml
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:ecompta}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:comptabia}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     hikari:
@@ -165,14 +165,14 @@ app:
 ```bash
 cd backend
 mvn clean package -DskipTests
-# Output : target/ecompta-0.0.1-SNAPSHOT.jar
+# Output : target/comptabia-0.0.1-SNAPSHOT.jar
 ```
 
 Lancer en production :
 ```bash
-java -jar target/ecompta-0.0.1-SNAPSHOT.jar \
+java -jar target/comptabia-0.0.1-SNAPSHOT.jar \
   --spring.profiles.active=prod \
-  --DB_USER=ecompta \
+  --DB_USER=comptabia \
   --DB_PASSWORD=secret \
   --JWT_SECRET=votre_secret
 ```
@@ -194,7 +194,7 @@ server {
     server_name [DOMAINE];
 
     # Frontend Angular (SPA)
-    root /var/www/ecompta;
+    root /var/www/comptabia;
     index index.html;
 
     location / {
@@ -244,7 +244,7 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_DB: ecompta_test
+          POSTGRES_DB: comptabia_test
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
         options: >-
@@ -259,7 +259,7 @@ jobs:
         env:
           DB_USER: test
           DB_PASSWORD: test
-          DB_NAME: ecompta_test
+          DB_NAME: comptabia_test
 
   frontend:
     runs-on: ubuntu-latest
@@ -296,19 +296,19 @@ Flyway OSS ne supporte pas le rollback automatique. Écrivez un script `V{N+1}__
 ### Sauvegarde manuelle
 
 ```bash
-pg_dump -h localhost -U ecompta -d ecompta -F c -f backup_$(date +%Y%m%d).dump
+pg_dump -h localhost -U comptabia -d comptabia -F c -f backup_$(date +%Y%m%d).dump
 ```
 
 ### Restauration
 
 ```bash
-pg_restore -h localhost -U ecompta -d ecompta -F c backup_20250615.dump
+pg_restore -h localhost -U comptabia -d comptabia -F c backup_20250615.dump
 ```
 
 ### Sauvegarde automatisée (cron)
 
 ```cron
-0 2 * * * pg_dump -h localhost -U ecompta ecompta | gzip > /backups/ecompta_$(date +\%Y\%m\%d).sql.gz
+0 2 * * * pg_dump -h localhost -U comptabia comptabia | gzip > /backups/comptabia_$(date +\%Y\%m\%d).sql.gz
 ```
 
 Rétention recommandée : 30 jours quotidien + 12 mois mensuel.

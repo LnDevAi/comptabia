@@ -1,4 +1,4 @@
-# Documentation API REST — e-Compta IA
+# Documentation API REST — ComptaBIA
 
 **Base URL :** `https://[DOMAINE]/api`
 **Authentification :** Bearer JWT (header `Authorization: Bearer <token>`)

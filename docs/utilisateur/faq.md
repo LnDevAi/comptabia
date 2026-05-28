@@ -114,7 +114,7 @@ Depuis **Paramètres › Mon compte**, cliquez **« Supprimer mon compte »**. C
 - Réponse sous 48h (plan STANDARD), 24h (PREMIUM), 4h (ENTERPRISE)
 
 **Q : Puis-je demander une formation personnalisée ?**
-Oui. L'N EXPERTISE propose des formations en présentiel et à distance sur e-Compta IA. Contactez [EMAIL_CONTACT] pour un devis.
+Oui. L'N EXPERTISE propose des formations en présentiel et à distance sur ComptaBIA. Contactez [EMAIL_CONTACT] pour un devis.
 
 **Q : Y a-t-il une application mobile ?**
 Pas encore. La plateforme est accessible depuis tout navigateur web sur mobile, tablette et ordinateur (design responsive). Une application native est en cours de développement.

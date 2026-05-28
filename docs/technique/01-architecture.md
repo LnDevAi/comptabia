@@ -1,8 +1,8 @@
-# Architecture système — e-Compta IA
+# Architecture système — ComptaBIA
 
 ## Vue d'ensemble
 
-e-Compta IA est une application **SaaS multi-tenant** construite sur une architecture en couches :
+ComptaBIA est une application **SaaS multi-tenant** construite sur une architecture en couches :
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -116,9 +116,9 @@ Redis est optionnel en développement (fail-open si indisponible).
 ## Structure du projet
 
 ```
-e-compta-ia-inter/
+comptabia/
 ├── backend/
-│   ├── src/main/java/com/edefence/ecompta/
+│   ├── src/main/java/com/edefence/comptabia/
 │   │   ├── controller/         # Contrôleurs REST (@RestController)
 │   │   ├── service/            # Logique métier (@Service)
 │   │   ├── domain/             # Entités JPA (@Entity)
@@ -172,7 +172,7 @@ La convention de nommage est `V{N}__{description}.sql`.
 ```yaml
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/ecompta
+    url: jdbc:postgresql://localhost:5432/comptabia
     username: ${DB_USER}
     password: ${DB_PASSWORD}
 ```

@@ -1,26 +1,26 @@
 # Argumentaire commercial & Gestion des objections
 
-Guide à l'usage de l'équipe commerciale de L'N EXPERTISE pour présenter e-Compta IA aux prospects.
+Guide à l'usage de l'équipe commerciale de L'N EXPERTISE pour présenter ComptaBIA aux prospects.
 
 ---
 
 ## Accroche selon le profil
 
 ### Pour le dirigeant de PME
-> « Avez-vous une visibilité claire sur votre résultat en temps réel ? Savez-vous si votre entreprise est rentable aujourd'hui ? e-Compta IA vous donne cette réponse en quelques secondes, sans attendre la clôture de fin d'exercice. »
+> « Avez-vous une visibilité claire sur votre résultat en temps réel ? Savez-vous si votre entreprise est rentable aujourd'hui ? ComptaBIA vous donne cette réponse en quelques secondes, sans attendre la clôture de fin d'exercice. »
 
 ### Pour le comptable interne
-> « Combien d'heures par mois consacrez-vous à la ressaisie de données, à la détection d'erreurs et à la préparation des états ? e-Compta IA automatise ces tâches pour vous concentrer sur l'analyse et le conseil. »
+> « Combien d'heures par mois consacrez-vous à la ressaisie de données, à la détection d'erreurs et à la préparation des états ? ComptaBIA automatise ces tâches pour vous concentrer sur l'analyse et le conseil. »
 
 ### Pour le cabinet d'expertise comptable
-> « Gérez-vous plusieurs dossiers clients avec des outils différents ? e-Compta IA centralise tous vos dossiers, avec un portail client intégré et une collaboration en temps réel. »
+> « Gérez-vous plusieurs dossiers clients avec des outils différents ? ComptaBIA centralise tous vos dossiers, avec un portail client intégré et une collaboration en temps réel. »
 
 ---
 
 ## Arguments de vente clés
 
 ### 1. Conçu pour l'Afrique, pas adapté
-**Message :** e-Compta IA est le seul SaaS comptable conçu nativement pour le SYSCOHADA Révisé par un expert-comptable burkinabè. Ce n'est pas un outil occidental adapté à l'africain — c'est un outil africain.
+**Message :** ComptaBIA est le seul SaaS comptable conçu nativement pour le SYSCOHADA Révisé par un expert-comptable burkinabè. Ce n'est pas un outil occidental adapté à l'africain — c'est un outil africain.
 
 **Preuves :**
 - Plan comptable SYSCOHADA préconfigurable en 1 clic
@@ -53,7 +53,7 @@ Guide à l'usage de l'équipe commerciale de L'N EXPERTISE pour présenter e-Com
 - Paiement Orange Money, Moov Money, Coris Money
 
 ### 5. Suite complète dans une seule plateforme
-**Message :** Plus besoin de jongler entre un logiciel comptable, un logiciel RH et un logiciel de trésorerie. e-Compta IA intègre tout.
+**Message :** Plus besoin de jongler entre un logiciel comptable, un logiciel RH et un logiciel de trésorerie. ComptaBIA intègre tout.
 
 **Preuves :**
 - 50+ modules dans une seule interface
@@ -66,11 +66,11 @@ Guide à l'usage de l'équipe commerciale de L'N EXPERTISE pour présenter e-Com
 
 ### « Mon logiciel actuel (Sage/EBP) me convient. »
 **Réponse :**
-> « Je comprends, ces logiciels sont robustes. La question est : avez-vous accès à votre comptabilité depuis votre téléphone ? Votre comptable peut-il travailler à distance en temps réel ? Bénéficiez-vous de l'IA pour détecter les erreurs avant la clôture ? e-Compta IA complémente ou remplace ces outils avec une expérience moderne, cloud et intelligente — à un coût bien inférieur. »
+> « Je comprends, ces logiciels sont robustes. La question est : avez-vous accès à votre comptabilité depuis votre téléphone ? Votre comptable peut-il travailler à distance en temps réel ? Bénéficiez-vous de l'IA pour détecter les erreurs avant la clôture ? ComptaBIA complémente ou remplace ces outils avec une expérience moderne, cloud et intelligente — à un coût bien inférieur. »
 
 ### « C'est trop cher. »
 **Réponse :**
-> « Comparons le coût total. Un comptable à temps partiel coûte X FCFA/mois. Un abonnement PREMIUM e-Compta IA coûte [TARIF_PREMIUM_M] FCFA/mois. Avec le Module IA, votre comptable gagne en moyenne 30 % de temps — c'est rentabilisé dès le premier mois. Et le plan FREE vous permet de commencer gratuitement pour en juger vous-même. »
+> « Comparons le coût total. Un comptable à temps partiel coûte X FCFA/mois. Un abonnement PREMIUM ComptaBIA coûte [TARIF_PREMIUM_M] FCFA/mois. Avec le Module IA, votre comptable gagne en moyenne 30 % de temps — c'est rentabilisé dès le premier mois. Et le plan FREE vous permet de commencer gratuitement pour en juger vous-même. »
 
 ### « Je ne fais pas confiance au cloud pour mes données comptables. »
 **Réponse :**
@@ -86,11 +86,11 @@ Guide à l'usage de l'équipe commerciale de L'N EXPERTISE pour présenter e-Com
 
 ### « Mon expert-comptable gère ça, je n'en ai pas besoin. »
 **Réponse :**
-> « Votre expert-comptable reste indispensable pour le conseil, la validation et la signature des comptes. e-Compta IA est justement l'outil qu'il utilisera pour gérer votre dossier plus efficacement — et plusieurs cabinets partenaires de L'N EXPERTISE utilisent déjà la plateforme pour leurs clients. »
+> « Votre expert-comptable reste indispensable pour le conseil, la validation et la signature des comptes. ComptaBIA est justement l'outil qu'il utilisera pour gérer votre dossier plus efficacement — et plusieurs cabinets partenaires de L'N EXPERTISE utilisent déjà la plateforme pour leurs clients. »
 
 ### « Je ne connais pas le SYSCOHADA. »
 **Réponse :**
-> « e-Compta IA est précisément conçu pour ça. Le plan comptable SYSCOHADA est préconfigurable en un clic. Notre IA vous guide sur les imputations. Notre centre d'aide contient des guides en français adaptés au contexte africain. Vous n'avez pas besoin d'être expert-comptable pour utiliser e-Compta IA. »
+> « ComptaBIA est précisément conçu pour ça. Le plan comptable SYSCOHADA est préconfigurable en un clic. Notre IA vous guide sur les imputations. Notre centre d'aide contient des guides en français adaptés au contexte africain. Vous n'avez pas besoin d'être expert-comptable pour utiliser ComptaBIA. »
 
 ---
 
@@ -126,7 +126,7 @@ Guide à l'usage de l'équipe commerciale de L'N EXPERTISE pour présenter e-Com
 
 **Durée recommandée :** 45 minutes
 
-1. **Introduction** (5 min) : présentation L'N EXPERTISE, positionnement e-Compta IA
+1. **Introduction** (5 min) : présentation L'N EXPERTISE, positionnement ComptaBIA
 2. **Dashboard et navigation** (5 min) : ergonomie, accès mobile
 3. **Saisie comptable + IA** (10 min) : démontrer la suggestion d'imputation en direct
 4. **États financiers** (5 min) : générer le bilan et le compte de résultat en direct

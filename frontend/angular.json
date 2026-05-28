@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "e-compta-ia-inter": {
+    "comptabia": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -19,7 +19,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/e-compta-ia-inter",
+            "outputPath": "dist/comptabia",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -53,8 +53,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
-            "production": {"buildTarget": "e-compta-ia-inter:build:production"},
-            "development": {"buildTarget": "e-compta-ia-inter:build:development"}
+            "production": {"buildTarget": "comptabia:build:production"},
+            "development": {"buildTarget": "comptabia:build:development"}
           },
           "defaultConfiguration": "development",
           "options": {

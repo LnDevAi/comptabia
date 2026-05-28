@@ -1,6 +1,6 @@
 # Guide — Fiscalité & TVA
 
-Ce guide couvre la gestion de la TVA, les déclarations fiscales et les outils de conformité fiscale disponibles sur e-Compta IA.
+Ce guide couvre la gestion de la TVA, les déclarations fiscales et les outils de conformité fiscale disponibles sur ComptaBIA.
 
 ---
 

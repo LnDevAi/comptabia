@@ -8,7 +8,7 @@
 
 ## Préambule
 
-L'N EXPERTISE accorde une importance primordiale à la protection de vos données à caractère personnel. La présente Politique de Confidentialité décrit les traitements mis en œuvre dans le cadre de l'utilisation de la plateforme **e-Compta IA**, en conformité avec :
+L'N EXPERTISE accorde une importance primordiale à la protection de vos données à caractère personnel. La présente Politique de Confidentialité décrit les traitements mis en œuvre dans le cadre de l'utilisation de la plateforme **ComptaBIA**, en conformité avec :
 
 - La **loi n°010-2004/AN du 20 avril 2004** portant protection des données à caractère personnel au Burkina Faso ;
 - Les lignes directrices et recommandations de la **CNDP** (Commission Nationale de l'Informatique et des Libertés — Burkina Faso) ;

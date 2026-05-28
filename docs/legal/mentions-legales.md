@@ -6,7 +6,7 @@
 
 ## 1. Éditeur de la plateforme
 
-La plateforme **e-Compta IA** est éditée par :
+La plateforme **ComptaBIA** est éditée par :
 
 **L'N EXPERTISE**
 Entreprise individuelle / Cabinet d'expertise comptable
@@ -38,7 +38,7 @@ La plateforme est hébergée par :
 
 ## 4. Propriété intellectuelle
 
-Tous les contenus présents sur la plateforme e-Compta IA (textes, graphiques, logotypes, icônes, images, éléments sonores, logiciels, code source, bases de données, etc.) sont la propriété exclusive de L'N EXPERTISE ou font l'objet d'une autorisation d'utilisation accordée à L'N EXPERTISE.
+Tous les contenus présents sur la plateforme ComptaBIA (textes, graphiques, logotypes, icônes, images, éléments sonores, logiciels, code source, bases de données, etc.) sont la propriété exclusive de L'N EXPERTISE ou font l'objet d'une autorisation d'utilisation accordée à L'N EXPERTISE.
 
 Toute reproduction, représentation, modification, publication, transmission ou dénaturation, totale ou partielle, de ces contenus, par quelque procédé que ce soit et sur quelque support que ce soit, est interdite sans l'autorisation préalable et écrite de L'N EXPERTISE.
 
@@ -59,7 +59,7 @@ Pour plus d'informations, consultez notre [Politique de Confidentialité](/legal
 
 ## 6. Cookies
 
-La plateforme e-Compta IA utilise des cookies techniques nécessaires à son bon fonctionnement. Aucun cookie publicitaire ou de traçage tiers n'est déposé sans votre consentement explicite.
+La plateforme ComptaBIA utilise des cookies techniques nécessaires à son bon fonctionnement. Aucun cookie publicitaire ou de traçage tiers n'est déposé sans votre consentement explicite.
 
 ---
 

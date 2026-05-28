@@ -1,6 +1,6 @@
 # Guide — Module IA (Intelligence Artificielle)
 
-Le **Module IA** d'e-Compta IA utilise l'intelligence artificielle pour vous assister dans votre travail comptable quotidien. Disponible à partir du plan **PREMIUM**.
+Le **Module IA** d'ComptaBIA utilise l'intelligence artificielle pour vous assister dans votre travail comptable quotidien. Disponible à partir du plan **PREMIUM**.
 
 ---
 

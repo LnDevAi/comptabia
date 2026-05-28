@@ -1,6 +1,6 @@
 # Guide — Import & Migration
 
-Le module **Import & Migration** vous permet de transférer vos données depuis un autre logiciel comptable vers e-Compta IA en quelques étapes.
+Le module **Import & Migration** vous permet de transférer vos données depuis un autre logiciel comptable vers ComptaBIA en quelques étapes.
 
 ---
 
@@ -159,7 +159,7 @@ Pour un import depuis Excel :
 
 ## Soldes d'ouverture
 
-Si vous démarrez e-Compta IA **en cours d'exercice**, importez vos soldes d'ouverture :
+Si vous démarrez ComptaBIA **en cours d'exercice**, importez vos soldes d'ouverture :
 
 1. Préparez un fichier avec les colonnes : `compte`, `libelle`, `soldeDebit`, `soldeCredit`.
 2. Choisissez le format **Soldes d'ouverture** et le type **Soldes d'ouverture**.

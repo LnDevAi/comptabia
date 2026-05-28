@@ -5,15 +5,15 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-ecompta}
-      POSTGRES_USER: ${POSTGRES_USER:-ecompta}
+      POSTGRES_DB: ${POSTGRES_DB:-comptabia}
+      POSTGRES_USER: ${POSTGRES_USER:-comptabia}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecompta}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-comptabia}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,8 +39,8 @@ services:
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-ecompta}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-ecompta}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-comptabia}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-comptabia}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
@@ -54,7 +54,7 @@ services:
       MAIL_PORT: ${MAIL_PORT:-587}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
-      MAIL_FROM: ${MAIL_FROM:-noreply@ecompta.app}
+      MAIL_FROM: ${MAIL_FROM:-noreply@comptabia.app}
       # ── Licence ────────────────────────────────────────────────────────────
       LICENCE_FILE: /config/licence.lic
       LICENCE_DEV_MODE: ${LICENCE_DEV_MODE:-false}

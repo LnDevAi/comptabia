@@ -265,8 +265,8 @@ Créez un fichier `.env` à la racine (ne jamais committer) :
 # Base de données
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=ecompta
-DB_USER=ecompta
+DB_NAME=comptabia
+DB_USER=comptabia
 DB_PASSWORD=changeme_en_production
 
 # JWT — générez avec : openssl rand -base64 64

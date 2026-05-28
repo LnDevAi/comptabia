@@ -1,6 +1,6 @@
-# Pitch — e-Compta IA
+# Pitch — ComptaBIA
 
-**L'N EXPERTISE** présente **e-Compta IA** : la première plateforme de gestion comptable et financière intelligente conçue pour les entreprises africaines opérant sous le référentiel **SYSCOHADA Révisé**.
+**L'N EXPERTISE** présente **ComptaBIA** : la première plateforme de gestion comptable et financière intelligente conçue pour les entreprises africaines opérant sous le référentiel **SYSCOHADA Révisé**.
 
 ---
 
@@ -16,9 +16,9 @@ Les PME et TPE africaines font face à des défis comptables majeurs :
 
 ---
 
-## La solution — e-Compta IA
+## La solution — ComptaBIA
 
-e-Compta IA est une plateforme **SaaS cloud-native** qui combine :
+ComptaBIA est une plateforme **SaaS cloud-native** qui combine :
 
 ### 1. Comptabilité SYSCOHADA native
 Tenue de comptabilité conforme au SYSCOHADA Révisé dès la première utilisation, sans paramétrage fastidieux. Plan comptable, journaux et états financiers préconfigurés.
