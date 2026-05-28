@@ -1,4 +1,4 @@
-# Sécurité — e-Compta IA
+# Sécurité — ComptaBIA
 
 ## Modèle de sécurité
 

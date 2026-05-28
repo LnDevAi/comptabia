@@ -8,7 +8,7 @@
 
 ## Préambule
 
-Les présentes Conditions Générales de Vente (CGV) s'appliquent à toute souscription à un abonnement payant de la plateforme **e-Compta IA**, éditée par **L'N EXPERTISE**.
+Les présentes Conditions Générales de Vente (CGV) s'appliquent à toute souscription à un abonnement payant de la plateforme **ComptaBIA**, éditée par **L'N EXPERTISE**.
 
 Elles complètent les [Conditions Générales d'Utilisation (CGU)](/legal/cgu) et prévalent sur toute autre communication en matière commerciale et financière.
 

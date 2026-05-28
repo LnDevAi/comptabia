@@ -1,6 +1,6 @@
 # Programme Partenaires — L'N EXPERTISE
 
-Le **Programme Partenaires e-Compta IA** est destiné aux cabinets d'expertise comptable, consultants en gestion et revendeurs souhaitant proposer e-Compta IA à leurs clients.
+Le **Programme Partenaires ComptaBIA** est destiné aux cabinets d'expertise comptable, consultants en gestion et revendeurs souhaitant proposer ComptaBIA à leurs clients.
 
 ---
 
@@ -10,7 +10,7 @@ En tant que partenaire L'N EXPERTISE, vous bénéficiez de :
 
 - **Commission récurrente** sur chaque client apporté, tant qu'il reste abonné
 - **Accès revendeur** avec tableau de bord de gestion de vos clients
-- **Formation certifiante** sur e-Compta IA et le SYSCOHADA
+- **Formation certifiante** sur ComptaBIA et le SYSCOHADA
 - **Support prioritaire** dédié aux partenaires
 - **Co-marketing** : apparition dans notre annuaire des partenaires certifiés
 - **Matériel commercial** : fiches produit, présentations, fichiers de démo
@@ -69,7 +69,7 @@ Les seuils sont calculés sur les 12 derniers mois glissants.
 - Gestion des objections
 - Onboarding client type
 
-**Certification :** À l'issue de la formation, les partenaires reçoivent le certificat **« Partenaire Certifié e-Compta IA »** valable 2 ans.
+**Certification :** À l'issue de la formation, les partenaires reçoivent le certificat **« Partenaire Certifié ComptaBIA »** valable 2 ans.
 
 ---
 

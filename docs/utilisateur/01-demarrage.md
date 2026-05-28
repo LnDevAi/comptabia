@@ -1,6 +1,6 @@
 # Guide de démarrage rapide
 
-Bienvenue sur **e-Compta IA**, la plateforme de gestion comptable et financière de L'N EXPERTISE.
+Bienvenue sur **ComptaBIA**, la plateforme de gestion comptable et financière de L'N EXPERTISE.
 Ce guide vous accompagne de l'inscription à votre première écriture en moins de 15 minutes.
 
 ---

@@ -1,6 +1,6 @@
 # Comparatif détaillé des plans
 
-e-Compta IA propose quatre niveaux d'abonnement pour s'adapter à toutes les structures, de la micro-entreprise au groupe multi-entités.
+ComptaBIA propose quatre niveaux d'abonnement pour s'adapter à toutes les structures, de la micro-entreprise au groupe multi-entités.
 
 ---
 

@@ -8,7 +8,7 @@
 
 ## Préambule
 
-Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la plateforme **e-Compta IA**, solution de gestion comptable et financière proposée par **L'N EXPERTISE**.
+Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la plateforme **ComptaBIA**, solution de gestion comptable et financière proposée par **L'N EXPERTISE**.
 
 En accédant à la plateforme et en créant un compte, l'Utilisateur accepte sans réserve les présentes CGU. Si l'Utilisateur n'accepte pas ces conditions, il lui est demandé de ne pas utiliser la plateforme.
 
@@ -18,7 +18,7 @@ En accédant à la plateforme et en créant un compte, l'Utilisateur accepte san
 
 | Terme | Définition |
 |-------|------------|
-| **Plateforme** | L'application web e-Compta IA accessible à l'adresse de publication officielle |
+| **Plateforme** | L'application web ComptaBIA accessible à l'adresse de publication officielle |
 | **Éditeur** | L'N EXPERTISE, représentée par Lassané NACOULMA |
 | **Utilisateur** | Toute personne physique ou morale ayant créé un compte sur la Plateforme |
 | **Entreprise** | Entité juridique gérée par un Utilisateur au sein de la Plateforme |
@@ -48,7 +48,7 @@ L'utilisation de la Plateforme est réservée aux personnes majeures (18 ans ou 
 
 ### 3.1 Services proposés
 
-La Plateforme e-Compta IA offre notamment les services suivants :
+La Plateforme ComptaBIA offre notamment les services suivants :
 
 - Tenue de comptabilité générale (SYSCOHADA Révisé)
 - Gestion du plan comptable, des journaux et des exercices

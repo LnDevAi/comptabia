@@ -1,4 +1,4 @@
-# Fiches modules — e-Compta IA
+# Fiches modules — ComptaBIA
 
 Présentation détaillée de chaque module de la plateforme.
 
