@@ -1,0 +1,144 @@
+{
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "sections": {
+      "accounting": "Comptabilité",
+      "parties": "Tiers",
+      "assets": "Actifs",
+      "tax": "Fiscalité",
+      "budget": "Budget",
+      "treasury": "Trésorerie",
+      "invoicing": "Facturation",
+      "payroll": "Paie & RH",
+      "crm": "CRM",
+      "steering": "Pilotage",
+      "documents": "Documents",
+      "import_export": "Import / Export",
+      "governance": "Gouvernance",
+      "insurance": "Assurances CIMA",
+      "microfinance": "Microfinance SFD",
+      "islamic": "Finance Islamique",
+      "association": "Association",
+      "platform": "Plateforme",
+      "admin": "Administration"
+    },
+    "accounting": {
+      "chart_of_accounts": "Plan de comptes",
+      "entries": "Écritures",
+      "financial_statements": "États financiers",
+      "fiscal_years": "Exercices",
+      "lettering": "Lettrage",
+      "analytics": "Analytique",
+      "allocation": "Affectation",
+      "aged_balance": "Balance âgée",
+      "accruals": "Régularisations",
+      "currencies": "Devises",
+      "templates": "Modèles"
+    },
+    "parties": {
+      "parties": "Tiers"
+    },
+    "assets": {
+      "fixed_assets": "Immobilisations",
+      "inventory": "Stocks"
+    },
+    "tax": {
+      "vat": "TVA",
+      "corporate_tax": "IS",
+      "fiscal": "Fiscal",
+      "tax_notes": "Notes annexes",
+      "tax_return": "Liasse fiscale"
+    },
+    "budget": {
+      "budget": "Budget"
+    },
+    "treasury": {
+      "treasury": "Trésorerie",
+      "reconciliation": "Rapprochement",
+      "forecasts": "Prévisions"
+    },
+    "invoicing": {
+      "invoicing": "Facturation",
+      "quotes": "Devis",
+      "reminders": "Relances"
+    },
+    "payroll": {
+      "payroll": "Paie",
+      "hr_budget": "Budget RH",
+      "expenses": "Notes de frais",
+      "leave": "Congés",
+      "evaluations": "Évaluations",
+      "social": "Social",
+      "training": "Formation",
+      "discipline": "Discipline",
+      "hr_dashboard": "Tableau RH",
+      "attendance": "Temps & Présences",
+      "recruitment": "Recrutement",
+      "loans": "Prêts & Avances",
+      "my_space": "Mon espace",
+      "hr_documents": "Documents RH"
+    },
+    "crm": {
+      "crm": "CRM"
+    },
+    "steering": {
+      "ratios": "Ratios",
+      "steering": "Pilotage",
+      "kpi": "KPI",
+      "reporting": "Reporting"
+    },
+    "documents": {
+      "ged": "GED"
+    },
+    "import_export": {
+      "export": "Export",
+      "import_fec": "Import FEC",
+      "migration": "Migration"
+    },
+    "governance": {
+      "governance": "Gouvernance"
+    },
+    "insurance": {
+      "technical_provisions": "Provisions CIMA",
+      "insurance_statements": "États CIMA"
+    },
+    "microfinance": {
+      "portfolio": "Portefeuille SFD",
+      "sfd_statements": "États SFD"
+    },
+    "islamic": {
+      "islamic_finance": "Finance Islamique"
+    },
+    "association": {
+      "regulatory_docs": "Docs réglementaires"
+    },
+    "platform": {
+      "alerts": "Alertes",
+      "subscriptions": "Abonnements",
+      "academy": "Académie",
+      "ai_assistant": "Assistant IA"
+    },
+    "admin": {
+      "approvals": "Approbations",
+      "audit": "Audit",
+      "notifications": "Notifications",
+      "consolidation": "Consolidation",
+      "users": "Utilisateurs",
+      "administration": "Administration",
+      "commercial": "Gestion Commerciale"
+    }
+  },
+  "topbar": {
+    "help": "Centre d'aide",
+    "notifications": {
+      "title": "Notifications temps réel",
+      "mark_all_read": "Tout marquer lu",
+      "empty": "Aucune notification"
+    },
+    "user_menu": {
+      "my_profile": "Mon profil",
+      "account_settings": "Paramètres du compte",
+      "logout": "Déconnexion"
+    }
+  }
+}

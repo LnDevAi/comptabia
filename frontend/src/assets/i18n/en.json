@@ -1,0 +1,144 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "sections": {
+      "accounting": "Accounting",
+      "parties": "Parties",
+      "assets": "Assets",
+      "tax": "Tax",
+      "budget": "Budget",
+      "treasury": "Treasury",
+      "invoicing": "Invoicing",
+      "payroll": "Payroll & HR",
+      "crm": "CRM",
+      "steering": "Steering",
+      "documents": "Documents",
+      "import_export": "Import / Export",
+      "governance": "Governance",
+      "insurance": "CIMA Insurance",
+      "microfinance": "SFD Microfinance",
+      "islamic": "Islamic Finance",
+      "association": "Association",
+      "platform": "Platform",
+      "admin": "Administration"
+    },
+    "accounting": {
+      "chart_of_accounts": "Chart of accounts",
+      "entries": "Journal entries",
+      "financial_statements": "Financial statements",
+      "fiscal_years": "Fiscal years",
+      "lettering": "Lettering",
+      "analytics": "Analytics",
+      "allocation": "Allocation",
+      "aged_balance": "Aged balance",
+      "accruals": "Accruals",
+      "currencies": "Currencies",
+      "templates": "Templates"
+    },
+    "parties": {
+      "parties": "Parties"
+    },
+    "assets": {
+      "fixed_assets": "Fixed assets",
+      "inventory": "Inventory"
+    },
+    "tax": {
+      "vat": "VAT",
+      "corporate_tax": "Corporate tax",
+      "fiscal": "Tax management",
+      "tax_notes": "Tax notes",
+      "tax_return": "Tax return"
+    },
+    "budget": {
+      "budget": "Budget"
+    },
+    "treasury": {
+      "treasury": "Treasury",
+      "reconciliation": "Reconciliation",
+      "forecasts": "Forecasts"
+    },
+    "invoicing": {
+      "invoicing": "Invoicing",
+      "quotes": "Quotes",
+      "reminders": "Reminders"
+    },
+    "payroll": {
+      "payroll": "Payroll",
+      "hr_budget": "HR budget",
+      "expenses": "Expense reports",
+      "leave": "Leave",
+      "evaluations": "Evaluations",
+      "social": "Social",
+      "training": "Training",
+      "discipline": "Discipline",
+      "hr_dashboard": "HR dashboard",
+      "attendance": "Time & Attendance",
+      "recruitment": "Recruitment",
+      "loans": "Loans & Advances",
+      "my_space": "My space",
+      "hr_documents": "HR documents"
+    },
+    "crm": {
+      "crm": "CRM"
+    },
+    "steering": {
+      "ratios": "Ratios",
+      "steering": "Steering",
+      "kpi": "KPI",
+      "reporting": "Reporting"
+    },
+    "documents": {
+      "ged": "DMS"
+    },
+    "import_export": {
+      "export": "Export",
+      "import_fec": "Import FEC",
+      "migration": "Migration"
+    },
+    "governance": {
+      "governance": "Governance"
+    },
+    "insurance": {
+      "technical_provisions": "CIMA provisions",
+      "insurance_statements": "CIMA statements"
+    },
+    "microfinance": {
+      "portfolio": "SFD portfolio",
+      "sfd_statements": "SFD statements"
+    },
+    "islamic": {
+      "islamic_finance": "Islamic Finance"
+    },
+    "association": {
+      "regulatory_docs": "Regulatory docs"
+    },
+    "platform": {
+      "alerts": "Alerts",
+      "subscriptions": "Subscriptions",
+      "academy": "Academy",
+      "ai_assistant": "AI Assistant"
+    },
+    "admin": {
+      "approvals": "Approvals",
+      "audit": "Audit",
+      "notifications": "Notifications",
+      "consolidation": "Consolidation",
+      "users": "Users",
+      "administration": "Administration",
+      "commercial": "Commercial management"
+    }
+  },
+  "topbar": {
+    "help": "Help center",
+    "notifications": {
+      "title": "Real-time notifications",
+      "mark_all_read": "Mark all as read",
+      "empty": "No notifications"
+    },
+    "user_menu": {
+      "my_profile": "My profile",
+      "account_settings": "Account settings",
+      "logout": "Sign out"
+    }
+  }
+}
